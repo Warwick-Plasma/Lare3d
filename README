@@ -1,0 +1,11 @@
+LARE3D V2.0
+
+LARE3D is a 3D MHD solver using a 2nd order accurate Lagrangian remap
+scheme.
+
+To build Lare3D, type "make"
+To unbuild Lare3D and destroy the stored data type "make clean"
+To clean up temporary files but leave the data type "make tidy"
+
+To build the Lare3D plugin for LLNL Visit, type "make visit"
+
