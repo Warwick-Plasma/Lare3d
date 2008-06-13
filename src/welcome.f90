@@ -43,8 +43,8 @@ CONTAINS
 
     DO iy=1,LOGOY*2+1 
        DO ix=1,LOGOX
-          LOGOSTRING(ix*2:ix*2)=LOGOELS(LOGO(ix,iy/2)+1)
-          LOGOSTRING(ix*2+1:ix*2+1)=LOGOELS(LOGO(ix,iy/2)+1)
+          LOGOSTRING(ix*2:ix*2)=LOGOELS(LOGO(ix,MAX(iy/2,1))+1)
+          LOGOSTRING(ix*2+1:ix*2+1)=LOGOELS(LOGO(ix,MAX(iy/2,1))+1)
        ENDDO
        PRINT *,LOGOSTRING
     ENDDO
