@@ -736,9 +736,6 @@ END SUBROUTINE viscosity_and_b_update
              magn_b = SQRT(bxv**2 + byv**2 + bzv**2)
 
              ! it's heat not flux but:
-             flux = (dt * ((eta(ix,iy,iz) * magn_j**2))  &
-                  / 8.0_num)*PI
-             ! it's heat not flux but:
              flux = flux + (dt * eta(ix,iy,iz) * curlb(ix,iy,iz)**2 / 8.0_num) ! eta j^2 at vertex 
 
              ! Ohmic heating split between 8 cells adjacent to point V
