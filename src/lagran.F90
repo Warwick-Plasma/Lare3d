@@ -736,7 +736,7 @@ END SUBROUTINE viscosity_and_b_update
              magn_b = SQRT(bxv**2 + byv**2 + bzv**2)
 
              ! it's heat not flux but:
-             flux = flux + (dt * eta(ix,iy,iz) * curlb(ix,iy,iz)**2 / 8.0_num) ! eta j^2 at vertex 
+             flux = (dt * eta(ix,iy,iz) * curlb(ix,iy,iz)**2 / 2.0_num) ! eta j^2 at vertex 
 
              ! Ohmic heating split between 8 cells adjacent to point V
              energy(ix,iy,iz) = energy(ix,iy,iz) +  flux / rho(ix,iy,iz)
@@ -756,7 +756,7 @@ END SUBROUTINE viscosity_and_b_update
 
              total_ohmic_heating = total_ohmic_heating + w2
 
-             flux = flux-(jx * eta(ix,iy,iz) * dxc(ix) * dt / 2.0_num)
+             flux = -(jx * eta(ix,iy,iz) * dxc(ix) * dt / 2.0_num)
 
              bz1(ix,iy,iz) = bz1(ix,iy,iz) - flux
              bz1(ix,iyp,iz) = bz1(ix,iyp,iz) + flux
@@ -767,7 +767,7 @@ END SUBROUTINE viscosity_and_b_update
              by1(ixp,iy,iz) = by1(ixp,iy,iz) + flux
              by1(ixp,iy,izp) = by1(ixp,iy,izp) - flux
 
-             flux = flux-(jy * eta(ix,iy,iz) * dyc(iy) * dt / 2.0_num )
+             flux = -(jy * eta(ix,iy,iz) * dyc(iy) * dt / 2.0_num )
              bx1(ix,iy,iz) = bx1(ix,iy,iz) - flux
              bx1(ix,iy,izp) = bx1(ix,iy,izp) + flux
              bx1(ix,iyp,iz) = bx1(ix,iyp,iz) - flux
@@ -777,7 +777,7 @@ END SUBROUTINE viscosity_and_b_update
              bz1(ix,iyp,iz) = bz1(ix,iyp,iz) + flux
              bz1(ixp,iyp,iz) = bz1(ixp,iyp,iz) - flux
 
-             flux = flux-(jz * eta(ix,iy,iz) * dzc(iz) * dt / 2.0_num)
+             flux = -(jz * eta(ix,iy,iz) * dzc(iz) * dt / 2.0_num)
              by1(ix,iy,iz) = by1(ix,iy,iz) - flux
              by1(ixp,iy,iz) = by1(ixp,iy,iz) + flux
              by1(ix,iy,izp) = by1(ix,iy,izp) - flux
