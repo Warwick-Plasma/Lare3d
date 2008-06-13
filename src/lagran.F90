@@ -666,24 +666,24 @@ END SUBROUTINE viscosity_and_b_update
     REAL(num) :: jx, jy, jz, jxxp, jyyp, jzzp, flux
     REAL(num) :: bxv, byv, bzv, j_par_x, j_par_y, j_par_z
     REAL(num) :: j_perp_x, j_perp_y, j_perp_z, magn_b
-    REAL(num) :: magn_j_par, magn_j_perp,flip
+    REAL(num) :: magn_j_par, magn_j_perp,flip,magn_j
     REAL(num), DIMENSION(:),ALLOCATABLE:: maskx,masky,maskz
 
-	ALLOCATE(maskx(0:nx),masky(0:ny),maskz(0:nz))
+    ALLOCATE(maskx(0:nx),masky(0:ny),maskz(0:nz))
 
-!These mask variables are used later to multiply the
-!edge cells in each direction by 0.5
-      maskx=1.0_num
-      maskx(0)=0.5_num
-      maskx(nx)=0.5_num
+    !These mask variables are used later to multiply the
+    !edge cells in each direction by 0.5
+    maskx=1.0_num
+    maskx(0)=0.5_num
+    maskx(nx)=0.5_num
 
-      masky=1.0_num
-      masky(0)=0.5_num
-      masky(ny)=0.5_num
+    masky=1.0_num
+    masky(0)=0.5_num
+    masky(ny)=0.5_num
 
-      maskz=1.0_num
-      maskz(0)=0.5_num
-      maskz(nz)=0.5_num
+    maskz=1.0_num
+    maskz(0)=0.5_num
+    maskz(nz)=0.5_num
 
     DO iz = 0, nz+1
        DO iy = 0, ny+1
@@ -735,28 +735,9 @@ END SUBROUTINE viscosity_and_b_update
                   + bz(ixp,iyp,iz)) / 4.0_num
              magn_b = SQRT(bxv**2 + byv**2 + bzv**2)
 
-!	     If magn_b**2 < none_zero j_par_{x,y,z}=0.0_num
-             j_par_x = (jx*bxv + jy*byv + jz*bzv) * bxv / magn_b**2
-             j_par_y = (jx*bxv + jy*byv + jz*bzv) * byv / magn_b**2
-             j_par_z = (jx*bxv + jy*byv + jz*bzv) * bzv / magn_b**2
-
-             flip=MAX(magn_b**2,none_zero)
-             j_par_x = -j_par_x * flip
-             J_par_y = -j_par_y * flip
-             j_par_z = -j_par_z * flip
-
-             magn_j_par = SQRT(j_par_x**2 + j_par_y**2 + j_par_z**2)
-
-             !calc j_perp
-             j_perp_x = jx-j_par_x
-             j_perp_y = jy-j_par_y
-             j_perp_z = jz-j_par_z
-
-             magn_j_perp = SQRT(j_perp_x**2 + j_perp_y**2 + j_perp_z**2)
-
              ! it's heat not flux but:
-             flux = (dt * ((eta(ix,iy,iz) * magn_j_par**2)  &
-                  + (eta_perp(ix,iy,iz) * magn_j_perp**2)) / 8.0_num)*PI
+             flux = (dt * ((eta(ix,iy,iz) * magn_j**2))  &
+                  / 8.0_num)*PI
              ! it's heat not flux but:
              flux = flux + (dt * eta(ix,iy,iz) * curlb(ix,iy,iz)**2 / 8.0_num) ! eta j^2 at vertex 
 
