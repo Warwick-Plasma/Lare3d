@@ -1,0 +1,28 @@
+LARE3D core directory
+
+This directory contains the core of the solver and the physics packages for LARE2D. Many of the files in this directory are core parts of the code which should not be altered by end users, but there are some sections which can be changed to change the range of simulations which can be performed by LARE.
+
+---------------------------------------------------------------
+shared_data.F90
+
+shared_data.F90 is the module which contains the global arrays used by LARE (compare with F77 common blocks). Any new global variables which are needed should be defined here.
+--------------------------------------------------------------
+mpi_routines.f90
+
+mpi_routines.f90 is the module which sets up the MPI parallel part of the code, and also allocates the main code arrays. Any new array variable added to the code should be allocated/deallocated in this module, using the existing arrays as a guide.
+--------------------------------------------------------------
+lagran.f90
+
+Most of lagran.f90 should not be altered by end users, but the single subroutine "eta_calc" is used to calculate the resistivity in the code. In the routine, simply set the array "eta" to the required value at every point in space and the code will then apply that value of resistivity in the simulation.
+
+--------------------------------------------------------------
+eos.f90
+
+It is possible to add new equations of state to LARE by modifying the subroutines in this module to calculate
+
+1) Pressure given specific internal energy and density
+2) Specific internal energy given temperature and density
+3) Temperature given specific internal energy and density
+4) Sound speed given specific internal energy and density
+
+The rest of the code has been written to work with whatever equation of state is given here.

@@ -1,0 +1,35 @@
+Lare2D main code directory
+--------------------------
+Contains
+	boundary.f90
+	control.f90
+	diagnostics.f90
+	initial_conditions.f90
+
+-----------------------------------------------------------------
+control.f90
+
+control.f90 contains all the code parameters, such as the number of gridpoints,  the length of the domain,the physics packages used, parameters for the packages etc.
+
+It is subdivided into three subroutines
+User_Normalisation - User sets the parameters used in the code normalisation
+Control_Variables - User sets the basic code parameters. See the comments in the code for a full description
+Set_Output_Dumps - User sets the information to be included in the output dumps from the code.
+-----------------------------------------------------------------
+initial_conditions.f90
+
+initial_conditions.f90 controls the initial conditions for the simulation. It contains only a single subroutine, called "Set_Initial_Conditions", where the user must set the initial conditions for the variables
+
+rho - density
+energy - specific internal energy
+v{x,y,z} - Velocity in all three directions
+b{x,y,z} - Magnetic field in all three directions
+-----------------------------------------------------------------
+boundary.f90
+
+boundary.f90 controls the boundary conditions for the code. Details on the boundary conditions and how to change them are given in the LARE manual
+-----------------------------------------------------------------
+diagnostics.f90
+
+diagnostics.f90 performs the output of data to the output dump files, and must be changed by the user if additional output data is required. Changing the output dumps is described in the LARE manual
+-----------------------------------------------------------------
