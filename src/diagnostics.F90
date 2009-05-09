@@ -27,10 +27,8 @@ CONTAINS
 
     INTEGER, PARAMETER :: out = 1000
     INTEGER, SAVE :: index = 1, step = 1
-    INTEGER :: filehandle, localcellcount
     REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: data
     LOGICAL :: print_arrays, last_call
-    INTEGER :: code
     REAL(num), DIMENSION(3) :: Stagger = 0.0_num
     INTEGER, DIMENSION(3) :: dims
 
@@ -44,7 +42,7 @@ CONTAINS
     REAL(num) :: en_ke = 0.0_num, en_int = 0.0_num
     REAL(num) :: en_b = 0.0_num, heating_visc = 0.0_num
     REAL(num) :: heating_ohmic = 0.0_num
-    REAL(num) :: j_max_local, total
+    REAL(num) :: total
 
     dims = (/ nx_global+1, ny_global+1, nz_global+1 /)
 
@@ -290,8 +288,8 @@ CONTAINS
     ! with setting 'dt_multiplier' if you expect massive changes across
     ! cells.
 
-    REAL(num) :: cons, dt1, dt2, dt3, dt4, dt5, dt_local, dxlocal
-    REAL(num) :: dtr_local, dth_local, cs, cs1
+    REAL(num) :: cons, dt1, dt3, dt4, dt5, dt_local, dxlocal
+    REAL(num) :: dtr_local, dth_local, cs
 
     dt_local = largest_number
     dtr_local = largest_number
@@ -477,8 +475,6 @@ CONTAINS
 
 
   SUBROUTINE output_log ! writes basic data to 'lare3d.dat'
-
-    REAL(num) :: temp
 
     WRITE(20, *) 'Density normalisation = ', RHO0, ' kg m^(-3)'
     WRITE(20, *) 'Specific energy density normalisation = ', ENERGY0, ' K'

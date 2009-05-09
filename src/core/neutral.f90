@@ -66,7 +66,7 @@ CONTAINS
     ! normalising values are L0 = 150km, v0 = 6.5km / s, rho0 = 2.7e-4 kg / m3
     ! t0 = 23s, T0 = 6420K, P0 = 1.2e4 Pa, B0 = 1200G (0.12T)
 
-    REAL(num) :: f, b, r, xi_v, bxv, byv, bzv, bfieldsq, rho_v, T_v, T
+    REAL(num) :: f, xi_v, bxv, byv, bzv, bfieldsq, rho_v, T_v, T
     INTEGER :: ixp, iyp, izp
 
     eta_perp = 0.0001
@@ -139,7 +139,7 @@ CONTAINS
 
     REAL(num), INTENT(IN) :: T_V, rho_v
     REAL(num) :: Get_Neutral
-    REAL(num) :: f, b, r, bof
+    REAL(num) :: f, b, r
 
     f = f_bar * SQRT(T_v) * EXP(-T_bar / T_v) ! T from b has been cancelled
     b = Tr_bar * EXP(0.25_num * T_bar / T_v * (Tr_bar * T_v - 1.0_num))
@@ -154,7 +154,7 @@ CONTAINS
 
     INTEGER, INTENT(IN) :: material
     REAL(num) :: bof, r, T, rho0, e0, dx, x
-    REAL(num), DIMENSION(2) :: Ta, fa, ba, ra, xi_a
+    REAL(num), DIMENSION(2) :: Ta, fa, xi_a
     REAL(num) :: ionise_pot_local
     INTEGER :: loop
 
@@ -209,9 +209,9 @@ CONTAINS
 
   SUBROUTINE newton_relax
 
-    INTEGER, DIMENSION(1) :: ref_index, z0(1) = 1
-    LOGICAL :: first_call = .TRUE., run_loop = .TRUE.
-
+!!$    INTEGER, DIMENSION(1) :: ref_index, z0(1) = 1
+!!$    LOGICAL :: first_call = .TRUE., run_loop = .TRUE.
+!!$
 !!$    ! This should only be run above the photosphere so first call sets up
 !!$    ! the lowest value of iz to use if at all, the -2 is due to zc starting
 !!$    ! at -1

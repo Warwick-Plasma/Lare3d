@@ -84,7 +84,6 @@ CONTAINS
     CHARACTER(len = MaxStringLen) :: name_l, class_l
     INTEGER, INTENT(OUT) :: TYPE
     INTEGER :: len_name, len_class
-    INTEGER(KIND = MPI_OFFSET_KIND) :: old_displacement
 
     len_name = LEN(name)
     len_class = LEN(name)

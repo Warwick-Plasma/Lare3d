@@ -30,8 +30,7 @@ CONTAINS
   SUBROUTINE lagrangian_step
 
     INTEGER :: substeps, subcycle
-    REAL(num) :: actual_dt, dt_sub, cumulative_dt
-    LOGICAL :: keepcycling
+    REAL(num) :: actual_dt, dt_sub
 
     ALLOCATE (bx1(0:nx+1, 0:ny+1, 0:nz+1), by1(0:nx+1, 0:ny+1, 0:nz+1), &
         bz1(0:nx+1, 0:ny+1, 0:nz+1), qxy(0:nx+1, 0:ny+1, 0:nz+1), &
@@ -431,9 +430,9 @@ CONTAINS
     REAL(num) :: vxb, vxbm, vyb, vybm, vzb, vzbm
     REAL(num) :: p, pxp, pxm, pyp, pym, pzp, pzm, fx, fy, fz, dv
     REAL(num) :: dvxdx, dvydy, dvzdz, dvxy, dvxz, dvyz, s, L, L2, cf
-    REAL(num) :: sxx, syy, szz, sxy, sxz, syx, syz
+    REAL(num) :: sxx, syy, szz, sxy, sxz, syz
     REAL(num) :: dvxdy, dvxdz, dvydx, dvydz, dvzdx, dvzdy
-    REAL(num) :: Cs, temp
+    REAL(num) :: Cs
     LOGICAL :: tensor_shock_visc = .TRUE.
 
     DO iz = -1, nz+2
@@ -749,7 +748,7 @@ CONTAINS
 
   SUBROUTINE eta_calc
 
-    REAL(num) :: jx, jy, jz, jxxp, jyyp, jzzp, flux
+    REAL(num) :: jx, jy, jz, jxxp, jyyp, jzzp
     REAL(num) :: modj
 
     eta = 0.0_num
@@ -812,8 +811,7 @@ CONTAINS
   ! Use the subroutine rkstep
   SUBROUTINE resistive_effects
 
-    REAL(num) :: jx, jy, jz, jxxp, jyyp, flux
-    REAL(num) :: rho_v, half_dt, dt6
+    REAL(num) :: dt6
     REAL(num) :: jx1, jx2, jy1, jy2, jz1, jz2
     REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: k1x, k2x, k3x, k4x
     REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: k1y, k2y, k3y, k4y
@@ -1114,15 +1112,12 @@ CONTAINS
   SUBROUTINE rkstep
 
     REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: jx, jy, jz
-    REAL(num), DIMENSION(:, :, :), ALLOCATABLE  :: hxflux, hyflux, hzflux
     REAL(num) :: jx1, jy1, jz1, jx2, jy2, jz2
-    REAL(num) :: bxv, byv, bzv, rho_v
-    REAL(num) :: f1, f2, area
+    REAL(num) :: bxv, byv, bzv
     REAL(num) :: magn_b
     REAL(num) :: j_par_x, j_par_y, j_par_z
     REAL(num) :: j_perp_x, j_perp_y, j_perp_z
     REAL(num) :: magn_j_perp, magn_j_par
-    INTEGER :: ixp2, iyp2
 
     ALLOCATE(jx(-1:nx+1, -1:ny+1, -1:nz+1), &
         jy(-1:nx+1, -1:ny+1, -1:nz+1), jz(-1:nx+1, -1:ny+1, -1:nz+1))

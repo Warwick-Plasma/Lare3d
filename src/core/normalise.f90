@@ -97,8 +97,6 @@ CONTAINS
     ! Rho0 the normalising density (in kgm^{ - 3})
     ! The code will generate the rest
 
-    REAL(num) :: Tr
-
     IF (.NOT. SI) THEN
       ! If not running as an SI code then force normalisation off
       ! Ignore any values read from the input deck

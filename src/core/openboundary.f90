@@ -18,7 +18,7 @@ CONTAINS
 
   SUBROUTINE damp_boundaries
 
-    REAL(num) :: a, r_a, alpha
+    REAL(num) :: a
 
     IF (damping) THEN
 
@@ -108,7 +108,7 @@ CONTAINS
 
   SUBROUTINE open_bcs
 
-    REAL(num) :: bperp, a
+    REAL(num) :: bperp
 
     ! update ghost cells based on Riemann problem with farfield
     ! only expected to work perfectly for prblems with straight B field
@@ -623,7 +623,7 @@ CONTAINS
     ! Solve for when bx and bperp are non zero. Solves in the coordinate system
     ! such that y-axis points along by_farfield
     REAL(num), DIMENSION(7) :: vtest
-    INTEGER :: i, j
+    INTEGER :: i
     REAL(num) :: a, b, c, d, e, f, g
     REAL(num) :: pmagg, pmagfar, phi, theta
     REAL(num) :: c0, cx, ct, cf, cs

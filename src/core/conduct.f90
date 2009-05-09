@@ -38,9 +38,7 @@ CONTAINS
     REAL(num) :: A1, A2, mx, Q, errtot, mx1
     REAL(num) :: w = 1.5_num
 
-    REAL(dbl) :: runtime = 0.0_dbl, starttime, endtime
-
-    INTEGER :: CYCLE, sweep, mx_x, mx_y, mx_z, start_index
+    INTEGER :: CYCLE, sweep, start_index
 
     LOGICAL :: converged
 

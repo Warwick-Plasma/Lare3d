@@ -180,7 +180,7 @@ CONTAINS
 
   SUBROUTINE grid ! stretched and staggered grid
 
-    REAL(num) :: dx, dy, dz, dxmin, dzmin, dymin, xcstar, ycstar, zcstar
+    REAL(num) :: dx, dy, dz, xcstar, ycstar, zcstar
     INTEGER :: ix, iy
 
     ALLOCATE(xb_global(-2:nx_global+2), dxnew(-2:nx_global+2))
