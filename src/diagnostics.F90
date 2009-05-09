@@ -299,11 +299,11 @@ CONTAINS
     cons = gamma * (gamma - 1.0_num)
 
     DO iz = -1, nz+2
+      izm = iz - 1
       DO iy = -1, ny+2
+        iym = iy - 1
         DO ix = -1, nx+2
           ixm = ix - 1
-          iym = iy - 1
-          izm = iz - 1
 
           w1 = bx(ix, iy, iz)**2 + by(ix, iy, iz)**2 + bz(ix, iy, iz)**2
           CALL Get_CS(rho(ix, iy, iz), energy(ix, iy, iz), eos_number, &
@@ -380,11 +380,12 @@ CONTAINS
     energy_int_local = 0.0_dbl
 
     DO iz = 1, nz
+      izm = iz - 1
       DO iy = 1, ny
+        iym = iy - 1
         DO ix = 1, nx
           ixm = ix - 1
-          iym = iy - 1
-          izm = iz - 1
+
           w2 = (bx(ix, iy, iz)**2 + bx(ixm, iy, iz)**2) / 2.0_dbl
           w3 = (by(ix, iy, iz)**2 + by(ix, iym, iz)**2) / 2.0_dbl
           w4 = (bz(ix, iy, iz)**2 + bz(ix, iy, izm)**2) / 2.0_dbl
@@ -398,11 +399,11 @@ CONTAINS
     END DO
 
     DO iz = 0, nz
+      izp = iz + 1
       DO iy = 0, ny
+        iyp = iy + 1
         DO ix = 0, nx
           ixp = ix + 1
-          iyp = iy + 1
-          izp = iz + 1
 
           ! WARNING the KE is summed on the vertices
           rho_v = (rho(ix, iy, iz) * cv(ix, iy, iz) &

@@ -73,13 +73,13 @@ CONTAINS
     IF (Conduction) CALL Conduct_Heat
 
     DO iz = 0, nz+1
+      izm = iz - 1
       DO iy = 0, ny+1
+        iym = iy - 1
         !DEC$ IVDEP
         !DEC$ VECTOR ALWAYS
         DO ix = 0, nx+1
           ixm = ix - 1
-          iym = iy - 1
-          izm = iz - 1
           bx1(ix, iy, iz) = (bx(ix, iy, iz) + bx(ixm, iy, iz)) / 2.0_num
           by1(ix, iy, iz) = (by(ix, iy, iz) + by(ix, iym, iz)) / 2.0_num
           bz1(ix, iy, iz) = (bz(ix, iy, iz) + bz(ix, iy, izm)) / 2.0_num
@@ -154,13 +154,13 @@ CONTAINS
     END DO
 
     DO iz = 0, nz
+      izp = iz + 1
       DO iy = 0, ny
+        iyp = iy + 1
         !DEC$ IVDEP
         !DEC$ VECTOR ALWAYS
         DO ix = 0, nx
           ixp = ix + 1
-          iyp = iy + 1
-          izp = iz + 1
 
           p       = pressure(ix , iy , iz )
           pxp     = pressure(ixp, iy , iz )
@@ -355,13 +355,13 @@ CONTAINS
 
     ! finally correct density and energy to final values
     DO iz = 1, nz
+      izm = iz - 1
       DO iy = 1, ny
+        iym = iy - 1
         !DEC$ IVDEP
         !DEC$ VECTOR ALWAYS
         DO ix = 1, nx
           ixm = ix - 1
-          iym = iy - 1
-          izm = iz - 1
 
           vxb = (vx1(ix, iy, iz) + vx1(ix, iym, iz) &
               + vx1(ix, iy, izm) + vx1(ix, iym, izm)) / 4.0_num
@@ -448,14 +448,14 @@ CONTAINS
     END DO
 
     DO iz = 0, nz+1
+      izm = iz - 1
+      izp = iz + 1
       DO iy = 0, ny+1
+        iym = iy - 1
+        iyp = iy + 1
         DO ix = 0, nx+1
           ixm = ix - 1
           ixp = ix + 1
-          iym = iy - 1
-          iyp = iy + 1
-          izm = iz - 1
-          izp = iz + 1
 
           ! vx at Sx(i, j, k)
           vxb = (vx(ix, iy, iz) + vx(ix, iym, iz) &
@@ -666,16 +666,16 @@ CONTAINS
     RETURN
 
     DO iz = 0, nz+1
+      izm = iz - 1
+      izp = iz + 1
       DO iy = 0, ny+1
+        iym = iy - 1
+        iyp = iy + 1
         !DEC$ IVDEP
         !DEC$ VECTOR ALWAYS
         DO ix = 0, nx+1
           ixm = ix - 1
           ixp = ix + 1
-          iym = iy - 1
-          iyp = iy + 1
-          izm = iz - 1
-          izp = iz + 1
 
           ! vx at Sx(i, j, k)
           vxb = (vx1(ix, iy, iz) + vx1(ix, iym, iz) &
@@ -755,13 +755,13 @@ CONTAINS
     eta = 0.0_num
 
     DO iz = -1, nz+1
+      izp = iz + 1
       DO iy = -1, ny+1
+        iyp = iy + 1
         !DEC$ IVDEP
         !DEC$ VECTOR ALWAYS
         DO ix = -1, nx+1
           ixp = ix + 1
-          iyp = iy + 1
-          izp = iz + 1
 
           ! jx at E3(i, j)
           jx = (bz(ix, iyp, iz) - bz(ix, iy, iz)) / dyc(iy) &
@@ -1022,11 +1022,11 @@ CONTAINS
     CALL bfield_bcs
 
     DO iz = 1, nz
+      izm = iz - 1
       DO iy = 1, ny
+        iym = iy - 1
         DO ix = 1, nx
           ixm = ix - 1
-          iym = iy - 1
-          izm = iz - 1
           energy(ix, iy, iz) = energy(ix, iy, iz) &
               + (c1(ix, iy, iz) + c1(ixm, iy, iz) &
               + c1(ix, iym, iz) + c1(ix, iy, izm) &
@@ -1038,13 +1038,13 @@ CONTAINS
     END DO
 
     DO iz = 0, nz
+      izp = iz + 1
       DO iy = 0, ny
+        iyp = iy + 1
         !DEC$ IVDEP
         !DEC$ VECTOR ALWAYS
         DO ix = 0, nx
           ixp = ix + 1
-          iyp = iy + 1
-          izp = iz + 1
 
           ! jx at E3(i, j)
           jx1 = (bz(ix, iyp, iz) - bz(ix, iy, iz)) / dyc(iy) &
@@ -1128,13 +1128,13 @@ CONTAINS
         jy(-1:nx+1, -1:ny+1, -1:nz+1), jz(-1:nx+1, -1:ny+1, -1:nz+1))
 
     DO iz = -1, nz+1
+      izp = iz + 1
       DO iy = -1, ny+1
+        iyp = iy + 1
         !DEC$ IVDEP
         !DEC$ VECTOR ALWAYS
         DO ix = -1, nx+1
           ixp = ix + 1
-          iyp = iy + 1
-          izp = iz + 1
 
           ! jx at E3(i, j)
           jx1 = (bz(ix, iyp, iz) - bz(ix, iy, iz)) / dyc(iy) &
@@ -1190,11 +1190,11 @@ CONTAINS
       ! Use partially ionised flux calculation
       DO iz = 0, nz
         DO iy = 0, ny
+          iyp = iy + 1
           !DEC$ IVDEP
           !DEC$ VECTOR ALWAYS
           DO ix = 0, nx
             ixp = ix + 1
-            iyp = iy + 1
             ! B at vertices
             bxv = (bx(ix, iy, iz) + bx(ix, iyp, iz) + bx(ix, iy, izp) &
                 + bx(ix, iyp, izp)) / 4.0_num
