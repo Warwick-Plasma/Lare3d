@@ -508,7 +508,7 @@ CONTAINS
     WRITE(20, *) 'vc = ', vc * B0 / L0
     WRITE(20, *) 'eta0 = ', eta0 * RES0
     WRITE(20, *) 'eta_background = ', eta_background * RES0
-    WRITE(20, *) 'kappa = ', kappa * KAPPA0
+    WRITE(20, *) 'kappa = ', kappa_0 * KAPPA0
     WRITE(20, *)
     WRITE(20, *) 't_start, t_end = ', time * T0, t_end * T0
     WRITE(20, *) 'nsteps =', nsteps

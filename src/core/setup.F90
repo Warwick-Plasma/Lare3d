@@ -131,8 +131,8 @@ CONTAINS
 
     ! the SI value for the constant in the conductivity
     ! assuming ln(Lambda) = 18.4
-    kappa = 1.0e-11_num
-    kappa = kappa / KAPPA0
+    kappa_0 = 1.0e-11_num
+    kappa_0 = kappa_0 / KAPPA0
 
     time = time / T0
     t_end = t_end / T0

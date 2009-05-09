@@ -85,7 +85,7 @@ MODULE shared_data
   ! Heat conduction
 
   LOGICAL :: conduction
-  REAL(num) :: kappa
+  REAL(num) :: kappa_0
 
   ! RTV radiation
   LOGICAL :: radiation

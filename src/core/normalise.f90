@@ -98,6 +98,13 @@ CONTAINS
     ! The code will generate the rest
 
     IF (.NOT. SI) THEN
+      ! Assuming you have set B0, RHO0 and L0 correctly then this
+      ! will calculate the normalised thermal conductivity
+      ! The temperature dependence is added later
+      ENERGY0 = B0**2 / (MU0 * RHO0)
+      KAPPA0 = ENERGY0**(3.0_num / 2.0_num) * RHO0 * L0 &
+            / (MBAR / KB * ENERGY0)**(7.0_num / 2.0_num)    
+      kappa_0 = 1.e-11_num / KAPPA0
       ! If not running as an SI code then force normalisation off
       ! Ignore any values read from the input deck
       B0 = 1.0_num
