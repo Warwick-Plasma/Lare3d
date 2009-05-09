@@ -387,7 +387,7 @@ CONTAINS
           db    = (dzb1(ix, iy, iz  ) + dzb1(ix, iyp, iz  )) / 2.0_num
           dbzp  = (dzb1(ix, iy, izp ) + dzb1(ix, iyp, izp )) / 2.0_num
           dbzp2 = (dzb1(ix, iy, izp2) + dzb1(ix, iyp, izp2)) / 2.0_num
-          dbzm  = (dzb1(ix, iy, iz  ) + dzb1(ix, iyp, izm )) / 2.0_num
+          dbzm  = (dzb1(ix, iy, izm ) + dzb1(ix, iyp, izm )) / 2.0_num
 
           w4 = by(ix, iy, iz ) / db
           w5 = by(ix, iy, izp) / dbzp
@@ -444,7 +444,6 @@ CONTAINS
           izp2 = iz + 2
           ixm  = ix - 1
           iym  = iy - 1
-          iyp  = iy + 1
 
           v_advect = (vz1(ix, iy, iz) + vz1(ix, iym, iz) &
               + vz1(ixm, iy, iz) + vz1(ixm, iym, iz)) / 4.0_num
@@ -586,7 +585,7 @@ CONTAINS
               / (rho_v(ix, iy, iz ) * dzb1(ix, iy, iz ) * vad_p &
               +  rho_v(ix, iy, izp) * dzb1(ix, iy, izp) * vad_m)
 
-          w4 = (2.0_num - w5) * ABS(w1) / dzb(iz) &
+          w4 = (2.0_num - w5) * ABS(w1) / dzb(izp) &
               + (1.0_num + w5) * ABS(w2 * vad_p + w3 * vad_m) &
               / (dzb(iz) * vad_p + dzb(izp2) * vad_m)
 
@@ -658,7 +657,6 @@ CONTAINS
           izm  = iz - 1
           izp  = iz + 1
           izp2 = iz + 2
-          iyp = iy + 1
 
           v_advect = vz1(ix, iy, iz)
 

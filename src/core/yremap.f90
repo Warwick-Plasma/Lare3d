@@ -752,7 +752,6 @@ CONTAINS
           iym  = iy - 1
           iyp  = iy + 1
           iyp2 = iy + 2
-          ixp  = ix + 1
 
           v_advect = vy1(ix, iy, iz)
 

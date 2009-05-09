@@ -684,7 +684,6 @@ CONTAINS
           ixm  = ix - 1
           ixp  = ix + 1
           ixp2 = ix + 2
-          iyp  = iy + 1
 
           v_advect = vx1(ix, iy, iz)
 
@@ -780,7 +779,6 @@ CONTAINS
           ixm  = ix - 1
           ixp  = ix + 1
           ixp2 = ix + 2
-          iyp  = iy + 1
 
           v_advect = vx1(ix, iy, iz)
 
@@ -813,7 +811,8 @@ CONTAINS
               + SIGN(1.0_num, w2 * vad_p + w3 * vad_m))
 
           w5 = SIGN(1.0_num, v_advect) * w8 &
-              * MIN(ABS(w4) * dxc(ix), ABS(w1), ABS(w2 * vad_p + w3 * vad_m))
+              * MIN(ABS(w4) * (dxc(ix) * vad_p + dxc(ixp) * vad_m), &
+              ABS(w1), ABS(w2 * vad_p + w3 * vad_m))
 
           flux(ix, iy, iz) = w7 + w5 * (1.0_num - w6)
         END DO
