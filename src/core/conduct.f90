@@ -53,8 +53,8 @@ CONTAINS
 		DO iz = -1, nz+2
 			DO iy = -1, ny+2
 				DO ix = -1, nx+2
-					e = energy(ix,iy,iz)
-					CALL get_temp(rho(ix,iy,iz), e, eos_number, ix, iy, iz, T)
+					e = energy(ix, iy, iz)
+					CALL get_temp(rho(ix, iy, iz), e, eos_number, ix, iy, iz, T)
 					e2temp = T / e
 				END DO
 			END DO
@@ -63,21 +63,21 @@ CONTAINS
     DO iz = 0, nz+1
       DO iy = 0, ny+1
         DO ix = 0, nx+1
-          bxc = (bx(ix,iy,iz) + bx(ix-1,iy,iz))
-          byc = (by(ix,iy,iz) + by(ix,iy-1,iz))
-          bzc = (bz(ix,iy,iz) + bz(ix,iy,iz-1))
+          bxc = (bx(ix, iy, iz) + bx(ix-1, iy, iz))
+          byc = (by(ix, iy, iz) + by(ix, iy-1, iz))
+          bzc = (bz(ix, iy, iz) + bz(ix, iy, iz-1))
           b = SQRT(bxc**2 + byc**2 + bzc**2)
 
           ux(ix, iy, iz) = bxc / SQRT(b**2 + b_min**2)
           uy(ix, iy, iz) = byc / SQRT(b**2 + b_min**2)
           uz(ix, iy, iz) = bzc / SQRT(b**2 + b_min**2)
                                 
-					T = (e2temp(ix,iy,iz) * energy0(ix,iy,iz))**pow 
-          kx(ix,iy,iz) = ux(ix,iy,iz) * kappa_0 * T
-          ky(ix,iy,iz) = uy(ix,iy,iz) * kappa_0 * T
-          kz(ix,iy,iz) = uz(ix,iy,iz) * kappa_0 * T 
+					T = (e2temp(ix, iy, iz) * energy0(ix, iy, iz))**pow 
+          kx(ix, iy, iz) = ux(ix, iy, iz) * kappa_0 * T
+          ky(ix, iy, iz) = uy(ix, iy, iz) * kappa_0 * T
+          kz(ix, iy, iz) = uz(ix, iy, iz) * kappa_0 * T 
 
-					kp(ix,iy,iz) = kappa_0 * T * b_min**2 / (b**2 + b_min**2)
+					kp(ix, iy, iz) = kappa_0 * T * b_min**2 / (b**2 + b_min**2)
         END DO
       END DO
     END DO
@@ -254,18 +254,18 @@ CONTAINS
                 + ky(ix, iy, iz) * ry + kz(ix, iy, iz) * rz) 
 
 						! add isoptropic elements
-	          a1 = a1 + kp(ix,iy,iz) * m0x + kp(ix,iy,iz) * m0y &
+	          a1 = a1 + kp(ix, iy, iz) * m0x + kp(ix, iy, iz) * m0y &
 	                    - kpx * q0x - kpy * q0y - kpz * q0z 
-	          a2 = a2 + kp(ix,iy,iz) * rxx + kp(ix,iy,iz) * ryy &
+	          a2 = a2 + kp(ix, iy, iz) * rxx + kp(ix, iy, iz) * ryy &
 	                    + kpx * rx + kpy * ry	+ kpz * rz						
 
-						a1 = a1 * dt * e2temp(ix,iy,iz) / rho(ix,iy, iz) 
-						a2 = a2 * dt / rho(ix,iy,iz) 
+						a1 = a1 * dt * e2temp(ix, iy, iz) / rho(ix, iy, iz) 
+						a2 = a2 * dt / rho(ix, iy, iz) 
 
-						Q = energy(ix,iy,iz)
-						energy(ix,iy,iz) = (1.0_num-w) * energy(ix,iy,iz) &
-					    + w * (energy0(ix,iy,iz)  + a2) / (1.0_num + a1)
-						Q = (Q - energy(ix,iy,iz)) / Q
+						Q = energy(ix, iy, iz)
+						energy(ix, iy, iz) = (1.0_num-w) * energy(ix, iy, iz) &
+					    + w * (energy0(ix, iy, iz)  + a2) / (1.0_num + a1)
+						Q = (Q - energy(ix, iy, iz)) / Q
 
 	          errmax = MAX(errmax, ABS(Q))  
           END DO
