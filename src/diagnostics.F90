@@ -36,7 +36,7 @@ CONTAINS
     ! this is more complicated than need for the serial code
     ! rank always equals zero in this serial code
     CHARACTER(LEN = 9+data_dir_max_length+n_zeros) :: filename
-    CHARACTER(LEN = 30) :: file_name_desc
+    CHARACTER(LEN = 35) :: filename_desc
 
     REAL(num) :: t_out = 0.0_num
     REAL(num) :: en_ke = 0.0_num, en_int = 0.0_num
@@ -83,9 +83,9 @@ CONTAINS
       END IF
 
       ! Set the filename
-      WRITE(file_name_desc, '("(''nfs:'', a, ''/'', i", i3.3, ".", i3.3, &
-          & "''.cfd'')")'), n_zeros, n_zeros
-      WRITE(filename, file_name_desc) TRIM(data_dir), output_file
+      WRITE(filename_desc, '("(''nfs:'', a, ''/'', i", i3.3, ".", i3.3, &
+          & ", ''.cfd'')")'), n_zeros, n_zeros
+      WRITE(filename, filename_desc) TRIM(data_dir), output_file
 
       CALL cfd_open(filename, rank, comm, MPI_MODE_CREATE + MPI_MODE_WRONLY)
       CALL cfd_write_snapshot_data(time * T0, i, 0)
