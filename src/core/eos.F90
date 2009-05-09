@@ -9,10 +9,10 @@ CONTAINS
 
   ! This module contains all the information about the equations of state
   ! used by LARE. These are expressed in normalised units except for
-  ! Get_Energy which is only used in the initial conditions and MUST be
+  ! get_energy which is only used in the initial conditions and MUST be
   ! in SI units using the define constants constants
 
-  SUBROUTINE Get_Pressure(rho_in, en_in, m_in, ix, iy, iz, p)
+  SUBROUTINE get_pressure(rho_in, en_in, m_in, ix, iy, iz, p)
     REAL(num), INTENT(IN) :: rho_in, en_in ! input energy & density
     INTEGER, INTENT(IN) :: m_in            ! EOS number
     INTEGER, INTENT(IN) :: ix, iy, iz
@@ -34,11 +34,11 @@ CONTAINS
       RETURN
     END IF
 
-  END SUBROUTINE Get_Pressure
+  END SUBROUTINE get_pressure
 
 
 
-  SUBROUTINE Get_Temp(rho_in, energy_in, m_in, ix, iy, iz, temp_out)
+  SUBROUTINE get_temp(rho_in, energy_in, m_in, ix, iy, iz, temp_out)
 
     REAL(num), INTENT(IN) :: rho_in, energy_in
     INTEGER, INTENT(IN) :: m_in, ix, iy, iz
@@ -67,11 +67,11 @@ CONTAINS
       RETURN
     END IF
 
-  END SUBROUTINE Get_Temp
+  END SUBROUTINE get_temp
 
 
 
-  SUBROUTINE Get_Cs(rho_in, energy_in, m_in, ix, iy, iz, cs_out)
+  SUBROUTINE get_cs(rho_in, energy_in, m_in, ix, iy, iz, cs_out)
 
     REAL(num), INTENT(IN) :: rho_in, energy_in
     INTEGER, INTENT(IN) :: m_in, ix, iy, iz
@@ -92,11 +92,11 @@ CONTAINS
       RETURN
     END IF
 
-  END SUBROUTINE Get_Cs
+  END SUBROUTINE get_cs
 
 
 
-  SUBROUTINE Get_Energy(rho_in, temp_in, m_in, ix, iy, iz, en_out)
+  SUBROUTINE get_energy(rho_in, temp_in, m_in, ix, iy, iz, en_out)
 
     REAL(num), INTENT(IN) :: rho_in, temp_in
     INTEGER, INTENT(IN) :: m_in, ix, iy, iz
@@ -111,9 +111,9 @@ CONTAINS
     IF (m_in .EQ. EOS_PI) THEN
       ! Since we can't guarantee that the ionisation fraction already
       ! calculated is correct here, calculate it straight from the temperature
-      bof = Tr_bar / (f_bar * SQRT(Temp_in)) &
-          * EXP((0.25_num * (Tr_bar * Temp_in - 1.0_num) + 1.0_num) &
-          * T_bar / Temp_in)
+      bof = tr_bar / (f_bar * SQRT(temp_in)) &
+          * EXP((0.25_num * (tr_bar * temp_in - 1.0_num) + 1.0_num) &
+          * T_bar / temp_in)
       r = 0.5_num * (-1.0_num + SQRT(1.0_num + r_bar * rho_in * bof))
       xi_local = r / (1.0_num + r)
 
@@ -125,9 +125,9 @@ CONTAINS
     IF (m_in .EQ. EOS_ION) THEN
       ! Since we can't guarantee that the ionisation fraction already
       ! calculated is correct here, calculate it straight from the temperature
-      bof = Tr_bar / (f_bar * SQRT(Temp_in)) &
-          * EXP((0.25_num * (Tr_bar * Temp_in - 1.0_num) + 1.0_num) &
-          * T_bar / Temp_in)
+      bof = tr_bar / (f_bar * SQRT(temp_in)) &
+          * EXP((0.25_num * (tr_bar * temp_in - 1.0_num) + 1.0_num) &
+          * T_bar / temp_in)
       r = 0.5_num * (-1.0_num + SQRT(1.0_num + r_bar * rho_in * bof))
       xi_local = r / (1.0_num + r)
 
@@ -137,6 +137,6 @@ CONTAINS
       RETURN
     END IF
 
-  END SUBROUTINE Get_Energy
+  END SUBROUTINE get_energy
 
 END MODULE EOS

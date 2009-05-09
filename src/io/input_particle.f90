@@ -11,7 +11,7 @@ MODULE input_particle
 CONTAINS
 
   ! Grid loading functions
-  SUBROUTINE cfd_Get_nD_Particle_Grid_MetaData_All(ndims, coord_type, &
+  SUBROUTINE cfd_get_nd_particle_grid_metadata_all(ndims, coord_type, &
       npart, extents)
 
     INTEGER, INTENT(OUT) :: coord_type
@@ -20,19 +20,19 @@ CONTAINS
     INTEGER, INTENT(IN) :: ndims
 
     ! This subroutine MUST be called after the call to
-    ! Get_Common_Mesh_MetaData_All or it will break everything
+    ! get_common_mesh_metadata_all or it will break everything
     CALL MPI_FILE_SET_VIEW(cfd_filehandle, current_displacement, &
         MPI_INTEGER, MPI_INTEGER, "native", MPI_INFO_NULL, cfd_errcode)
 
     CALL MPI_FILE_READ_ALL(cfd_filehandle, coord_type, 1, MPI_INTEGER, &
         cfd_status, cfd_errcode)
 
-    current_displacement = current_displacement +  SoI
+    current_displacement = current_displacement +  soi
 
     CALL MPI_FILE_READ_ALL(cfd_filehandle, npart, 1, MPI_INTEGER8, &
         cfd_status, cfd_errcode)
 
-    current_displacement = current_displacement + SoI8
+    current_displacement = current_displacement + soi8
 
     CALL MPI_FILE_SET_VIEW(cfd_filehandle, current_displacement, mpireal, &
         mpireal, "native", MPI_INFO_NULL, cfd_errcode)
@@ -43,13 +43,13 @@ CONTAINS
     ! After this subroutine, all the metadata should be read in, so to
     ! make sure, just jump to known start of Data
 
-    CALL cfd_Skip_Block_MetaData()
+    CALL cfd_skip_block_metadata()
 
-  END SUBROUTINE cfd_Get_nD_Particle_Grid_MetaData_All
+  END SUBROUTINE cfd_get_nd_particle_grid_metadata_all
 
 
 
-  SUBROUTINE cfd_Get_nD_Particle_Grid_All(ndims, npart, data)
+  SUBROUTINE cfd_get_nd_particle_grid_all(ndims, npart, data)
 
     INTEGER, INTENT(IN) :: ndims
     INTEGER(KIND = 8), INTENT(IN) :: npart
@@ -61,41 +61,41 @@ CONTAINS
     CALL MPI_FILE_READ_ALL(cfd_filehandle, data, ndims * npart, mpireal, &
         cfd_status, cfd_errcode)
 
-    CALL cfd_Skip_Block
+    CALL cfd_skip_block
 
-  END SUBROUTINE cfd_Get_nD_Particle_Grid_All
+  END SUBROUTINE cfd_get_nd_particle_grid_all
 
 
 
-  SUBROUTINE cfd_Get_nD_Particle_Grid_Parallel(ndims, npart, data, SubType)
+  SUBROUTINE cfd_get_nd_particle_grid_parallel(ndims, npart, data, sub_type)
 
     INTEGER, INTENT(IN) :: ndims
-    INTEGER, INTENT(IN) :: SubType
+    INTEGER, INTENT(IN) :: sub_type
     INTEGER(KIND = 8), INTENT(IN) :: npart
     REAL(num), DIMENSION(:, :), INTENT(INOUT) :: data
 
     CALL MPI_FILE_SET_VIEW(cfd_filehandle, current_displacement, mpireal, &
-        SubType, "native", MPI_INFO_NULL, cfd_errcode)
+        sub_type, "native", MPI_INFO_NULL, cfd_errcode)
 
     CALL MPI_FILE_READ_ALL(cfd_filehandle, data, ndims * npart, mpireal, &
         cfd_status, cfd_errcode)
 
-    CALL cfd_Skip_Block
+    CALL cfd_skip_block
 
-  END SUBROUTINE cfd_Get_nD_Particle_Grid_Parallel
+  END SUBROUTINE cfd_get_nd_particle_grid_parallel
 
 
 
-  SUBROUTINE cfd_Get_nD_Particle_Grid_Parallel_With_Iterator(ndims, &
-      npart_local, npart_lglobal, npart_per_it, sof, SubType, Iterator)
+  SUBROUTINE cfd_get_nd_particle_grid_parallel_with_iterator(ndims, &
+      npart_local, npart_lglobal, npart_per_it, sof, sub_type, iterator)
 
-    INTEGER, INTENT(IN) :: SubType
+    INTEGER, INTENT(IN) :: sub_type
     INTEGER, INTENT(IN) :: ndims
     INTEGER, INTENT(IN) :: sof
     INTEGER(KIND = 8), INTENT(IN) :: npart_local, npart_per_it, npart_lglobal
     INTEGER(KIND = 8) :: npart_this_it, npart_remain, size_of_stencil
-    INTEGER :: Direction
-    LOGICAL :: Start
+    INTEGER :: direction
+    LOGICAL :: start
     REAL(num), DIMENSION(:), ALLOCATABLE :: data
 
     INTERFACE
@@ -104,30 +104,30 @@ CONTAINS
         REAL(num), DIMENSION(:), INTENT(INOUT) :: data
         INTEGER(8), INTENT(INOUT) :: npart_it
         LOGICAL, INTENT(IN) :: start
-        INTEGER, INTENT(IN) :: Direction
+        INTEGER, INTENT(IN) :: direction
       END SUBROUTINE iterator
     END INTERFACE
 
     CALL MPI_FILE_SET_VIEW(cfd_filehandle, current_displacement, mpireal, &
-        SubType, "native", MPI_INFO_NULL, cfd_errcode)
+        sub_type, "native", MPI_INFO_NULL, cfd_errcode)
 
     ALLOCATE(data(1:npart_per_it))
 
-    DO Direction = 1, ndims
-      Start = .TRUE.
+    DO direction = 1, ndims
+      start = .TRUE.
       npart_remain = npart_local
       npart_this_it = MIN(npart_remain, npart_per_it)
 
       CALL MPI_FILE_SET_VIEW(cfd_filehandle, current_displacement, mpireal, &
-          SubType, "native", MPI_INFO_NULL, cfd_errcode)
+          sub_type, "native", MPI_INFO_NULL, cfd_errcode)
 
       DO WHILE (npart_this_it .GT. 0)
         CALL MPI_FILE_READ(cfd_filehandle, data, npart_this_it, mpireal, &
             cfd_status, cfd_errcode)
 
         npart_remain = npart_remain - npart_this_it
-        CALL Iterator(data, npart_this_it, Start, direction)
-        Start = .FALSE.
+        CALL iterator(data, npart_this_it, start, direction)
+        start = .FALSE.
         npart_this_it = MIN(npart_remain, npart_per_it)
       END DO
 
@@ -137,27 +137,27 @@ CONTAINS
     DEALLOCATE(data)
 
     CALL MPI_BARRIER(cfd_comm, cfd_errcode)
-    CALL cfd_Skip_Block
+    CALL cfd_skip_block
 
-  END SUBROUTINE cfd_Get_nD_Particle_Grid_Parallel_With_Iterator
+  END SUBROUTINE cfd_get_nd_particle_grid_parallel_with_iterator
 
 
 
   ! Grid loading functions
-  SUBROUTINE cfd_Get_nD_Particle_Variable_MetaData_All(npart, range, &
+  SUBROUTINE cfd_get_nd_particle_variable_metadata_all(npart, range, &
       mesh, mesh_class)
 
     INTEGER(8), INTENT(OUT) :: npart
     REAL(num), DIMENSION(2), INTENT(OUT) :: range
-    CHARACTER(Len = MaxStringLen), INTENT(OUT) :: mesh, mesh_class
+    CHARACTER(LEN = max_string_len), INTENT(OUT) :: mesh, mesh_class
 
     ! This subroutine MUST be called after the call to
-    ! Get_Common_Mesh_MetaData_All or it will break everything
+    ! get_common_mesh_metadata_all or it will break everything
 
     CALL MPI_FILE_READ_ALL(cfd_filehandle, npart, 1, MPI_INTEGER8, &
         cfd_status, cfd_errcode)
 
-    current_displacement = current_displacement + SoI8
+    current_displacement = current_displacement + soi8
 
     CALL MPI_FILE_SET_VIEW(cfd_filehandle, current_displacement, mpireal, &
         mpireal, "native", MPI_INFO_NULL, cfd_errcode)
@@ -170,22 +170,22 @@ CONTAINS
     CALL MPI_FILE_SET_VIEW(cfd_filehandle, current_displacement, &
         MPI_CHARACTER, MPI_CHARACTER, "native", MPI_INFO_NULL, cfd_errcode)
 
-    CALL MPI_FILE_READ_ALL(cfd_filehandle, mesh, MaxStringLen, &
+    CALL MPI_FILE_READ_ALL(cfd_filehandle, mesh, max_string_len, &
         MPI_CHARACTER, cfd_status, cfd_errcode)
 
-    CALL MPI_FILE_READ_ALL(cfd_filehandle, mesh_class, MaxStringLen, &
+    CALL MPI_FILE_READ_ALL(cfd_filehandle, mesh_class, max_string_len, &
         MPI_CHARACTER, cfd_status, cfd_errcode)
 
     ! After this subroutine, all the metadata should be read in, so to
     ! make sure, just jump to known start of Data
 
-    CALL cfd_Skip_Block_MetaData()
+    CALL cfd_skip_block_metadata()
 
-  END SUBROUTINE cfd_Get_nD_Particle_Variable_MetaData_All
+  END SUBROUTINE cfd_get_nd_particle_variable_metadata_all
 
 
 
-  SUBROUTINE cfd_Get_nD_Particle_Variable_All(npart, data)
+  SUBROUTINE cfd_get_nd_particle_variable_all(npart, data)
 
     INTEGER(KIND = 8), INTENT(IN) :: npart
     REAL(num), DIMENSION(:), INTENT(INOUT) :: data
@@ -196,37 +196,37 @@ CONTAINS
     CALL MPI_FILE_READ_ALL(cfd_filehandle, data, npart, mpireal, &
         cfd_status, cfd_errcode)
 
-    CALL cfd_Skip_Block
+    CALL cfd_skip_block
 
-  END SUBROUTINE cfd_Get_nD_Particle_Variable_All
+  END SUBROUTINE cfd_get_nd_particle_variable_all
 
 
 
-  SUBROUTINE cfd_Get_nD_Particle_Variable_Parallel(npart_local, data, SubType)
+  SUBROUTINE cfd_get_nd_particle_variable_parallel(npart_local, data, sub_type)
 
-    INTEGER, INTENT(IN) :: SubType
+    INTEGER, INTENT(IN) :: sub_type
     INTEGER(KIND = 8), INTENT(IN) :: npart_local
     REAL(num), DIMENSION(:, :), INTENT(INOUT) :: data
 
     CALL MPI_FILE_SET_VIEW(cfd_filehandle, current_displacement, mpireal, &
-        SubType, "native", MPI_INFO_NULL, cfd_errcode)
+        sub_type, "native", MPI_INFO_NULL, cfd_errcode)
 
     CALL MPI_FILE_READ_ALL(cfd_filehandle, data, npart_local, mpireal, &
         cfd_status, cfd_errcode)
 
-    CALL cfd_Skip_Block
+    CALL cfd_skip_block
 
-  END SUBROUTINE cfd_Get_nD_Particle_Variable_Parallel
+  END SUBROUTINE cfd_get_nd_particle_variable_parallel
 
 
 
-  SUBROUTINE cfd_Get_nD_Particle_Variable_Parallel_With_Iterator(npart_local, &
-      npart_per_it, SubType, Iterator)
+  SUBROUTINE cfd_get_nd_particle_variable_parallel_with_iterator(npart_local, &
+      npart_per_it, sub_type, iterator)
 
-    INTEGER, INTENT(IN) :: SubType
+    INTEGER, INTENT(IN) :: sub_type
     INTEGER(KIND = 8), INTENT(IN) :: npart_local, npart_per_it
     INTEGER(KIND = 8) :: npart_this_it, npart_remain
-    LOGICAL :: Start
+    LOGICAL :: start
     REAL(num), DIMENSION(:), ALLOCATABLE :: data
 
     INTERFACE
@@ -239,9 +239,9 @@ CONTAINS
     END INTERFACE
 
     CALL MPI_FILE_SET_VIEW(cfd_filehandle, current_displacement, mpireal, &
-        SubType, "native", MPI_INFO_NULL, cfd_errcode)
+        sub_type, "native", MPI_INFO_NULL, cfd_errcode)
 
-    Start = .TRUE.
+    start = .TRUE.
     ALLOCATE(data(1:npart_per_it))
     npart_remain = npart_local
     npart_this_it = MIN(npart_remain, npart_per_it)
@@ -252,14 +252,14 @@ CONTAINS
           cfd_status, cfd_errcode)
 
       npart_remain = npart_remain - npart_this_it
-      CALL Iterator(data, npart_this_it, Start)
-      Start = .FALSE.
+      CALL iterator(data, npart_this_it, start)
+      start = .FALSE.
     END DO
 
     CALL MPI_BARRIER(cfd_comm, cfd_errcode)
     DEALLOCATE(data)
-    CALL cfd_Skip_Block
+    CALL cfd_skip_block
 
-  END SUBROUTINE cfd_Get_nD_Particle_Variable_Parallel_With_Iterator
+  END SUBROUTINE cfd_get_nd_particle_variable_parallel_with_iterator
 
 END MODULE input_particle

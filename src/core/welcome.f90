@@ -62,7 +62,7 @@ CONTAINS
 
     WRITE(*, *) ""
     WRITE(*, '("Welcome to Lare3D Version ", I1, ".", I1, "BETA")'), &
-        Version, Revision
+        version, revision
     WRITE(*, *) ""
 
   END SUBROUTINE welcome_message

@@ -42,16 +42,16 @@ CONTAINS
         flux_z(0:nx, 0:ny, 0:nz), curlb(0:nx, 0:ny, 0:nz))
 
     IF (include_neutrals) CALL neutral_fraction(eos_number)
-    IF (resistiveMHD .OR. HallMHD) THEN
+    IF (resistive_mhd .OR. hall_mhd) THEN
       ! if subcycling isn't wanted set dt = dtr in set_dt, don't just
       ! set substeps to 1.
-      IF (resistiveMHD) THEN
+      IF (resistive_mhd) THEN
         dt_sub = dtr
       ELSE
         dt_sub = dth
       END IF
 
-      IF (resistiveMHD .AND. HallMHD) dt_sub = MIN(dtr, dth)
+      IF (resistive_mhd .AND. hall_mhd) dt_sub = MIN(dtr, dth)
       substeps = INT(dt / dt_sub) + 1
 
       IF (substeps > peak_substeps) peak_substeps = substeps
@@ -62,14 +62,14 @@ CONTAINS
         CALL eta_calc
         IF (include_neutrals) CALL neutral_fraction(eos_number)
         IF (cowling_resistivity) CALL perpendicular_resistivity
-        ! IF (HallMHD) CALL hall_effects
-        IF (resistiveMHD) CALL resistive_effects
+        ! IF (hall_mhd) CALL hall_effects
+        IF (resistive_mhd) CALL resistive_effects
       END DO
 
       dt = actual_dt
     END IF
 
-    IF (Conduction) CALL Conduct_Heat
+    IF (conduction) CALL conduct_heat
 
     DO iz = 0, nz+1
       izm = iz - 1
@@ -142,7 +142,7 @@ CONTAINS
 #endif
 
           ! now define the predictor step pressures
-          CALL Get_Pressure(rho(ix, iy, iz) * cv(ix, iy, iz) / cv1(ix, iy, iz),&
+          CALL get_pressure(rho(ix, iy, iz) * cv(ix, iy, iz) / cv1(ix, iy, iz),&
               e1, eos_number, ix, iy, iz, pressure(ix, iy, iz))
 #ifdef Q_MONO
           ! add shock viscosity
@@ -432,7 +432,7 @@ CONTAINS
     REAL(num) :: dvxdx, dvydy, dvzdz, dvxy, dvxz, dvyz, s, L, L2, cf
     REAL(num) :: sxx, syy, szz, sxy, sxz, syz
     REAL(num) :: dvxdy, dvxdz, dvydx, dvydz, dvzdx, dvzdy
-    REAL(num) :: Cs
+    REAL(num) :: cs
     LOGICAL :: tensor_shock_visc = .TRUE.
 
     DO iz = -1, nz+2
@@ -440,7 +440,7 @@ CONTAINS
         !DEC$ IVDEP
         !DEC$ VECTOR ALWAYS
         DO ix = -1, nx+2
-          CALL Get_Pressure(rho(ix, iy, iz), energy(ix, iy, iz), eos_number, &
+          CALL get_pressure(rho(ix, iy, iz), energy(ix, iy, iz), eos_number, &
               ix, iy, iz, pressure(ix, iy, iz))
         END DO
       END DO
@@ -593,8 +593,8 @@ CONTAINS
           w1 = (bx1(ix, iy, iz)**2 + by1(ix, iy, iz)**2 + bz1(ix, iy, iz)**2)
           ! / rho(ix, iy, iz)
 
-          CALL Get_Cs(rho(ix, iy, iz), energy(ix, iy, iz), eos_number, &
-              ix, iy, iz, Cs)
+          CALL get_cs(rho(ix, iy, iz), energy(ix, iy, iz), eos_number, &
+              ix, iy, iz, cs)
           cf = SQRT(cs**2 + w1)
 
           p_visc(ix, iy, iz) = visc1 * ABS(s) * L*cf * rho(ix, iy, iz) &
@@ -801,7 +801,7 @@ CONTAINS
       END DO
     END DO
 
-    IF (.NOT. resistiveMHD) eta = 0.0_num
+    IF (.NOT. resistive_mhd) eta = 0.0_num
 
   END SUBROUTINE eta_calc
 
@@ -1162,7 +1162,7 @@ CONTAINS
       END DO
     END DO
 
-    IF (.NOT. Cowling_Resistivity) THEN
+    IF (.NOT. cowling_resistivity) THEN
       ! Use simple flux calculation
       DO iz = 0, nz
         DO iy = 0, ny

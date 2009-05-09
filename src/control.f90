@@ -6,11 +6,11 @@ MODULE control
   IMPLICIT NONE
 
   PRIVATE
-  PUBLIC :: User_Normalisation, Control_Variables, Set_Output_Dumps
+  PUBLIC :: user_normalisation, control_variables, set_output_dumps
 
 CONTAINS
 
-  SUBROUTINE User_Normalisation
+  SUBROUTINE user_normalisation
     ! Set the normalising constants for LARE
     ! This is needed to allow the use of some physics
     ! Modules which are coded in SI units
@@ -38,11 +38,11 @@ CONTAINS
     ! Density normalisation in kg / m^3
     RHO0 = 2.7e-6_num
 
-  END SUBROUTINE User_Normalisation
+  END SUBROUTINE user_normalisation
 
 
 
-  SUBROUTINE Control_Variables
+  SUBROUTINE control_variables
 
     ! Set the number of gridpoints in x and y directions
     nx_global = 40
@@ -92,7 +92,7 @@ CONTAINS
     z_stretch = .FALSE.
 
     ! Turn on or off the resistive parts of the MHD equations
-    ResistiveMHD = .FALSE.
+    resistive_mhd = .FALSE.
 
     ! The background resistivity expressed as the inverse Lundquist
     ! number, i.e. the same for normalised and SI input
@@ -106,10 +106,10 @@ CONTAINS
     j_max = 0.0_num
     eta0 = 0.0_num
 
-    ! Turn on or off the HallMHD term in the MHD equations
+    ! Turn on or off the hall_mhd term in the MHD equations
     ! Well actually this does nothing as it isn't fully
     ! included yet! Sorry!
-    HallMHD = .FALSE.
+    hall_mhd = .FALSE.
 
     ! Set the ion skin depth. If SI_Input is true then
     ! This is in metres. Note that this should be fixed to
@@ -121,7 +121,7 @@ CONTAINS
 
     ! Turn on or off the Braginskii thermal conduction term in
     ! the MHD equations
-    Conduction = .FALSE.
+    conduction = .FALSE.
 
     ! Remap kinetic energy correction. LARE does not
     ! perfectly conserve kinetic energy during the remap step
@@ -131,12 +131,12 @@ CONTAINS
     rke = .FALSE.
 
     ! The code to choose the initial conditions. The valid choices are
-    ! IC_NEW - Use Set_Initial_Conditions in "initial_conditions.f90"
+    ! IC_NEW - Use set_initial_conditions in "initial_conditions.f90"
     !         to setup new initial conditions
-    ! IC_RESTART - Load the output file with index Restart_Snapshot and
+    ! IC_RESTART - Load the output file with index restart_snapshot and
     ! use it as the initial conditions
     initial = IC_NEW
-    Restart_Snapshot = 1
+    restart_snapshot = 1
 
     ! Turn on or off the physics package dealing with partial ionisation
     ! If include_neutrals is true then the code will calculate the
@@ -168,20 +168,20 @@ CONTAINS
     ! EOS_ION - EOS_PI plus the ionisation potential
     eos_number = EOS_IDEAL
 
-  END SUBROUTINE Control_Variables
+  END SUBROUTINE control_variables
 
 
 
-  SUBROUTINE Set_Output_Dumps
+  SUBROUTINE set_output_dumps
 
     ! The output directory for the code
-    Data_Dir = "Data"
+    data_dir = "Data"
 
     ! The interval between output snapshots. If SI_Input is true
     ! Then this is in seconds
     dt_snapshots = 0.! 2_num
 
-    ! dumpmask is an array which specifies which quantities the
+    ! dump_mask is an array which specifies which quantities the
     ! code should output to disk in a data dump.
     ! The codes are
     ! 1  - rho
@@ -203,13 +203,13 @@ CONTAINS
     ! 17 - jx
     ! 18 - jy
     ! 19 - jz
-    ! If a given element of dumpmask is true then that field is dumped
+    ! If a given element of dump_mask is true then that field is dumped
     ! If the element is false then the field isn't dumped
-    ! N.B. if dumpmask(1:8) not true then the restart will not work
-    dumpmask = .FALSE.
-    dumpmask(1:10) = .TRUE.
-    ! dumpmask(14) = .TRUE.
+    ! N.B. if dump_mask(1:8) not true then the restart will not work
+    dump_mask = .FALSE.
+    dump_mask(1:10) = .TRUE.
+    ! dump_mask(14) = .TRUE.
 
-  END SUBROUTINE Set_Output_Dumps
+  END SUBROUTINE set_output_dumps
 
 END MODULE control

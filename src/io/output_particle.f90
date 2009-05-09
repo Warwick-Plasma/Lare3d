@@ -14,14 +14,14 @@ CONTAINS
   ! Serial operation, so no need to specify nx, ny
   !--------------------------------------------------------------------------
 
-  SUBROUTINE cfd_Write_nD_Particle_Grid_All(name, class, particles, &
-      npart_global, Particle_coord_type, Particle_Type)
+  SUBROUTINE cfd_write_nd_particle_grid_all(name, class, particles, &
+      npart_global, particle_coord_type, particle_type)
 
     REAL(num), DIMENSION(:, :), INTENT(IN) :: particles
     CHARACTER(len = *), INTENT(IN) :: name, class
     INTEGER(8), INTENT(IN) :: npart_global
-    INTEGER(4), INTENT(IN) :: Particle_coord_type
-    INTEGER, INTENT(IN) :: Particle_Type
+    INTEGER(4), INTENT(IN) :: particle_coord_type
+    INTEGER, INTENT(IN) :: particle_type
     INTEGER(8) :: npart_local
     INTEGER(8) :: blocklen, mdlen
     INTEGER(4) :: ndim, i, disp0
@@ -33,7 +33,7 @@ CONTAINS
     ndim = sizes(1)
 
     ! Metadata is
-    !* ) MeshType (INTEGER(4)) All mesh blocks contain this
+    !* ) meshtype (INTEGER(4)) All mesh blocks contain this
     !* ) nd    INTEGER(4)
     !* ) sof   INTEGER(4)
     ! Specific to particle mesh
@@ -50,24 +50,24 @@ CONTAINS
     ! n + 1) dnmax REAL(num)
 
     ! 1 INT, 1 INT8, 2REAL per Dim
-    mdlen = MeshType_Header_Offset + 1 * SoI + 1 * SoI8  + ndim * 2 * num
+    mdlen = meshtype_header_offset + 1 * soi + 1 * soi8  + ndim * 2 * num
     blocklen = mdlen + num * ndim * npart_global
 
     ! Now written header, write metadata
-    CALL cfd_Write_Block_Header(name, class, TYPE_MESH, blocklen, mdlen, &
+    CALL cfd_write_block_header(name, class, TYPE_MESH, blocklen, mdlen, &
         default_rank)
 
     disp0 = current_displacement
-    CALL cfd_Write_MeshType_Header(MESH_PARTICLE, ndim, num, default_rank)
+    CALL cfd_write_meshtype_header(MESH_PARTICLE, ndim, num, default_rank)
 
     CALL MPI_FILE_SET_VIEW(cfd_filehandle, current_displacement, MPI_INTEGER, &
         MPI_INTEGER, "native", MPI_INFO_NULL, cfd_errcode)
 
     IF (cfd_rank == default_rank) THEN
-      CALL MPI_FILE_WRITE(cfd_filehandle, Particle_Coord_Type, 1, MPI_INTEGER, &
+      CALL MPI_FILE_WRITE(cfd_filehandle, particle_coord_type, 1, MPI_INTEGER, &
           cfd_status, cfd_errcode)
     END IF
-    current_displacement = current_displacement + 1 * SoI
+    current_displacement = current_displacement + 1 * soi
 
     CALL MPI_FILE_SET_VIEW(cfd_filehandle, current_displacement, MPI_INTEGER8, &
         MPI_INTEGER8, "native", MPI_INFO_NULL, cfd_errcode)
@@ -76,7 +76,7 @@ CONTAINS
       CALL MPI_FILE_WRITE(cfd_filehandle, npart_global, 1, MPI_INTEGER8, &
           cfd_status, cfd_errcode)
     END IF
-    current_displacement = current_displacement + 1 * SoI8
+    current_displacement = current_displacement + 1 * soi8
 
     CALL MPI_FILE_SET_VIEW(cfd_filehandle, current_displacement, mpireal, &
         mpireal, "native", MPI_INFO_NULL, cfd_errcode)
@@ -97,13 +97,13 @@ CONTAINS
     END DO
 
     CALL MPI_FILE_SET_VIEW(cfd_filehandle, current_displacement, mpireal, &
-        Particle_Type, "native", MPI_INFO_NULL, cfd_errcode)
+        particle_type, "native", MPI_INFO_NULL, cfd_errcode)
     ! Write the real data
     CALL MPI_FILE_WRITE_ALL(cfd_filehandle, particles, npart_local * ndim, &
         mpireal, cfd_status, cfd_errcode)
     current_displacement = current_displacement + ndim * npart_global * num
 
-  END SUBROUTINE cfd_Write_nD_Particle_Grid_All
+  END SUBROUTINE cfd_write_nd_particle_grid_all
 
 
 
@@ -113,17 +113,17 @@ CONTAINS
   ! Serial operation, so no need to specify nx, ny
   !--------------------------------------------------------------------------
 
-  SUBROUTINE cfd_Write_nD_Particle_Grid_With_Iterator_All(name, class, &
+  SUBROUTINE cfd_write_nd_particle_grid_with_iterator_all(name, class, &
       iterator, ndims, npart_local, npart_global, npart_per_iteration, &
-      Particle_coord_type, Particle_Type)
+      particle_coord_type, particle_type)
 
     CHARACTER(len = *), INTENT(IN) :: name, class
     INTEGER(8), INTENT(IN) :: npart_global
     INTEGER(8), INTENT(IN) :: npart_local
     INTEGER(8), INTENT(IN) :: npart_per_iteration
     INTEGER(4), INTENT(IN) :: ndims
-    INTEGER(4), INTENT(IN) :: Particle_coord_type
-    INTEGER, INTENT(IN) :: Particle_Type
+    INTEGER(4), INTENT(IN) :: particle_coord_type
+    INTEGER, INTENT(IN) :: particle_type
     REAL(num), ALLOCATABLE, DIMENSION(:) :: data
 
     INTERFACE
@@ -140,13 +140,13 @@ CONTAINS
         npart_sent
     INTEGER(4) :: idim
     INTEGER(4) :: sizes(2)
-    INTEGER(MPI_OFFSET_KIND) :: OffsetForMinMax
+    INTEGER(MPI_OFFSET_KIND) :: offset_for_min_max
     REAL(num) :: mn, mx
-    REAL(num), ALLOCATABLE, DIMENSION(:, :) :: MinMax
+    REAL(num), ALLOCATABLE, DIMENSION(:, :) :: min_max
     LOGICAL :: start
 
     ! Metadata is
-    !* ) MeshType (INTEGER(4)) All mesh blocks contain this
+    !* ) meshtype (INTEGER(4)) All mesh blocks contain this
     !* ) nd    INTEGER(4)
     !* ) sof   INTEGER(4)
     ! Specific to particle mesh
@@ -163,25 +163,25 @@ CONTAINS
     ! n + 1) dnmax REAL(num)
 
     ! 1 INT, 1 INT8, 2REAL per Dim
-    mdlen = MeshType_Header_Offset + 1 * SoI + 1 * SoI8  + ndims * 2 * num
+    mdlen = meshtype_header_offset + 1 * soi + 1 * soi8  + ndims * 2 * num
     blocklen = mdlen + num * ndims * npart_global
 
-    ALLOCATE(MinMax(1:ndims, 1:2))
-    MinMax = 0.0_num
+    ALLOCATE(min_max(1:ndims, 1:2))
+    min_max = 0.0_num
 
     ! Now written header, write metadata
-    CALL cfd_Write_Block_Header(name, class, TYPE_MESH, blocklen, mdlen, &
+    CALL cfd_write_block_header(name, class, TYPE_MESH, blocklen, mdlen, &
         default_rank)
-    CALL cfd_Write_MeshType_Header(MESH_PARTICLE, ndims, num, default_rank)
+    CALL cfd_write_meshtype_header(MESH_PARTICLE, ndims, num, default_rank)
 
     CALL MPI_FILE_SET_VIEW(cfd_filehandle, current_displacement, MPI_INTEGER, &
         MPI_INTEGER, "native", MPI_INFO_NULL, cfd_errcode)
 
     IF (cfd_rank == default_rank) THEN
-      CALL MPI_FILE_WRITE(cfd_filehandle, Particle_Coord_Type, 1, MPI_INTEGER, &
+      CALL MPI_FILE_WRITE(cfd_filehandle, particle_coord_type, 1, MPI_INTEGER, &
           cfd_status, cfd_errcode)
     END IF
-    current_displacement = current_displacement + 1 * SoI
+    current_displacement = current_displacement + 1 * soi
 
     CALL MPI_FILE_SET_VIEW(cfd_filehandle, current_displacement, MPI_INTEGER8, &
         MPI_INTEGER8, "native", MPI_INFO_NULL, cfd_errcode)
@@ -190,16 +190,16 @@ CONTAINS
       CALL MPI_FILE_WRITE(cfd_filehandle, npart_global, 1, MPI_INTEGER8, &
           cfd_status, cfd_errcode)
     END IF
-    current_displacement = current_displacement + 1 * SoI8
+    current_displacement = current_displacement + 1 * soi8
 
     ! This is to skip past the location for the min / max values(Just write
     ! zeros). They will be filled in later
-    OffsetForMinMax = current_displacement
-    CALL MPI_FILE_SET_VIEW(cfd_filehandle, OffsetForMinMax, mpireal, mpireal, &
-        "native", MPI_INFO_NULL, cfd_errcode)
+    offset_for_min_max = current_displacement
+    CALL MPI_FILE_SET_VIEW(cfd_filehandle, offset_for_min_max, mpireal, &
+        mpireal, "native", MPI_INFO_NULL, cfd_errcode)
 
     IF (cfd_rank == default_rank) THEN
-      CALL MPI_FILE_WRITE(cfd_filehandle, MinMax, ndims * 2, mpireal, &
+      CALL MPI_FILE_WRITE(cfd_filehandle, min_max, ndims * 2, mpireal, &
           cfd_status, cfd_errcode)
     END IF
     current_displacement = current_displacement + 2 * ndims * num
@@ -212,21 +212,21 @@ CONTAINS
 
     DO idim = 1, ndims
       CALL MPI_FILE_SET_VIEW(cfd_filehandle, current_displacement, mpireal, &
-          Particle_Type, "native", MPI_INFO_NULL, cfd_errcode)
+          particle_type, "native", MPI_INFO_NULL, cfd_errcode)
       npart_this_cycle = npart_per_iteration
       start = .TRUE.
 
       DO
-        CALL Iterator(data, npart_this_cycle, idim, start)
+        CALL iterator(data, npart_this_cycle, idim, start)
         IF (npart_this_cycle <= 0) EXIT
 
-        IF (Start) THEN
-          MinMax(idim, 1) = MINVAL(data(1:npart_this_cycle))
-          MinMax(idim, 2) = MAXVAL(data(1:npart_this_cycle))
+        IF (start) THEN
+          min_max(idim, 1) = MINVAL(data(1:npart_this_cycle))
+          min_max(idim, 2) = MAXVAL(data(1:npart_this_cycle))
         ELSE
-          MinMax(idim, 1) = MIN(MinMax(idim, 1), &
+          min_max(idim, 1) = MIN(min_max(idim, 1), &
               MINVAL(data(1:npart_this_cycle)))
-          MinMax(idim, 2) = MAX(MinMax(idim, 2), &
+          min_max(idim, 2) = MAX(min_max(idim, 2), &
               MAXVAL(data(1:npart_this_cycle)))
         END IF
 
@@ -240,13 +240,13 @@ CONTAINS
 
     DEALLOCATE(data)
 
-    CALL MPI_FILE_SET_VIEW(cfd_filehandle, OffsetForMinMax, mpireal, mpireal, &
-        "native", MPI_INFO_NULL, cfd_errcode)
+    CALL MPI_FILE_SET_VIEW(cfd_filehandle, offset_for_min_max, mpireal, &
+        mpireal, "native", MPI_INFO_NULL, cfd_errcode)
 
     DO idim = 1, ndims
-      CALL MPI_ALLREDUCE(MinMax(idim, 1), mn, 1, mpireal, MPI_MIN, cfd_comm, &
+      CALL MPI_ALLREDUCE(min_max(idim, 1), mn, 1, mpireal, MPI_MIN, cfd_comm, &
           cfd_errcode)
-      CALL MPI_ALLREDUCE(MinMax(idim, 2), mx, 1, mpireal, MPI_MAX, cfd_comm, &
+      CALL MPI_ALLREDUCE(min_max(idim, 2), mx, 1, mpireal, MPI_MAX, cfd_comm, &
           cfd_errcode)
 
       IF (cfd_rank == default_rank) THEN
@@ -257,11 +257,11 @@ CONTAINS
       END IF
     END DO
 
-    DEALLOCATE(MinMax)
+    DEALLOCATE(min_max)
 
     CALL MPI_BARRIER(comm, errcode)
 
-  END SUBROUTINE cfd_Write_nD_Particle_Grid_With_Iterator_All
+  END SUBROUTINE cfd_write_nd_particle_grid_with_iterator_all
 
 
 
@@ -270,12 +270,12 @@ CONTAINS
   ! {rank_write}
   ! Serial operation, so no need to specify nx, ny
   !--------------------------------------------------------------------------
-  SUBROUTINE cfd_Write_nD_Particle_Variable_All(name, class, particles, &
-      npart_global, meshname, meshclass, Particle_Type)
+  SUBROUTINE cfd_write_nd_particle_variable_all(name, class, particles, &
+      npart_global, meshname, meshclass, particle_type)
 
     REAL(num), DIMENSION(:), INTENT(IN) :: particles
     CHARACTER(len = *), INTENT(IN) :: name, class, meshname, meshclass
-    INTEGER, INTENT(IN) :: Particle_Type
+    INTEGER, INTENT(IN) :: particle_type
     INTEGER(8), INTENT(IN) :: npart_global
     INTEGER(8) :: npart_local
     INTEGER(8) :: blocklen, mdlen
@@ -286,7 +286,7 @@ CONTAINS
     npart_local = SIZE(particles)
 
     ! Metadata is
-    !* ) MeshType (INTEGER(4)) All mesh blocks contain this
+    !* ) meshtype (INTEGER(4)) All mesh blocks contain this
     !* ) nd     INTEGER(4)
     !* ) sof    INTEGER(4)
     ! Specific to particle variable
@@ -296,13 +296,13 @@ CONTAINS
     ! 4 ) mesh   CHARACTER
     ! 5 ) mclass CHARACTER
 
-    mdlen = MeshType_Header_Offset + 1 * SoI8  + 2 * num  + 2 * MaxStringLen
+    mdlen = meshtype_header_offset + 1 * soi8  + 2 * num  + 2 * max_string_len
     blocklen = mdlen + num * npart_global
 
     ! Now written header, write metadata
-    CALL cfd_Write_Block_Header(name, class, TYPE_MESH_VARIABLE, blocklen, &
+    CALL cfd_write_block_header(name, class, TYPE_MESH_VARIABLE, blocklen, &
         mdlen, default_rank)
-    CALL cfd_Write_MeshType_Header(VAR_PARTICLE, DIMENSION_IRRELEVANT, num, &
+    CALL cfd_write_meshtype_header(VAR_PARTICLE, DIMENSION_IRRELEVANT, num, &
         default_rank)
 
     CALL MPI_FILE_SET_VIEW(cfd_filehandle, current_displacement, MPI_INTEGER8, &
@@ -312,7 +312,7 @@ CONTAINS
       CALL MPI_FILE_WRITE(cfd_filehandle, npart_global, 1, MPI_INTEGER8, &
           cfd_status, cfd_errcode)
     END IF
-    current_displacement = current_displacement + 1 * SoI8
+    current_displacement = current_displacement + 1 * soi8
 
     CALL MPI_FILE_SET_VIEW(cfd_filehandle, current_displacement, mpireal, &
         mpireal, "native", MPI_INFO_NULL, cfd_errcode)
@@ -333,13 +333,13 @@ CONTAINS
         MPI_CHARACTER, MPI_CHARACTER, "native", MPI_INFO_NULL, cfd_errcode)
 
     IF (cfd_rank == default_rank) THEN
-      CALL cfd_Safe_Write_String(meshname)
-      CALL cfd_Safe_Write_String(meshclass)
+      CALL cfd_safe_write_string(meshname)
+      CALL cfd_safe_write_string(meshclass)
     END IF
-    current_displacement = current_displacement + 2 * MaxStringLen
+    current_displacement = current_displacement + 2 * max_string_len
 
     CALL MPI_FILE_SET_VIEW(cfd_filehandle, current_displacement, mpireal, &
-        Particle_Type, "native", MPI_INFO_NULL, cfd_errcode)
+        particle_type, "native", MPI_INFO_NULL, cfd_errcode)
 
     ! Write the real data
     CALL MPI_FILE_WRITE_ALL(cfd_filehandle, particles, npart_local, mpireal, &
@@ -347,16 +347,16 @@ CONTAINS
 
     current_displacement = current_displacement + npart_global * num
 
-  END SUBROUTINE cfd_Write_nD_Particle_Variable_All
+  END SUBROUTINE cfd_write_nd_particle_variable_all
 
 
 
-  SUBROUTINE cfd_Write_nD_Particle_Variable_With_Iterator_All(name, class, &
+  SUBROUTINE cfd_write_nd_particle_variable_with_iterator_all(name, class, &
       iterator, npart_global, npart_per_iteration, meshname, meshclass, &
-      Particle_Type)
+      particle_type)
 
     CHARACTER(len = *), INTENT(IN) :: name, class, meshname, meshclass
-    INTEGER, INTENT(IN) :: Particle_Type
+    INTEGER, INTENT(IN) :: particle_type
     INTEGER(8), INTENT(IN) :: npart_global, npart_per_iteration
     INTEGER(8) :: npart_this_cycle, min_npart_this_cycle
 
@@ -376,11 +376,11 @@ CONTAINS
     INTEGER(4) :: i
     INTEGER(4) :: sizes(2)
     REAL(num) :: mn, mx, mn_g, mx_g
-    INTEGER(MPI_OFFSET_KIND) :: OffsetForMinMax
+    INTEGER(MPI_OFFSET_KIND) :: offset_for_min_max
     LOGICAL :: start
 
     ! Metadata is
-    !* ) MeshType (INTEGER(4)) All mesh blocks contain this
+    !* ) meshtype (INTEGER(4)) All mesh blocks contain this
     !* ) nd     INTEGER(4)
     !* ) sof    INTEGER(4)
     ! Specific to particle variable
@@ -390,13 +390,13 @@ CONTAINS
     ! 4 ) mesh   CHARACTER
     ! 5 ) mclass CHARACTER
 
-    mdlen = MeshType_Header_Offset + 1 * SoI8  + 2 * num  + 2 * MaxStringLen
+    mdlen = meshtype_header_offset + 1 * soi8  + 2 * num  + 2 * max_string_len
     blocklen = mdlen + num * npart_global
 
     ! Now written header, write metadata
-    CALL cfd_Write_Block_Header(name, class, TYPE_MESH_VARIABLE, blocklen, &
+    CALL cfd_write_block_header(name, class, TYPE_MESH_VARIABLE, blocklen, &
         mdlen, default_rank)
-    CALL cfd_Write_MeshType_Header(VAR_PARTICLE, DIMENSION_IRRELEVANT, num, &
+    CALL cfd_write_meshtype_header(VAR_PARTICLE, DIMENSION_IRRELEVANT, num, &
         default_rank)
 
     CALL MPI_FILE_SET_VIEW(cfd_filehandle, current_displacement, MPI_INTEGER8, &
@@ -406,7 +406,7 @@ CONTAINS
       CALL MPI_FILE_WRITE(cfd_filehandle, npart_global, 1, MPI_INTEGER8, &
           cfd_status, cfd_errcode)
     END IF
-    current_displacement = current_displacement + 1 * SoI8
+    current_displacement = current_displacement + 1 * soi8
 
     CALL MPI_FILE_SET_VIEW(cfd_filehandle, current_displacement, mpireal, &
         mpireal, "native", MPI_INFO_NULL, cfd_errcode)
@@ -418,20 +418,20 @@ CONTAINS
           cfd_errcode)
     END IF
 
-    OffsetForMinMax = current_displacement
+    offset_for_min_max = current_displacement
     current_displacement = current_displacement + 2 * num
 
     CALL MPI_FILE_SET_VIEW(cfd_filehandle, current_displacement, &
         MPI_CHARACTER, MPI_CHARACTER, "native", MPI_INFO_NULL, cfd_errcode)
 
     IF (cfd_rank == default_rank) THEN
-      CALL cfd_Safe_Write_String(meshname)
-      CALL cfd_Safe_Write_String(meshclass)
+      CALL cfd_safe_write_string(meshname)
+      CALL cfd_safe_write_string(meshclass)
     END IF
-    current_displacement = current_displacement + 2 * MaxStringLen
+    current_displacement = current_displacement + 2 * max_string_len
 
     CALL MPI_FILE_SET_VIEW(cfd_filehandle, current_displacement, mpireal, &
-        Particle_Type, "native", MPI_INFO_NULL, cfd_errcode)
+        particle_type, "native", MPI_INFO_NULL, cfd_errcode)
 
     start = .TRUE.
     npart_this_cycle = npart_per_iteration
@@ -439,10 +439,10 @@ CONTAINS
 
     DO
       data = 27.224_num
-      CALL Iterator(data, npart_this_cycle, start)
+      CALL iterator(data, npart_this_cycle, start)
       IF (npart_this_cycle <= 0) EXIT
 
-      IF (Start) THEN
+      IF (start) THEN
         mn = MINVAL(data(1:npart_this_cycle))
         mx = MAXVAL(data(1:npart_this_cycle))
       ELSE
@@ -463,8 +463,8 @@ CONTAINS
     mn = mn_g
     mx = mx_g
 
-    CALL MPI_FILE_SET_VIEW(cfd_filehandle, OffsetForMinMax, mpireal, mpireal, &
-        "native", MPI_INFO_NULL, cfd_errcode)
+    CALL MPI_FILE_SET_VIEW(cfd_filehandle, offset_for_min_max, mpireal, &
+        mpireal, "native", MPI_INFO_NULL, cfd_errcode)
 
     IF (cfd_rank == default_rank) THEN
       CALL MPI_FILE_WRITE(cfd_filehandle, mn, 1, mpireal, cfd_status, &
@@ -475,6 +475,6 @@ CONTAINS
 
     CALL MPI_BARRIER(comm, errcode)
 
-  END SUBROUTINE cfd_Write_nD_Particle_Variable_With_Iterator_All
+  END SUBROUTINE cfd_write_nd_particle_variable_with_iterator_all
 
 END MODULE output_particle

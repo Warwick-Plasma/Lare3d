@@ -8,7 +8,7 @@ MODULE initial_conditions
 
   PRIVATE
 
-  PUBLIC:: Set_Initial_Conditions
+  PUBLIC:: set_initial_conditions
 
 CONTAINS
 
@@ -20,10 +20,10 @@ CONTAINS
   ! B{x, y, z} - Magnetic fields in x, y, z
   ! Energy - Specific internal energy
   ! Since temperature is a more intuitive quantity than specific internal energy
-  ! There is a helper function Get_Energy which converts temperature to energy
+  ! There is a helper function get_energy which converts temperature to energy
   ! The syntax for this function is
   !
-  ! CALL Get_Energy(density, temperature, equation_of_state, ix, iy, &
+  ! CALL get_energy(density, temperature, equation_of_state, ix, iy, &
   !     output_energy)
   !
   ! REAL(num) :: density - The density at point (ix, iy) on the grid
@@ -35,7 +35,7 @@ CONTAINS
   ! REAL(num) :: output_energy - The specific internal energy returned by
   !              the routine
   !---------------------------------------------------------------------------
-  SUBROUTINE Set_Initial_Conditions
+  SUBROUTINE set_initial_conditions
 
     INTEGER:: ix, iy, iz
     REAL(num) :: T
@@ -61,12 +61,12 @@ CONTAINS
           T = 1.0e3_num + 1.0e6_num * EXP(-(xc(ix) / (length_x / 16.0_num))**2 &
               - (yc(iy) / (length_y / 16.0_num))**2 &
               - (zc(iz) / (length_z / 16.0_num))**2)
-          CALL Get_Energy(rho(ix, iy, iz), T, EOS_IDEAL, ix, iy, iz, &
+          CALL get_energy(rho(ix, iy, iz), T, EOS_IDEAL, ix, iy, iz, &
               energy(ix, iy, iz))
         END DO
       END DO
     END DO
 
-  END SUBROUTINE Set_Initial_Conditions
+  END SUBROUTINE set_initial_conditions
 
 END MODULE initial_conditions

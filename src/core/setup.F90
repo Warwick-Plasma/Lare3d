@@ -143,7 +143,7 @@ CONTAINS
 
 
 
-  SUBROUTINE Normalise_Neutral
+  SUBROUTINE normalise_neutral
 
     ! Normalise constants used in the calculation of properties
     ! Of partially ionised plasmas
@@ -151,7 +151,7 @@ CONTAINS
     ! Normalised mass
     REAL(num) :: MASS0
 
-    REAL(num) :: Tr ! Temperature of photospheric radiation field
+    REAL(num) :: tr ! Temperature of photospheric radiation field
     REAL(num) :: eta_bar_0
 
     MASS0 = RHO0 * L0**2
@@ -171,10 +171,10 @@ CONTAINS
     ! Finally normalise ion_mass and ionise_pot which are needed in the code
     ionise_pot = ionise_pot / (ENERGY0 * MASS0)
 
-    Tr = 7230.85_num / TEMP0
-    Tr_bar = 1.0_num / Tr
+    tr = 7230.85_num / TEMP0
+    tr_bar = 1.0_num / tr
 
-  END SUBROUTINE Normalise_Neutral
+  END SUBROUTINE normalise_neutral
 
 
 
@@ -436,8 +436,8 @@ CONTAINS
   ! Open the output diagnostic files
   SUBROUTINE open_files
 
-    CHARACTER(LEN = 11+Data_Dir_Max_Length) :: file2
-    CHARACTER(LEN = 7+Data_Dir_Max_Length) :: file3
+    CHARACTER(LEN = 11+data_dir_max_length) :: file2
+    CHARACTER(LEN = 7+data_dir_max_length) :: file3
     INTEGER :: ios
 
     IF (rank == 0) THEN
@@ -482,36 +482,36 @@ CONTAINS
 
 
   ! Subroutine to perform string comparisons
-  FUNCTION StrCmp(StrIn, StrTest)
+  FUNCTION str_cmp(str_in, str_test)
 
-    CHARACTER(*), INTENT(IN) :: StrIn, StrTest
-    CHARACTER(30) :: StrTrim
-    LOGICAL :: StrCmp
+    CHARACTER(*), INTENT(IN) :: str_in, str_test
+    CHARACTER(30) :: str_trim
+    LOGICAL :: str_cmp
 
-    StrTrim = TRIM(ADJUSTL(StrIn))
+    str_trim = TRIM(ADJUSTL(str_in))
 
-    IF (LEN(StrTest) .GT. LEN(StrIn)) THEN
-      StrCmp = .FALSE.
+    IF (LEN(str_test) .GT. LEN(str_in)) THEN
+      str_cmp = .FALSE.
       RETURN
     END IF
 
-    IF (StrTrim(LEN(StrTest)+1:LEN(StrTest)+1) .NE. " ") THEN
-      StrCmp = .FALSE.
+    IF (str_trim(LEN(str_test)+1:LEN(str_test)+1) .NE. " ") THEN
+      str_cmp = .FALSE.
       RETURN
     END IF
 
-    StrCmp = StrTrim(1:LEN(StrTest)) == StrTest
+    str_cmp = str_trim(1:LEN(str_test)) == str_test
 
-  END FUNCTION StrCmp
+  END FUNCTION str_cmp
 
 
 
   ! Restart from previous output dumps
   SUBROUTINE restart_data
 
-    CHARACTER(LEN = 20+Data_Dir_Max_Length) :: filename
-    CHARACTER(LEN = 20) :: Name, Class, MeshName, MeshClass
-    INTEGER :: nBlocks, TYPE, nd, sof, snap
+    CHARACTER(LEN = 20+data_dir_max_length) :: filename
+    CHARACTER(LEN = 20) :: name, class, mesh_name, mesh_class
+    INTEGER :: nblocks, type, nd, sof, snap
     INTEGER, DIMENSION(3) :: dims
     REAL(num), DIMENSION(3) :: extent
     REAL(num), DIMENSION(3) :: stagger
@@ -529,110 +529,110 @@ CONTAINS
     output_file = restart_snapshot
 
     ALLOCATE(data(0:nx, 0:ny, 0:nz))
-    CALL cfd_Open(filename, rank, comm, MPI_MODE_RDONLY)
+    CALL cfd_open(filename, rank, comm, MPI_MODE_RDONLY)
     ! Open the file
-    nBlocks = cfd_Get_nBlocks()
+    nblocks = cfd_get_nblocks()
 
-    DO ix = 1, nBlocks
-      CALL cfd_Get_Next_Block_Info_All(Name, Class, TYPE)
-      IF (rank == 0) PRINT *, ix, Name, Class, TYPE
+    DO ix = 1, nblocks
+      CALL cfd_get_next_block_info_all(name, class, type)
+      IF (rank == 0) PRINT *, ix, name, class, type
 
-      IF (TYPE == TYPE_SNAPSHOT) THEN
-        CALL cfd_Get_Snapshot(time, snap)
+      IF (type == TYPE_SNAPSHOT) THEN
+        CALL cfd_get_snapshot(time, snap)
       END IF
 
-      IF (TYPE == TYPE_MESH) THEN
+      IF (type == TYPE_MESH) THEN
         ! Strangely, LARE doesn't actually read in the grid from a file
         ! This can be fixed, but for the moment, just go with the flow and
         ! Replicate the old behaviour
 
-        CALL cfd_Skip_Block()
-      ELSE IF (TYPE == TYPE_MESH_VARIABLE) THEN
-        CALL cfd_Get_Common_MeshType_MetaData_All(TYPE, nd, sof)
+        CALL cfd_skip_block()
+      ELSE IF (type == TYPE_MESH_VARIABLE) THEN
+        CALL cfd_get_common_meshtype_metadata_all(type, nd, sof)
 
         IF (nd /= DIMENSION_3D) THEN
           IF (rank == 0) PRINT *, "Non 3D Dataset found in input file, ", &
               "ignoring and continuting."
-          CALL cfd_Skip_Block()
+          CALL cfd_skip_block()
           CYCLE
         END IF
 
-        IF (TYPE /= VAR_CARTESIAN) THEN
+        IF (type /= VAR_CARTESIAN) THEN
           IF (rank == 0) PRINT *, "Non - Cartesian variable block found ", &
               "in file, ignoring and continuing"
-          CALL cfd_Skip_Block()
+          CALL cfd_skip_block()
           CYCLE
         END IF
 
         ! We now have a valid variable, let's load it up
         ! First error trapping
-        CALL cfd_Get_nD_Cartesian_Variable_MetaData_All(nd, dims, extent, &
-            stagger, MeshName, MeshClass)
+        CALL cfd_get_nd_cartesian_variable_metadata_all(nd, dims, extent, &
+            stagger, mesh_name, mesh_class)
 
         IF (dims(1) /= nx_global+1 &
             .OR. dims(2) /= ny_global+1 .OR. dims(3) /= nz_global) THEN
           IF (rank == 0) PRINT *, "Size of grid represented by one more ", &
               "variables invalid. Continuing"
-          CALL cfd_Skip_Block
+          CALL cfd_skip_block
           CYCLE
         END IF
 
         IF (sof /= num) THEN
           IF (rank == 0) PRINT *, "Precision of data does not match ", &
               "precision of code. Continuing."
-          CALL cfd_Skip_Block
+          CALL cfd_skip_block
         END IF
 
         ! We're not interested in the other parameters, so if we're here,
         ! load up the data
 
-        CALL cfd_Get_3D_Cartesian_Variable_Parallel(data, subtype)
+        CALL cfd_get_3d_cartesian_variable_parallel(data, subtype)
 
         ! Now have the data, just copy it to correct place
 
-        IF (StrCmp(Name(1:3), "Rho")) THEN
+        IF (str_cmp(name(1:3), "Rho")) THEN
           rho(0:nx, 0:ny, 0:nz) = data
         END IF
 
-        IF (StrCmp(Name(1:6), "Energy")) THEN
+        IF (str_cmp(name(1:6), "Energy")) THEN
           energy(0:nx, 0:ny, 0:nz) = data
         END IF
 
-        IF (StrCmp(Name(1:2), "Vx")) THEN
-          Vx(0:nx, 0:ny, 0:nz) = data
+        IF (str_cmp(name(1:2), "Vx")) THEN
+          vx(0:nx, 0:ny, 0:nz) = data
         END IF
 
-        IF (StrCmp(Name(1:2), "Vy")) THEN
-          Vy(0:nx, 0:ny, 0:nz) = data
+        IF (str_cmp(name(1:2), "Vy")) THEN
+          vy(0:nx, 0:ny, 0:nz) = data
         END IF
 
-        IF (StrCmp(Name(1:2), "Vz")) THEN
-          Vz(0:nx, 0:ny, 0:nz) = data
+        IF (str_cmp(name(1:2), "Vz")) THEN
+          vz(0:nx, 0:ny, 0:nz) = data
         END IF
 
-        IF (StrCmp(Name(1:2), "Bx")) THEN
-          Bx(0:nx, 0:ny, 0:nz) = data
+        IF (str_cmp(name(1:2), "Bx")) THEN
+          bx(0:nx, 0:ny, 0:nz) = data
         END IF
 
-        IF (StrCmp(Name(1:2), "By")) THEN
-          By(0:nx, 0:ny, 0:nz) = data
+        IF (str_cmp(name(1:2), "By")) THEN
+          by(0:nx, 0:ny, 0:nz) = data
         END IF
 
-        IF (StrCmp(Name(1:2), "Bz")) THEN
-          Bz(0:nx, 0:ny, 0:nz) = data
+        IF (str_cmp(name(1:2), "Bz")) THEN
+          bz(0:nx, 0:ny, 0:nz) = data
         END IF
 
         ! Should be at end of block, but force the point anyway
-        CALL cfd_Skip_Block()
+        CALL cfd_skip_block()
       ELSE
         ! Unknown block, just skip it
-        CALL cfd_Skip_Block()
+        CALL cfd_skip_block()
       END IF
     END DO
 
     DEALLOCATE(data)
 
-    CALL cfd_Close()
+    CALL cfd_close()
 
     CALL MPI_BARRIER(comm, errcode)
 

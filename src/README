@@ -12,13 +12,13 @@ control.f90
 control.f90 contains all the code parameters, such as the number of gridpoints,  the length of the domain,the physics packages used, parameters for the packages etc.
 
 It is subdivided into three subroutines
-User_Normalisation - User sets the parameters used in the code normalisation
-Control_Variables - User sets the basic code parameters. See the comments in the code for a full description
-Set_Output_Dumps - User sets the information to be included in the output dumps from the code.
+user_normalisation - User sets the parameters used in the code normalisation
+control_variables - User sets the basic code parameters. See the comments in the code for a full description
+set_output_dumps - User sets the information to be included in the output dumps from the code.
 -----------------------------------------------------------------
 initial_conditions.f90
 
-initial_conditions.f90 controls the initial conditions for the simulation. It contains only a single subroutine, called "Set_Initial_Conditions", where the user must set the initial conditions for the variables
+initial_conditions.f90 controls the initial conditions for the simulation. It contains only a single subroutine, called "set_initial_conditions", where the user must set the initial conditions for the variables
 
 rho - density
 energy - specific internal energy

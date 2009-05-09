@@ -89,7 +89,7 @@ MODULE normalise
 
 CONTAINS
 
-  SUBROUTINE Set_Normalisation
+  SUBROUTINE set_normalisation
 
     ! Remember that the way to set the normalisations is to set
     ! B0 the normalising magnetic field (in Tesla)
@@ -113,13 +113,13 @@ CONTAINS
     END IF
 
     ! Calculate the derived quantities
-    CALL Derived_Quantities
+    CALL derived_quantities
 
-  END SUBROUTINE Set_Normalisation
+  END SUBROUTINE set_normalisation
 
 
 
-  SUBROUTINE Derived_Quantities
+  SUBROUTINE derived_quantities
 
     ! Average particle mass is mass of proton * mass of average particle
     ! in proton masses
@@ -145,6 +145,6 @@ CONTAINS
     KAPPA0 = ENERGY0**(3.0_num / 2.0_num) * RHO0 * L0 &
         / (MBAR / KB * ENERGY0)**(7.0_num / 2.0_num)
 
-  END SUBROUTINE Derived_Quantities
+  END SUBROUTINE derived_quantities
 
 END MODULE normalise

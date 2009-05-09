@@ -14,7 +14,7 @@ MODULE constants
   INTEGER, PARAMETER :: BC_PERIODIC = 1, BC_OTHER = 2
   INTEGER, PARAMETER :: BC_OPEN = 3
 
-  INTEGER, PARAMETER :: Version = 2, Revision = 2
+  INTEGER, PARAMETER :: version = 2, revision = 2
 
   ! IC codes
   ! This is a bitmask, remember that
@@ -79,7 +79,7 @@ MODULE shared_data
   INTEGER :: restart_snapshot
   INTEGER :: peak_substeps = 0
   LOGICAL :: x_stretch, y_stretch, z_stretch, rke
-  LOGICAL :: resistiveMHD, any_open, HallMHD
+  LOGICAL :: resistive_mhd, any_open, hall_mhd
   LOGICAL :: restart
 
   ! Heat conduction
@@ -108,7 +108,7 @@ MODULE shared_data
   REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: eta_perp, xi_n, eta_perp0
   REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: parallel_current, perp_current
   LOGICAL :: include_neutrals, cowling_resistivity
-  REAL(num) :: f_bar, T_bar, Tr_bar, ionise_pot, r_bar
+  REAL(num) :: f_bar, T_bar, tr_bar, ionise_pot, r_bar
   REAL(num) :: eta_bar
 
   ! MPI data
@@ -125,7 +125,7 @@ MODULE shared_data
   INTEGER :: output_file = 0
 
   ! Number of variables to dump
-  LOGICAL, DIMENSION(19) :: DumpMask
+  LOGICAL, DIMENSION(19) :: dump_mask
 
 END MODULE shared_data
 
