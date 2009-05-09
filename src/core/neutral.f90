@@ -69,9 +69,6 @@ CONTAINS
     REAL(num) :: f, xi_v, bxv, byv, bzv, bfieldsq, rho_v, T_v, T
     INTEGER :: ixp, iyp, izp
 
-    eta_perp = 0.0001
-    RETURN
-
     DO iz = 0, nz
       DO iy = 0, ny
         DO ix = 0, nx

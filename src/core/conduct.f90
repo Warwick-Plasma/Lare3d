@@ -38,6 +38,7 @@ CONTAINS
     INTEGER :: loop
 
     LOGICAL :: converged
+    REAL(num), PARAMETER :: fractional_error = 1.0e-5_num
     REAL(num), PARAMETER :: b_min = 1.0e-4_num
 
     ALLOCATE(kx(0:nx+1, 0:ny+1, 0:nz+1))
@@ -46,16 +47,16 @@ CONTAINS
     ALLOCATE(ux(0:nx+1, 0:ny+1, 0:nz+1))
     ALLOCATE(uy(0:nx+1, 0:ny+1, 0:nz+1))
     ALLOCATE(uz(0:nx+1, 0:ny+1, 0:nz+1))
-    ALLOCATE(energy0(-1:nx+1, -1:ny+1, -1:nz+1))
-    ALLOCATE(e2temp(-1:nx+1, -1:ny+1, -1:nz+1))
-    ALLOCATE(kp(-1:nx+1, -1:ny+1, -1:nz+1))
+    ALLOCATE(energy0(-1:nx+2, -1:ny+2, -1:nz+2))
+    ALLOCATE(e2temp(0:nx+1, 0:ny+1, 0:nz+1))
+    ALLOCATE(kp(0:nx+1, 0:ny+1, 0:nz+1))
 
-		DO iz = -1, nz+2
-			DO iy = -1, ny+2
-				DO ix = -1, nx+2
+		DO iz = 0, nz+1
+			DO iy = 0, ny+1
+				DO ix = 0, nx+1
 					e = energy(ix, iy, iz)
 					CALL get_temp(rho(ix, iy, iz), e, eos_number, ix, iy, iz, T)
-					e2temp = T / e
+					e2temp(ix, iy, iz) = T / e
 				END DO
 			END DO
 		END DO
@@ -72,7 +73,7 @@ CONTAINS
           uy(ix, iy, iz) = byc / SQRT(b**2 + b_min**2)
           uz(ix, iy, iz) = bzc / SQRT(b**2 + b_min**2)
                                 
-					T = (e2temp(ix, iy, iz) * energy0(ix, iy, iz))**pow 
+					T = (e2temp(ix, iy, iz) * energy(ix, iy, iz))**pow 
           kx(ix, iy, iz) = ux(ix, iy, iz) * kappa_0 * T
           ky(ix, iy, iz) = uy(ix, iy, iz) * kappa_0 * T
           kz(ix, iy, iz) = uz(ix, iy, iz) * kappa_0 * T 
@@ -88,9 +89,9 @@ CONTAINS
     DO loop = 0, 100
       errmax = 0.0_num
 			error = 0.0_num
-      DO ix = 1, nx
-        DO iz = 1, nz
-          DO iy = 1, ny
+      DO iz = 1, nz
+        DO iy = 1, ny
+          DO ix = 1, nx
             qpx = dxc(ix-1) / (dxc(ix) * (dxc(ix) + dxc(ix-1)))
             qmx = dxc(ix) / (dxc(ix-1) * (dxc(ix) + dxc(ix-1)))
             q0x = (dxc(ix)**2 - dxc(ix-1)**2) &
@@ -136,11 +137,11 @@ CONTAINS
                   * (qpx * e2temp(ix+1, iy+1, iz) * energy(ix+1, iy+1, iz) &
                   - qmx * e2temp(ix-1, iy+1, iz) * energy(ix-1, iy+1, iz) &
                   + q0x * e2temp(ix, iy+1, iz) * energy(ix, iy+1, iz)) &
-                  - qmy  &
+                - qmy  &
                   * (qpx * e2temp(ix+1, iy-1, iz) * energy(ix+1, iy-1, iz) &
                   - qmx * e2temp(ix-1, iy-1, iz) * energy(ix-1, iy-1, iz) &
                   + q0x * e2temp(ix, iy-1, iz) * energy(ix, iy-1, iz)) &
-                  + q0y  &
+                + q0y  &
                   * (qpx * e2temp(ix+1, iy, iz) * energy(ix+1, iy, iz) &
                   - qmx * e2temp(ix-1, iy, iz) * energy(ix-1, iy, iz))
 
@@ -148,11 +149,11 @@ CONTAINS
                  * (qpx * e2temp(ix+1, iy, iz+1) * energy(ix+1, iy, iz+1) &
                  - qmx * e2temp(ix-1, iy, iz+1) * energy(ix-1, iy, iz+1) &
                  + q0x * e2temp(ix, iy, iz+1) * energy(ix, iy, iz+1)) &
-                - qmz  &
+               - qmz  &
                  * (qpx * e2temp(ix+1, iy, iz-1) * energy(ix+1, iy, iz-1) &
                  - qmx * e2temp(ix-1, iy, iz-1) * energy(ix-1, iy, iz-1) &
                  + q0x * e2temp(ix, iy, iz-1) * energy(ix, iy, iz-1)) &
-                + q0z  &
+               + q0z  &
                  * (qpx * e2temp(ix+1, iy, iz) * energy(ix+1, iy, iz) &
                  - qmx * e2temp(ix-1, iy, iz) * energy(ix-1, iy, iz))
 
@@ -254,18 +255,18 @@ CONTAINS
                 + ky(ix, iy, iz) * ry + kz(ix, iy, iz) * rz) 
 
 						! add isoptropic elements
-	          a1 = a1 + kp(ix, iy, iz) * m0x + kp(ix, iy, iz) * m0y &
+	          a1 = a1 + kp(ix, iy, iz) * (m0x + m0y + m0z) &
 	                    - kpx * q0x - kpy * q0y - kpz * q0z 
-	          a2 = a2 + kp(ix, iy, iz) * rxx + kp(ix, iy, iz) * ryy &
+	          a2 = a2 + kp(ix, iy, iz) * (rxx + ryy + rzz) &
 	                    + kpx * rx + kpy * ry	+ kpz * rz						
 
 						a1 = a1 * dt * e2temp(ix, iy, iz) / rho(ix, iy, iz) 
 						a2 = a2 * dt / rho(ix, iy, iz) 
 
-						Q = energy(ix, iy, iz)
-						energy(ix, iy, iz) = (1.0_num-w) * energy(ix, iy, iz) &
-					    + w * (energy0(ix, iy, iz)  + a2) / (1.0_num + a1)
-						Q = (Q - energy(ix, iy, iz)) / Q
+ 						Q = energy(ix, iy, iz)
+ 						energy(ix, iy, iz) = (1.0_num-w) * energy(ix, iy, iz) &
+ 					    + w * (energy0(ix, iy, iz)  + a2) / (1.0_num + a1)
+ 						Q = (Q - energy(ix, iy, iz)) / Q
 
 	          errmax = MAX(errmax, ABS(Q))  
           END DO
@@ -279,7 +280,7 @@ CONTAINS
 			IF (errmax .GT. errmax_prev) w = (1.0_num + w) / 2.0_num
 			errmax_prev = errmax
 
-      IF (errmax .LT. 1.e-3_num) THEN
+      IF (errmax .LT. fractional_error) THEN
         converged = .TRUE.
         EXIT
       END IF

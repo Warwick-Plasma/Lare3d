@@ -49,8 +49,6 @@ CONTAINS
     energy = 1.0_num
     rho = 1.0_num
 
-    gamma = 5.0_num / 3.0_num
-
     grav = 0.0_num
 
     rho = 1.0e-6_num
