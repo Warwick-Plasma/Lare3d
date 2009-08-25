@@ -67,8 +67,8 @@ CONTAINS
       END DO
 
       dt = actual_dt
-    END IF
-
+   END IF   
+                          
     IF (conduction) CALL conduct_heat
 
     DO iz = 0, nz+1
@@ -93,7 +93,7 @@ CONTAINS
 
     CALL energy_bcs
     CALL density_bcs
-    CALL velocity_bcs
+    CALL velocity_bcs         
 
   END SUBROUTINE lagrangian_step
 

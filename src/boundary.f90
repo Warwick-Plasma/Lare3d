@@ -145,14 +145,22 @@ CONTAINS
 
     CALL energy_MPI
 
+!     IF (front == MPI_PROC_NULL .AND. zbc_front == BC_OTHER) THEN
+!       energy(1:nx, 1:ny,  0) = energy(1:nx, 1:ny, 1)
+!       energy(1:nx, 1:ny, -1) = energy(1:nx, 1:ny, 2)
+!     END IF
+!     IF (back == MPI_PROC_NULL .AND. zbc_back == BC_OTHER) THEN
+!       energy(1:nx, 1:ny, nz+1) = energy(1:nx, 1:ny, nz  )
+!       energy(1:nx, 1:ny, nz+2) = energy(1:nx, 1:ny, nz-1)
+!     END IF     
     IF (front == MPI_PROC_NULL .AND. zbc_front == BC_OTHER) THEN
-      energy(1:nx, 1:ny,  0) = energy(1:nx, 1:ny, 1)
-      energy(1:nx, 1:ny, -1) = energy(1:nx, 1:ny, 2)
+      energy(1:nx, 1:ny,  0) = 1.e-4_num
+      energy(1:nx, 1:ny, -1) = 1.e-4_num
     END IF
     IF (back == MPI_PROC_NULL .AND. zbc_back == BC_OTHER) THEN
-      energy(1:nx, 1:ny, nz+1) = energy(1:nx, 1:ny, nz  )
-      energy(1:nx, 1:ny, nz+2) = energy(1:nx, 1:ny, nz-1)
-    END IF
+      energy(1:nx, 1:ny, nz+1) = 1.e-4_num
+      energy(1:nx, 1:ny, nz+2) = 1.e-4_num
+    END IF   
 
     IF (right == MPI_PROC_NULL .AND. xbc_right == BC_OTHER) THEN
       energy(nx+1, 1:ny, :) = energy(nx  , 1:ny, :)

@@ -102,7 +102,7 @@ CONTAINS
     ALLOCATE(xc(-1:nx+2), xb(-2:nx+2), dxb(-1:nx+2), dxc(-1:nx+2))
     ALLOCATE(yc(-1:ny+2), yb(-2:ny+2), dyb(-1:ny+2), dyc(-1:ny+2))
     ALLOCATE(zc(-1:nz+2), zb(-2:nz+2), dzb(-1:nz+2), dzc(-1:nz+2))
-    ALLOCATE(grav(-1:ny+2))
+    ALLOCATE(grav(-1:nz+2))
     ALLOCATE(jx_r(0:nx+1, 0:ny+1, 0:nz+1))
     ALLOCATE(jy_r(0:nx+1, 0:ny+1, 0:nz+1))
     ALLOCATE(jz_r(0:nx+1, 0:ny+1, 0:nz+1))

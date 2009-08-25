@@ -16,14 +16,14 @@ CONTAINS
     ! Modules which are coded in SI units
 
     ! Should the code use SI units
-    SI = .TRUE.
+    SI = .FALSE.
 
     ! Gamma is the ratio of specific heat capacities
     gamma = 5.0_num / 3.0_num
 
     ! Average mass of an ion in proton masses
     ! The code assumes a single ion species with this mass
-    mf = 1.4_num
+    mf = 1.0_num
 
     ! The equations describing the normalisation in LARE
     ! Have three free parameters which must be specified by
@@ -32,11 +32,11 @@ CONTAINS
     ! they are arbitrary.
 
     ! Magnetic field normalisation in Tesla
-    B0 = 0.12_num
+    B0 = 0.005_num
     ! Length normalisation in m
-    L0 = 150.0_num
+    L0 = 1.e6_num
     ! Density normalisation in kg / m^3
-    RHO0 = 2.7e-6_num
+    RHO0 = 1.672e-13_num
 
   END SUBROUTINE user_normalisation
 
@@ -47,15 +47,15 @@ CONTAINS
     ! Set the number of gridpoints in x and y directions
     nx_global = 40
     ny_global = 40
-    nz_global = 40
+    nz_global = 80
 
     ! Set the maximum number of iterations of the core solver before the code
     ! terminates. If nsteps < 0 then the code will run until t = t_end
-    nsteps = 100
+    nsteps = -1
 
     ! The maximum runtime of the code
     ! If SI_Input is true then this is in seconds
-    t_end = 20.0_num
+    t_end = 300.0_num
 
     ! Shock viscosities as detailed in manual - they are dimensionless
     visc1 = 0.1_num
@@ -75,36 +75,36 @@ CONTAINS
 
     ! The length of the domain in the x direction
     ! If SI_Input is true then this is in metres
-    x_start = -2.0e5_num
-    x_end = 2.0e5_num
+    x_start = -2.0_num
+    x_end = 2.0_num
     ! Should the x grid be stretched or uniform
     x_stretch = .FALSE.
 
     ! The length of the domain in the y direction
     ! If SI_Input is true then this is in metres
-    y_start = -2.0e5_num
-    y_end = 2.0e5_num
+    y_start = -2.0_num
+    y_end = 2.0_num
     ! Should the y grid be stretched of uniform
     y_stretch = .FALSE.
 
-    z_start = -2.0e5_num! /50.0_num
-    z_end = 2.0e5_num! /50.0_num
+    z_start = -10.0_num
+    z_end = 10.0_num
     z_stretch = .FALSE.
 
     ! Turn on or off the resistive parts of the MHD equations
-    resistive_mhd = .FALSE.
+    resistive_mhd = .TRUE.
 
     ! The background resistivity expressed as the inverse Lundquist
     ! number, i.e. the same for normalised and SI input
-    eta_background = 0.0_num
+    eta_background = 1.e-4_num
 
     ! The critical current for triggering anomalous resistivity
     ! and the resistivity when above the critical current
     ! The resistivity is expressed as the inverse Lundquist number, i.e. the
     ! same for normalised and SI input, bit the j_max must be in SI
     ! if using SI units
-    j_max = 0.0_num
-    eta0 = 0.0_num
+    j_max = 5.0_num
+    eta0 = 1.e-3_num
 
     ! Turn on or off the hall_mhd term in the MHD equations
     ! Well actually this does nothing as it isn't fully
@@ -121,7 +121,9 @@ CONTAINS
 
     ! Turn on or off the Braginskii thermal conduction term in
     ! the MHD equations
-    conduction = .FALSE.
+    conduction = .FALSE. 
+    ! Turn on limiter for heat flux based on maximum enthalpy flow
+    heat_flux_limited = .FALSE.
 
     ! Remap kinetic energy correction. LARE does not
     ! perfectly conserve kinetic energy during the remap step
@@ -152,12 +154,12 @@ CONTAINS
     ! BC_PERIODIC - Periodic boundary conditions
     ! BC_OPEN - Reimann characteristic boundary conditions
     ! BC_OTHER - Other boundary conditions specified in "boundary.f90"
-    xbc_left = BC_PERIODIC
-    xbc_right = BC_PERIODIC
-    ybc_up = BC_PERIODIC
-    ybc_down = BC_PERIODIC
-    zbc_front = BC_PERIODIC
-    zbc_back = BC_PERIODIC
+    xbc_left = BC_OTHER
+    xbc_right = BC_OTHER
+    ybc_up = BC_OTHER
+    ybc_down = BC_OTHER
+    zbc_front = BC_OTHER
+    zbc_back = BC_OTHER
 
     ! set to true to turn on routine for damped boundaries
     damping = .FALSE.
@@ -179,7 +181,7 @@ CONTAINS
 
     ! The interval between output snapshots. If SI_Input is true
     ! Then this is in seconds
-    dt_snapshots = 0.! 2_num
+    dt_snapshots = 50.0_num
 
     ! dump_mask is an array which specifies which quantities the
     ! code should output to disk in a data dump.
@@ -207,8 +209,8 @@ CONTAINS
     ! If the element is false then the field isn't dumped
     ! N.B. if dump_mask(1:8) not true then the restart will not work
     dump_mask = .FALSE.
-    dump_mask(1:10) = .TRUE.
-    ! dump_mask(14) = .TRUE.
+    dump_mask(1:10) = .TRUE. 
+    dump_mask(17:19) = .TRUE.
 
   END SUBROUTINE set_output_dumps
 

@@ -67,13 +67,13 @@ PROGRAM lare3d
     IF ((i >= nsteps .AND. nsteps >= 0) .OR. (time >= t_end)) EXIT
     i = i + 1
     CALL eta_calc                    ! lagran.f90
-    CALL set_dt                      ! diagnostics.f90
+    CALL set_dt                      ! diagnostics.f90  
     CALL lagrangian_step             ! lagran.f90
     CALL eulerian_remap(i)           ! remap.f90
     IF (rke) CALL energy_correction  ! diagnostics.f90
     IF (any_open) THEN
       CALL open_bcs                  ! openboundary.f90
-    END IF
+    END IF                 
     CALL boundary_conditions         ! boundary.f90
     CALL output_routines(i)          ! diagnostics.f90
   END DO

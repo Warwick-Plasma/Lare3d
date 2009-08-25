@@ -101,7 +101,7 @@ CONTAINS
       ! Assuming you have set B0, RHO0 and L0 correctly then this
       ! will calculate the normalised thermal conductivity
       ! The temperature dependence is added later 
-			mbar = mh * mf
+	    mbar = mh * mf
       ENERGY0 = B0**2 / (MU0 * RHO0)
       KAPPA0 = ENERGY0**(3.0_num / 2.0_num) * RHO0 * L0 &
             / (MBAR / KB * ENERGY0)**(7.0_num / 2.0_num)    
