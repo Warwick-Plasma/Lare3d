@@ -67,8 +67,8 @@ CONTAINS
       END DO
 
       dt = actual_dt
-   END IF   
-                          
+    END IF
+
     IF (conduction) CALL conduct_heat
 
     DO iz = 0, nz+1
@@ -93,7 +93,7 @@ CONTAINS
 
     CALL energy_bcs
     CALL density_bcs
-    CALL velocity_bcs         
+    CALL velocity_bcs
 
   END SUBROUTINE lagrangian_step
 
@@ -433,7 +433,8 @@ CONTAINS
     REAL(num) :: sxx, syy, szz, sxy, sxz, syz
     REAL(num) :: dvxdy, dvxdz, dvydx, dvydz, dvzdx, dvzdy
     REAL(num) :: cs
-    LOGICAL :: tensor_shock_visc = .TRUE.
+    REAL(num) :: w2_1,w2_2,w2_3,w2_4
+    REAL(num) :: flag1,flag2,flag3,flag4,sg0,dvg0
 
     DO iz = -1, nz+2
       DO iy = -1, ny+2
@@ -570,25 +571,49 @@ CONTAINS
           s = (dvxdx * fx**2 + dvydy * fy**2 + dvzdz * fz**2 + dvxy * fx * fy &
               + dvxz * fx * fz + dvyz * fy * fz) / MAX(w1, none_zero)
 
-          IF (dxb(ix) * ABS(fy) < dyb(iy) * ABS(fx)) THEN
-            IF (dxb(ix) * ABS(fz) < dzb(iz) * ABS(fx)) THEN
-              w2 = dxb(ix)**2 * w1 / (fx**2 + 1.e-20_num)
-            ELSE
-              w2 = dzb(iz)**2 * w1 / (fz**2 + 1.e-20_num)
-            END IF
-          ELSE
-            IF (dyb(iy) * ABS(fz) < dzb(iz) * ABS(fy)) THEN
-              w2 = dyb(iy)**2 * w1 / (fy**2 + 1.e-20_num)
-            ELSE
-              w2 = dzb(iz)**2 * w1 / (fz**2 + 1.e-20_num)
-            END IF
-          END IF
+!	     These flags are used to replace the rather clearer code in 
+!	     **SECTION 1**. They are used instead to facilitate vector
+!	     optimization
+             flag1=MAX(SIGN(1.0_num,dyb(iy)*ABS(fx)-dxb(ix)*ABS(fy)),0.0_num)
+             flag2=MAX(SIGN(1.0_num,dzb(iz)*ABS(fx)-dxb(ix)*ABS(fz)),0.0_num)
+             flag3=MAX(SIGN(1.0_num,dzb(iz)*ABS(fy)-dyb(iy)*ABS(fz)),0.0_num)
+             flag4=MAX(SIGN(1.0_num,w1-1.e-6_num),0.0_num)
 
-          IF (w1 < 1.e-6_num) w2 = MIN(dxb(ix), dyb(iy), dzb(iz))**2
+             w2_1=dxb(ix)**2*w1 / MAX(fx**2, none_zero)
+             w2_2=dzb(iz)**2*w1 / MAX(fz**2,none_zero)
+             w2_3=dyb(iy)**2*w1 / MAX(fy**2,none_zero)
+             w2_4=dzb(iz)**2*w1 / MAX(fz**2,none_zero)
+
+             w2=w2_1*flag1*flag2 + w2_2*flag1*(1.0_num-flag2)&
+                  +w2_3*(1.0_num-flag1)*flag3 + w2_4*(1.0_num-flag1)*(1.0_num-flag3)
+
+             w2=w2*flag4 + MIN(dxb(ix), dyb(iy), dzb(iz))**2 * (1.0_num-flag4)
+!!$		!BEGIN **SECTION 1**
+!!$		!*******************
+!          IF (dxb(ix) * ABS(fy) < dyb(iy) * ABS(fx)) THEN
+!            IF (dxb(ix) * ABS(fz) < dzb(iz) * ABS(fx)) THEN
+!              w2 = dxb(ix)**2 * w1 / (fx**2 + 1.e-20_num)
+!            ELSE
+!              w2 = dzb(iz)**2 * w1 / (fz**2 + 1.e-20_num)
+!            END IF
+!          ELSE
+!            IF (dyb(iy) * ABS(fz) < dzb(iz) * ABS(fy)) THEN
+!              w2 = dyb(iy)**2 * w1 / (fy**2 + 1.e-20_num)
+!            ELSE
+!              w2 = dzb(iz)**2 * w1 / (fz**2 + 1.e-20_num)
+!            END IF
+!          END IF
+!          IF (w1 < 1.e-6_num) w2 = MIN(dxb(ix), dyb(iy), dzb(iz))**2
+!$		!*****************
+
           L = SQRT(w2)
 
           L2 = L
-          IF (s > 0.0_num .OR. dv > 0.0_num) L = 0.0_num
+			!This code is equivalent to IF (s > 0 .OR. dv > 0) L=0.0
+  			  sg0 = MAX(SIGN(1.0_num,s),0.0_num)
+   			  dvg0 = MAX(SIGN(1.0_num,dv),0.0_num)
+          L = L * sg0 * (1.0_num - dvg0) + L * (1.0_num -sg0) * dvg0 +&
+  				L * sg0 * dvg0
 
           w1 = (bx1(ix, iy, iz)**2 + by1(ix, iy, iz)**2 + bz1(ix, iy, iz)**2)
           ! / rho(ix, iy, iz)
@@ -606,36 +631,33 @@ CONTAINS
           qyz(ix, iy, iz) = 0.0_num
           qzz(ix, iy, iz) = 0.0_num
 
-          IF (tensor_shock_visc) THEN
-            qxy(ix, iy, iz) = sxy * (L2 * rho(ix, iy, iz) &
-                * (visc1 * cf + L2 * visc2 * ABS(s)))
-            qxz(ix, iy, iz) = sxz * (L2 * rho(ix, iy, iz) &
-                * (visc1 * cf + L2 * visc2 * ABS(s)))
-            qyz(ix, iy, iz) = syz * (L2 * rho(ix, iy, iz) &
-                * (visc1 * cf + L2 * visc2 * ABS(s)))
-            qxx(ix, iy, iz) = sxx * (L2 * rho(ix, iy, iz) &
-                * (visc1 * cf + L2 * visc2 * ABS(s)))
-            qyy(ix, iy, iz) = syy * (L2 * rho(ix, iy, iz) &
-                * (visc1 * cf + L2 * visc2 * ABS(s)))
-            qzz(ix, iy, iz) = szz * (L2 * rho(ix, iy, iz) &
-                * (visc1 * cf + L2 * visc2 * ABS(s)))
-          END IF
+#ifndef Q_MONO
+                qxy(ix,iy,iz) = sxy * (L2 * rho(ix,iy,iz)  &
+                     * (visc1 * cf + L2 * visc2 * ABS(s)))
+                qxz(ix,iy,iz) = sxz * (L2 * rho(ix,iy,iz)  &
+                     * (visc1 * cf + L2 * visc2 * ABS(s)))
+                qyz(ix,iy,iz) = syz * (L2 * rho(ix,iy,iz)  &
+                     * (visc1 * cf + L2 * visc2 * ABS(s)))
+                qxx(ix,iy,iz) = sxx * (L2 * rho(ix,iy,iz)  &
+                     * (visc1 * cf + L2 * visc2 * ABS(s)))
+                qyy(ix,iy,iz) = syy * (L2 * rho(ix,iy,iz)  &
+                     * (visc1 * cf + L2 * visc2 * ABS(s)))
+                qzz(ix,iy,iz) = szz * (L2 * rho(ix,iy,iz)  &
+                     * (visc1 * cf + L2 * visc2 * ABS(s)))
+#endif
+                qxy(ix,iy,iz) = qxy(ix,iy,iz) + sxy  * rho(ix,iy,iz) * visc3 
+                qxz(ix,iy,iz) = qxz(ix,iy,iz) + sxz  * rho(ix,iy,iz) * visc3 
+                qyz(ix,iy,iz) = qyz(ix,iy,iz) + syz  * rho(ix,iy,iz) * visc3 
+                qxx(ix,iy,iz) = qxx(ix,iy,iz) + sxx  * rho(ix,iy,iz) * visc3 
+                qyy(ix,iy,iz) = qyy(ix,iy,iz) + syy  * rho(ix,iy,iz) * visc3
+                qzz(ix,iy,iz) = qzz(ix,iy,iz) + szz  * rho(ix,iy,iz) * visc3 
 
-          IF (visc3 > 1.e-6_num) THEN
-            qxy(ix, iy, iz) = qxy(ix, iy, iz) + sxy  * rho(ix, iy, iz) * visc3
-            qxz(ix, iy, iz) = qxz(ix, iy, iz) + sxz  * rho(ix, iy, iz) * visc3
-            qyz(ix, iy, iz) = qyz(ix, iy, iz) + syz  * rho(ix, iy, iz) * visc3
-            qxx(ix, iy, iz) = qxx(ix, iy, iz) + sxx  * rho(ix, iy, iz) * visc3
-            qyy(ix, iy, iz) = qyy(ix, iy, iz) + syy  * rho(ix, iy, iz) * visc3
-            qzz(ix, iy, iz) = qzz(ix, iy, iz) + szz  * rho(ix, iy, iz) * visc3
-          END IF
+#ifdef Q_MONO
+                visc_heat(ix,iy,iz) = qxy(ix,iy,iz)*dvxy + qxz(ix,iy,iz)*dvxz &
+                     + qyz(ix,iy,iz)*dvyz + qxx(ix,iy,iz)*dvxdx   &
+                     + qyy(ix,iy,iz)*dvydy + qzz(ix,iy,iz)*dvzdz 
+#endif
 
-          IF (tensor_shock_visc .OR. visc3 > 1.e-6_num) THEN
-            visc_heat(ix, iy, iz) = &
-                qxy(ix, iy, iz) * dvxy + qxz(ix, iy, iz) * dvxz &
-                + qyz(ix, iy, iz) * dvyz + qxx(ix, iy, iz) * dvxdx &
-                + qyy(ix, iy, iz) * dvydy + qzz(ix, iy, iz) * dvzdz
-          END IF
 
           w4 = bx1(ix, iy, iz) * dvxdx &
               + by1(ix, iy, iz) * dvxdy + bz1(ix, iy, iz) * dvxdz
