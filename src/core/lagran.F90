@@ -615,8 +615,7 @@ CONTAINS
           L = L * sg0 * (1.0_num - dvg0) + L * (1.0_num -sg0) * dvg0 +&
 				L * sg0 * dvg0
 
-          w1 = (bx1(ix, iy, iz)**2 + by1(ix, iy, iz)**2 + bz1(ix, iy, iz)**2)
-          ! / rho(ix, iy, iz)
+          w1 = (bx1(ix, iy, iz)**2 + by1(ix, iy, iz)**2 + bz1(ix, iy, iz)**2) / rho(ix, iy, iz)
 
           CALL get_cs(rho(ix, iy, iz), energy(ix, iy, iz), eos_number, &
               ix, iy, iz, cs)
