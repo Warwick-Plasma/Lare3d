@@ -610,10 +610,10 @@ CONTAINS
 
           L2 = L
 			!This code is equivalent to IF (s > 0 .OR. dv > 0) L=0.0
-  			  sg0 = MAX(SIGN(1.0_num,s),0.0_num)
-   			  dvg0 = MAX(SIGN(1.0_num,dv),0.0_num)
+			 sg0 = MAX(SIGN(1.0_num,s),0.0_num)
+			 dvg0 = MAX(SIGN(1.0_num,dv),0.0_num)
           L = L * sg0 * (1.0_num - dvg0) + L * (1.0_num -sg0) * dvg0 +&
-  				L * sg0 * dvg0
+				L * sg0 * dvg0
 
           w1 = (bx1(ix, iy, iz)**2 + by1(ix, iy, iz)**2 + bz1(ix, iy, iz)**2)
           ! / rho(ix, iy, iz)
