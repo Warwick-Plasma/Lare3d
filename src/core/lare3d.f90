@@ -30,13 +30,16 @@ PROGRAM lare3d
 
   CALL welcome_message     ! welcome.f90
 
+  CALL setup_neutral ! neutral.f90
+  IF (.NOT. SI) THEN
+    CALL normalise_neutral  ! setup.f90
+  END IF
+
   CALL set_normalisation         ! normalise.f90
   CALL set_boundary_conditions   ! boundary.f90
   CALL open_files                ! setup.f90
-  CALL grid                      ! setup.f90
-  IF (include_neutrals .OR. &
-      cowling_resistivity) CALL setup_neutral ! neutral.f90
-
+  CALL grid                      ! setup.f90 
+  
   IF (IAND(initial, IC_RESTART) .NE. 0) THEN
     CALL restart_data            ! setup.f90
     restart = .TRUE.
