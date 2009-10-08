@@ -108,7 +108,7 @@ CONTAINS
     REAL(num) :: vxb, vxbm, vyb, vybm, vzb, vzbm
     REAL(num) :: bxv, byv, bzv, jx, jy, jz
     REAL(num) :: cvx, cvxp, cvy, cvyp, cvz, cvzp
-    REAL(num) :: dv, UV3, NUV3
+    REAL(num) :: dv
 
     dt2 = dt / 2.0_num
     CALL viscosity_and_b_update
@@ -117,14 +117,6 @@ CONTAINS
     by1 = by1 * cv1(0:nx+1, 0:ny+1, 0:nz+1)
     bz1 = bz1 * cv1(0:nx+1, 0:ny+1, 0:nz+1)
 
-    IF (visc3 > 1.e-6_num) THEN
-      UV3 = 1.0_num
-      NUV3 = 0.0_num
-    ELSE
-      UV3 = 0.0_num
-      NUV3 = 1.0_num
-    END IF
-
     DO iz = 0, nz+1
       DO iy = 0, ny+1
         !DEC$ IVDEP
@@ -132,14 +124,12 @@ CONTAINS
         DO ix = 0, nx+1
           dv = cv1(ix, iy, iz) / cv(ix, iy, iz) - 1.0_num
           ! predictor energy
-          e1 = energy(ix, iy, iz) - pressure(ix, iy, iz) * dv / rho(ix, iy, iz)
-
-#ifndef Q_MONO
-          e1 = e1  + visc_heat(ix, iy, iz) * dt2 / rho(ix, iy, iz)
-#else
-          e1 = e1  + visc_heat(ix, iy, iz) * dt2 / rho(ix, iy, iz) * UV3
-          e1 = e1 - p_visc(ix, iy, iz) * dv / rho(ix, iy, iz)
+#ifdef Q_MONO
+            ! add shock viscosity
+            pressure(ix, iy, iz) = pressure(ix, iy, iz) + p_visc(ix, iy, iz)
 #endif
+          e1 = energy(ix, iy, iz) - pressure(ix, iy, iz) * dv / rho(ix, iy, iz)
+          e1 = e1  + visc_heat(ix, iy, iz) * dt2 / rho(ix, iy, iz) 
 
           ! now define the predictor step pressures
           CALL get_pressure(rho(ix, iy, iz) * cv(ix, iy, iz) / cv1(ix, iy, iz),&
@@ -179,70 +169,65 @@ CONTAINS
           w1 = (p + pxp + pyp + pxpyp) / 4.0_num
           w2 = (pzp + pxpzp + pypzp + pxpypzp) / 4.0_num
           fz = -(w2 - w1) / dzc(iz)
-#ifdef Q_MONO
-          IF ( visc3 > 1.e-6_num) THEN
-#endif
-            ! add diagonal components
-            w1 = (qxx(ix, iy, iz) + qxx(ix, iyp, iz) &
-                + qxx(ix, iy, izp) + qxx(ix, iyp, izp)) / 4.0_num
-            w2 = (qxx(ixp, iy, iz) + qxx(ixp, iyp, iz) &
-                + qxx(ixp, iy, izp) + qxx(ixp, iyp, izp)) / 4.0_num
-            fx = fx + (w2 - w1) / dxc(ix)
 
-            w1 = (qyy(ix, iy, iz) + qyy(ixp, iy, iz) &
-                + qyy(ix, iy, izp) + qyy(ixp, iy, izp)) / 4.0_num
-            w2 = (qyy(ix, iyp, iz) + qyy(ixp, iyp, iz) &
-                + qyy(ix, iyp, izp) + qyy(ixp, iyp, izp)) / 4.0_num
-            fy = fy + (w2 - w1) / dyc(iy)
-
-            w1 = (qzz(ix, iy, iz) + qzz(ixp, iy, iz) &
-                + qzz(ix, iyp, iz) + qzz(ixp, iyp, iz)) / 4.0_num
-            w2 = (qzz(ix, iy, izp) + qzz(ixp, iy, izp) &
-                + qzz(ix, iyp, izp) + qzz(ixp, iyp, izp)) / 4.0_num
-            fz = fz + (w2 - w1) / dzc(iz)
-
-            ! add shear viscosity forces
-            ! fx
-            w1 = (qxy(ix, iy, iz) + qxy(ixp, iy, iz) &
-                + qxy(ix, iy, izp) + qxy(ixp, iy, izp)) / 4.0_num
-            w2 = (qxy(ix, iyp, iz) + qxy(ixp, iyp, iz) &
-                + qxy(ix, iyp, izp) + qxy(ixp, iyp, izp)) / 4.0_num
-            fx = fx + (w2 - w1) / dyc(iy)
-
-            w1 = (qxz(ix, iy, iz) + qxz(ixp, iy, iz) &
-                + qxz(ix, iyp, iz) + qxz(ixp, iyp, iz)) / 4.0_num
-            w2 = (qxz(ix, iy, izp) + qxz(ixp, iy, izp) &
-                + qxz(ix, iyp, izp) + qxz(ixp, iyp, izp)) / 4.0_num
-            fx = fx + (w2 - w1) / dzc(iz)
-
-            ! fy
-            w1 = (qxy(ix, iy, iz) + qxy(ix, iyp, iz) &
-                + qxy(ix, iy, izp) + qxy(ix, iyp, izp)) / 4.0_num
-            w2 = (qxy(ixp, iy, iz) + qxy(ixp, iyp, iz) &
-                + qxy(ixp, iy, izp) + qxy(ixp, iyp, izp)) / 4.0_num
-            fy = fy + (w2 - w1) / dxc(ix)
-
-            w1 = (qyz(ix, iy, iz) + qyz(ixp, iy, iz) &
-                + qyz(ix, iyp, iz) + qyz(ixp, iyp, iz)) / 4.0_num
-            w2 = (qyz(ix, iy, izp) + qyz(ixp, iy, izp) &
-                + qyz(ix, iyp, izp) + qyz(ixp, iyp, izp)) / 4.0_num
-            fy = fy + (w2 - w1) / dzc(iz)
-
-            ! fz
-            w1 = (qxz(ix, iy, iz) + qxz(ix, iyp, iz) &
-                + qxz(ix, iy, izp) + qxz(ix, iyp, izp)) / 4.0_num
-            w2 = (qxz(ixp, iy, iz) + qxz(ixp, iyp, iz) &
-                + qxz(ixp, iy, izp) + qxz(ixp, iyp, izp)) / 4.0_num
-            fz = fz + (w2 - w1) / dxc(ix)
-
-            w1 = (qyz(ix, iy, iz) + qyz(ixp, iy, iz) &
-                + qyz(ix, iy, izp) + qyz(ixp, iy, izp)) / 4.0_num
-            w2 = (qyz(ix, iyp, iz) + qyz(ixp, iyp, iz) &
-                + qyz(ix, iyp, izp) + qyz(ixp, iyp, izp)) / 4.0_num
-            fz = fz + (w2 - w1) / dyc(iy)
-#ifdef Q_MONO
-          END IF
-#endif
+          ! add diagonal components
+          w1 = (qxx(ix, iy, iz) + qxx(ix, iyp, iz) &
+              + qxx(ix, iy, izp) + qxx(ix, iyp, izp)) / 4.0_num
+          w2 = (qxx(ixp, iy, iz) + qxx(ixp, iyp, iz) &
+              + qxx(ixp, iy, izp) + qxx(ixp, iyp, izp)) / 4.0_num
+          fx = fx + (w2 - w1) / dxc(ix)
+  
+          w1 = (qyy(ix, iy, iz) + qyy(ixp, iy, iz) &
+              + qyy(ix, iy, izp) + qyy(ixp, iy, izp)) / 4.0_num
+          w2 = (qyy(ix, iyp, iz) + qyy(ixp, iyp, iz) &
+              + qyy(ix, iyp, izp) + qyy(ixp, iyp, izp)) / 4.0_num
+          fy = fy + (w2 - w1) / dyc(iy)
+  
+          w1 = (qzz(ix, iy, iz) + qzz(ixp, iy, iz) &
+              + qzz(ix, iyp, iz) + qzz(ixp, iyp, iz)) / 4.0_num
+          w2 = (qzz(ix, iy, izp) + qzz(ixp, iy, izp) &
+              + qzz(ix, iyp, izp) + qzz(ixp, iyp, izp)) / 4.0_num
+          fz = fz + (w2 - w1) / dzc(iz)
+  
+          ! add shear viscosity forces
+          ! fx
+          w1 = (qxy(ix, iy, iz) + qxy(ixp, iy, iz) &
+              + qxy(ix, iy, izp) + qxy(ixp, iy, izp)) / 4.0_num
+          w2 = (qxy(ix, iyp, iz) + qxy(ixp, iyp, iz) &
+              + qxy(ix, iyp, izp) + qxy(ixp, iyp, izp)) / 4.0_num
+          fx = fx + (w2 - w1) / dyc(iy)
+  
+          w1 = (qxz(ix, iy, iz) + qxz(ixp, iy, iz) &
+              + qxz(ix, iyp, iz) + qxz(ixp, iyp, iz)) / 4.0_num
+          w2 = (qxz(ix, iy, izp) + qxz(ixp, iy, izp) &
+              + qxz(ix, iyp, izp) + qxz(ixp, iyp, izp)) / 4.0_num
+          fx = fx + (w2 - w1) / dzc(iz)
+  
+          ! fy
+          w1 = (qxy(ix, iy, iz) + qxy(ix, iyp, iz) &
+              + qxy(ix, iy, izp) + qxy(ix, iyp, izp)) / 4.0_num
+          w2 = (qxy(ixp, iy, iz) + qxy(ixp, iyp, iz) &
+              + qxy(ixp, iy, izp) + qxy(ixp, iyp, izp)) / 4.0_num
+          fy = fy + (w2 - w1) / dxc(ix)
+  
+          w1 = (qyz(ix, iy, iz) + qyz(ixp, iy, iz) &
+              + qyz(ix, iyp, iz) + qyz(ixp, iyp, iz)) / 4.0_num
+          w2 = (qyz(ix, iy, izp) + qyz(ixp, iy, izp) &
+              + qyz(ix, iyp, izp) + qyz(ixp, iyp, izp)) / 4.0_num
+          fy = fy + (w2 - w1) / dzc(iz)
+ 
+          ! fz
+          w1 = (qxz(ix, iy, iz) + qxz(ix, iyp, iz) &
+              + qxz(ix, iy, izp) + qxz(ix, iyp, izp)) / 4.0_num
+          w2 = (qxz(ixp, iy, iz) + qxz(ixp, iyp, iz) &
+              + qxz(ixp, iy, izp) + qxz(ixp, iyp, izp)) / 4.0_num
+          fz = fz + (w2 - w1) / dxc(ix)
+ 
+          w1 = (qyz(ix, iy, iz) + qyz(ixp, iy, iz) &
+              + qyz(ix, iy, izp) + qyz(ixp, iy, izp)) / 4.0_num
+          w2 = (qyz(ix, iyp, iz) + qyz(ixp, iyp, iz) &
+              + qyz(ix, iyp, izp) + qyz(ixp, iyp, izp)) / 4.0_num
+          fz = fz + (w2 - w1) / dyc(iy)
 
           cvx = cv1(ix, iy, iz) + cv1(ix, iyp, iz) &
               + cv1(ix, iy, izp) + cv1(ix, iyp, izp)
@@ -346,11 +331,7 @@ CONTAINS
 
     CALL remap_v_bcs
 
-#ifdef Q_MONO
-    IF (visc3 > 1.e-6_num) CALL visc_heating
-#else
     CALL visc_heating
-#endif
 
     ! finally correct density and energy to final values
     DO iz = 1, nz
@@ -382,38 +363,28 @@ CONTAINS
 
           dv = ((vxb - vxbm) / dxb(ix) + (vyb - vybm) / dyb(iy) &
               + (vzb - vzbm) / dzb(iz)) * dt
+          ! it is possible that dv has changed sign since the predictor step
+          ! in this case p_visc * dv ought to be removed from the heating
+          ! if QMONO is set - not done for simplicity since this is a rare
+          ! combination
 
           cv1(ix, iy, iz) = cv(ix, iy, iz) * (1.0_num + dv)
-
-          ! This line is equivalent to
-          ! IF (dv > 0.0_num) p_visc(ix, iy, iz) = 0.0_num
-          p_visc(ix, iy, iz) = -p_visc(ix, iy, iz) &
-              * MIN(SIGN(1.0_num, dv), 0.0_num)
 
           ! energy at end of Lagrangian step
 
           energy(ix, iy, iz) = energy(ix, iy, iz) &
               - pressure(ix, iy, iz) * dv / rho(ix, iy, iz)
-#ifdef Q_MONO
-          IF (visc3 > 1.e-6_num) THEN
-#endif
-            energy(ix, iy, iz) = energy(ix, iy, iz) &
-                + dt * visc_heat(ix, iy, iz) / rho(ix, iy, iz)
-#ifdef Q_MONO
-          END IF
+
           energy(ix, iy, iz) = energy(ix, iy, iz) &
-              - p_visc(ix, iy, iz) * dv / rho(ix, iy, iz)
-#endif
+                + dt * visc_heat(ix, iy, iz) / rho(ix, iy, iz)
 
           ! density at end of Lagrangian step
           rho(ix, iy, iz) = rho(ix, iy, iz) / (1.0_num + dv)
+
+          total_visc_heating = total_visc_heating &
+                + dt * visc_heat(ix, iy, iz) * cv(ix, iy, iz) 
+                
 #ifdef Q_MONO
-          IF (visc3 > 1.e-6_num) THEN
-#endif
-            total_visc_heating = total_visc_heating &
-                + dt * visc_heat(ix, iy, iz) * cv(ix, iy, iz)
-#ifdef Q_MONO
-          END IF
           total_visc_heating = total_visc_heating &
               - p_visc(ix, iy, iz) * dv * cv(ix, iy, iz)
 #endif
@@ -615,7 +586,8 @@ CONTAINS
           L = L * sg0 * (1.0_num - dvg0) + L * (1.0_num -sg0) * dvg0 +&
 				L * sg0 * dvg0
 
-          w1 = (bx1(ix, iy, iz)**2 + by1(ix, iy, iz)**2 + bz1(ix, iy, iz)**2) / rho(ix, iy, iz)
+          w1 = (bx1(ix, iy, iz)**2 + by1(ix, iy, iz)**2 + bz1(ix, iy, iz)**2) &
+                / rho(ix, iy, iz)
 
           CALL get_cs(rho(ix, iy, iz), energy(ix, iy, iz), eos_number, &
               ix, iy, iz, cs)
@@ -631,32 +603,29 @@ CONTAINS
           qzz(ix, iy, iz) = 0.0_num
 
 #ifndef Q_MONO
-                qxy(ix,iy,iz) = sxy * (L2 * rho(ix,iy,iz)  &
-                     * (visc1 * cf + L2 * visc2 * ABS(s)))
-                qxz(ix,iy,iz) = sxz * (L2 * rho(ix,iy,iz)  &
-                     * (visc1 * cf + L2 * visc2 * ABS(s)))
-                qyz(ix,iy,iz) = syz * (L2 * rho(ix,iy,iz)  &
-                     * (visc1 * cf + L2 * visc2 * ABS(s)))
-                qxx(ix,iy,iz) = sxx * (L2 * rho(ix,iy,iz)  &
-                     * (visc1 * cf + L2 * visc2 * ABS(s)))
-                qyy(ix,iy,iz) = syy * (L2 * rho(ix,iy,iz)  &
-                     * (visc1 * cf + L2 * visc2 * ABS(s)))
-                qzz(ix,iy,iz) = szz * (L2 * rho(ix,iy,iz)  &
-                     * (visc1 * cf + L2 * visc2 * ABS(s)))
+            qxy(ix,iy,iz) = sxy * (L2 * rho(ix,iy,iz)  &
+                 * (visc1 * cf + L2 * visc2 * ABS(s)))
+            qxz(ix,iy,iz) = sxz * (L2 * rho(ix,iy,iz)  &
+                 * (visc1 * cf + L2 * visc2 * ABS(s)))
+            qyz(ix,iy,iz) = syz * (L2 * rho(ix,iy,iz)  &
+                 * (visc1 * cf + L2 * visc2 * ABS(s)))
+            qxx(ix,iy,iz) = sxx * (L2 * rho(ix,iy,iz)  &
+                 * (visc1 * cf + L2 * visc2 * ABS(s)))
+            qyy(ix,iy,iz) = syy * (L2 * rho(ix,iy,iz)  &
+                 * (visc1 * cf + L2 * visc2 * ABS(s)))
+            qzz(ix,iy,iz) = szz * (L2 * rho(ix,iy,iz)  &
+                 * (visc1 * cf + L2 * visc2 * ABS(s)))
 #endif
-                qxy(ix,iy,iz) = qxy(ix,iy,iz) + sxy  * rho(ix,iy,iz) * visc3 
-                qxz(ix,iy,iz) = qxz(ix,iy,iz) + sxz  * rho(ix,iy,iz) * visc3 
-                qyz(ix,iy,iz) = qyz(ix,iy,iz) + syz  * rho(ix,iy,iz) * visc3 
-                qxx(ix,iy,iz) = qxx(ix,iy,iz) + sxx  * rho(ix,iy,iz) * visc3 
-                qyy(ix,iy,iz) = qyy(ix,iy,iz) + syy  * rho(ix,iy,iz) * visc3
-                qzz(ix,iy,iz) = qzz(ix,iy,iz) + szz  * rho(ix,iy,iz) * visc3 
+          qxy(ix,iy,iz) = qxy(ix,iy,iz) + sxy  * rho(ix,iy,iz) * visc3 
+          qxz(ix,iy,iz) = qxz(ix,iy,iz) + sxz  * rho(ix,iy,iz) * visc3 
+          qyz(ix,iy,iz) = qyz(ix,iy,iz) + syz  * rho(ix,iy,iz) * visc3 
+          qxx(ix,iy,iz) = qxx(ix,iy,iz) + sxx  * rho(ix,iy,iz) * visc3 
+          qyy(ix,iy,iz) = qyy(ix,iy,iz) + syy  * rho(ix,iy,iz) * visc3
+          qzz(ix,iy,iz) = qzz(ix,iy,iz) + szz  * rho(ix,iy,iz) * visc3 
 
-#ifdef Q_MONO
-                visc_heat(ix,iy,iz) = qxy(ix,iy,iz)*dvxy + qxz(ix,iy,iz)*dvxz &
-                     + qyz(ix,iy,iz)*dvyz + qxx(ix,iy,iz)*dvxdx   &
-                     + qyy(ix,iy,iz)*dvydy + qzz(ix,iy,iz)*dvzdz 
-#endif
-
+          visc_heat(ix,iy,iz) = qxy(ix,iy,iz)*dvxy + qxz(ix,iy,iz)*dvxz &
+               + qyz(ix,iy,iz)*dvyz + qxx(ix,iy,iz)*dvxdx   &
+               + qyy(ix,iy,iz)*dvydy + qzz(ix,iy,iz)*dvzdz 
 
           w4 = bx1(ix, iy, iz) * dvxdx &
               + by1(ix, iy, iz) * dvxdy + bz1(ix, iy, iz) * dvxdz
