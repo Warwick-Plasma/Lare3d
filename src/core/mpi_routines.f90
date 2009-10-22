@@ -45,10 +45,17 @@ CONTAINS
 
     IF (xbc_left == BC_OTHER) periods(3) = .FALSE.
     IF (ybc_up == BC_OTHER) periods(2) = .FALSE.
-    IF (zbc_back == BC_OTHER) periods(1) = .FALSE.
+    IF (zbc_front == BC_OTHER) periods(1) = .FALSE.
     IF (xbc_left == BC_OPEN) periods(3) = .FALSE.
     IF (ybc_up == BC_OPEN) periods(2) = .FALSE.
-    IF (zbc_front == BC_OPEN) periods(1) = .FALSE.
+    IF (zbc_front == BC_OPEN) periods(1) = .FALSE. 
+    
+    IF (xbc_right == BC_OTHER) periods(3) = .FALSE.
+    IF (ybc_down == BC_OTHER) periods(2) = .FALSE.
+    IF (zbc_back == BC_OTHER) periods(1) = .FALSE.
+    IF (xbc_right == BC_OPEN) periods(3) = .FALSE.
+    IF (ybc_down == BC_OPEN) periods(2) = .FALSE.
+    IF (zbc_back == BC_OPEN) periods(1) = .FALSE.
 
     CALL MPI_CART_CREATE(MPI_COMM_WORLD, ndims, dims, periods, &
         reorder, comm, errcode)

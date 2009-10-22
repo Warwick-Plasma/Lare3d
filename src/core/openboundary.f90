@@ -421,7 +421,7 @@ CONTAINS
 
     ! front boundary
     IF (zbc_front == BC_OPEN .AND. front == MPI_PROC_NULL) THEN
-      DO iz = -1, nz+1
+      DO iy = -1, ny+1
         DO ix = -1, nx+1
           vxbc(1) = vz(ix, iy, 0)
           vybc(1) = vy(ix, iy, 0)

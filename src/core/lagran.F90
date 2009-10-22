@@ -581,10 +581,10 @@ CONTAINS
 
           L2 = L
 			!This code is equivalent to IF (s > 0 .OR. dv > 0) L=0.0
-			 sg0 = MAX(SIGN(1.0_num,s),0.0_num)
-			 dvg0 = MAX(SIGN(1.0_num,dv),0.0_num)
+  			  sg0 = MAX(SIGN(1.0_num,s),0.0_num)
+   			  dvg0 = MAX(SIGN(1.0_num,dv),0.0_num)
           L = L * sg0 * (1.0_num - dvg0) + L * (1.0_num -sg0) * dvg0 +&
-				L * sg0 * dvg0
+  				L * sg0 * dvg0
 
           w1 = (bx1(ix, iy, iz)**2 + by1(ix, iy, iz)**2 + bz1(ix, iy, iz)**2) &
                 / rho(ix, iy, iz)
@@ -1292,7 +1292,7 @@ CONTAINS
           dvx = 2.0_num * (vx(ix, iy, nz) - vx1(ix, iy, nz))
           dvy = 2.0_num * (vy(ix, iy, nz) - vy1(ix, iy, nz))
           dvz = 2.0_num * (vz(ix, iy, nz) - vz1(ix, iy, nz))
-          dv_back(iy, iz) = SQRT(dvx**2 + dvy**2 + dvz**2)
+          dv_back(ix, iy) = SQRT(dvx**2 + dvy**2 + dvz**2)
         END DO
       END DO
     END IF
@@ -1303,7 +1303,7 @@ CONTAINS
           dvx = 2.0_num * (vx(ix, iy, 0) - vx1(ix, iy, 0))
           dvy = 2.0_num * (vy(ix, iy, 0) - vy1(ix, iy, 0))
           dvz = 2.0_num * (vz(ix, iy, 0) - vz1(ix, iy, 0))
-          dv_front(iy, iz) = SQRT(dvx**2 + dvy**2 + dvz**2)
+          dv_front(ix, iy) = SQRT(dvx**2 + dvy**2 + dvz**2)
         END DO
       END DO
     END IF
