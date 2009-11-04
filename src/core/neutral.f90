@@ -11,7 +11,7 @@ MODULE neutral
 
   PRIVATE
   PUBLIC :: perpendicular_resistivity, newton_relax, &
-      neutral_fraction, setup_neutral, get_neutral
+      neutral_fraction, setup_neutral, get_neutral, get_energy
 
 CONTAINS
 
@@ -196,6 +196,43 @@ CONTAINS
     END DO
 
   END SUBROUTINE neutral_fraction
+
+
+
+  SUBROUTINE get_energy(rho_in, temp_in, m_in, ix, iy, iz, en_out)
+    ! this routine is only used by initial conditions and must be in SI
+    ! with variables as defined with kb etc. The routine needs to be here to call 
+    ! get_neutral above
+    REAL(num), INTENT(IN) :: rho_in, temp_in
+    INTEGER, INTENT(IN) :: m_in, ix, iy, iz
+    REAL(num), INTENT(OUT) :: en_out
+    REAL(num) :: xi_local, bof, r
+  
+    IF (m_in .EQ. EOS_IDEAL) THEN
+      en_out = temp_in * kb / ((gamma - 1.0_num) * mbar / 2.0_num)
+      RETURN
+    END IF
+  
+    IF (m_in .EQ. EOS_PI) THEN
+      ! Since we can't guarantee that the ionisation fraction already
+      ! calculated is correct here, calculate it straight from the temperature
+      xi_local = get_neutral(temp_in, rho_in)  
+      en_out = (kb * temp_in * (2.0_num - xi_local)) &
+          / (MBAR * (gamma - 1.0_num))
+      RETURN
+    END IF
+  
+    IF (m_in .EQ. EOS_ION) THEN
+      ! Since we can't guarantee that the ionisation fraction already
+      ! calculated is correct here, calculate it straight from the temperature
+      xi_local = get_neutral(temp_in, rho_in)    
+      en_out = (kb * temp_in * (2.0_num - xi_local) &
+          + (1.0_num - xi_local) * ionise_pot * (gamma - 1.0_num)) &
+          / (MBAR * (gamma - 1.0_num))
+      RETURN
+    END IF
+  
+  END SUBROUTINE get_energy
 
 
 
