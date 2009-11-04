@@ -56,7 +56,7 @@ CONTAINS
     END IF
 
     IF (m_in .EQ. EOS_PI) THEN
-      temp_out = (gamma - 1.0_num) * (energy_in) / ((2.0_num -xi_n(ix, iy, iz)))
+      temp_out = (gamma - 1.0_num) * energy_in / (2.0_num - xi_n(ix, iy, iz))
       RETURN
     END IF
 
