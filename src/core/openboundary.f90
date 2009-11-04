@@ -22,57 +22,57 @@ CONTAINS
 
     IF (damping) THEN
 
-      IF (right == MPI_PROC_NULL) THEN
-        DO iz = -2, nz+2
-          DO iy = -2, ny+2
-            DO ix = nx-ndx, nx+2
-              a = dt * REAL(ix - (nx-ndx), num) / REAL(ndx, num)
-              vx(ix, iy, iz) = vx(ix, iy, iz) / (1.0_num + a)
-              vy(ix, iy, iz) = vy(ix, iy, iz) / (1.0_num + a)
-              vz(ix, iy, iz) = vz(ix, iy, iz) / (1.0_num + a)
-            END DO
-          END DO
-        END DO
-      END IF
-
-      IF (left == MPI_PROC_NULL) THEN
-        DO iz = -2, nz+2
-          DO iy = -2, ny+2
-            DO ix = -2, ndx
-              a = dt * REAL((ndx - ix), num) / REAL(ndx, num)
-              vx(ix, iy, iz) = vx(ix, iy, iz) / (1.0_num + a)
-              vy(ix, iy, iz) = vy(ix, iy, iz) / (1.0_num + a)
-              vz(ix, iy, iz) = vz(ix, iy, iz) / (1.0_num + a)
-            END DO
-          END DO
-        END DO
-      END IF
-
-      IF (up == MPI_PROC_NULL) THEN
-        DO iz = -2, nz+2
-          DO iy = ny-ndy, ny+2
-            DO ix = -2, nx+2
-              a = dt * REAL(iy - (ny-ndy), num) / REAL(ndy, num)
-              vx(ix, iy, iz) = vx(ix, iy, iz) / (1.0_num + a)
-              vy(ix, iy, iz) = vy(ix, iy, iz) / (1.0_num + a)
-              vz(ix, iy, iz) = vz(ix, iy, iz) / (1.0_num + a)
-            END DO
-          END DO
-        END DO
-      END IF
-
-      IF (down == MPI_PROC_NULL) THEN
-        DO iz = -2, nz+2
-          DO iy = -2, ndy
-            DO ix = -2, nx+2
-              a = dt * REAL((ndy - iy), num) / REAL(ndy, num)
-              vx(ix, iy, iz) = vx(ix, iy, iz) / (1.0_num + a)
-              vy(ix, iy, iz) = vy(ix, iy, iz) / (1.0_num + a)
-              vz(ix, iy, iz) = vz(ix, iy, iz) / (1.0_num + a)
-            END DO
-          END DO
-        END DO
-      END IF
+!       IF (right == MPI_PROC_NULL) THEN
+!         DO iz = -2, nz+2
+!           DO iy = -2, ny+2
+!             DO ix = nx-ndx, nx+2
+!               a = dt * REAL(ix - (nx-ndx), num) / REAL(ndx, num)
+!               vx(ix, iy, iz) = vx(ix, iy, iz) / (1.0_num + a)
+!               vy(ix, iy, iz) = vy(ix, iy, iz) / (1.0_num + a)
+!               vz(ix, iy, iz) = vz(ix, iy, iz) / (1.0_num + a)
+!             END DO
+!           END DO
+!         END DO
+!       END IF
+!         
+!       IF (left == MPI_PROC_NULL) THEN
+!         DO iz = -2, nz+2
+!           DO iy = -2, ny+2
+!             DO ix = -2, ndx
+!               a = dt * REAL((ndx - ix), num) / REAL(ndx, num)
+!               vx(ix, iy, iz) = vx(ix, iy, iz) / (1.0_num + a)
+!               vy(ix, iy, iz) = vy(ix, iy, iz) / (1.0_num + a)
+!               vz(ix, iy, iz) = vz(ix, iy, iz) / (1.0_num + a)
+!             END DO
+!           END DO
+!         END DO
+!       END IF
+! 
+!       IF (up == MPI_PROC_NULL) THEN
+!         DO iz = -2, nz+2
+!           DO iy = ny-ndy, ny+2
+!             DO ix = -2, nx+2
+!               a = dt * REAL(iy - (ny-ndy), num) / REAL(ndy, num)
+!               vx(ix, iy, iz) = vx(ix, iy, iz) / (1.0_num + a)
+!               vy(ix, iy, iz) = vy(ix, iy, iz) / (1.0_num + a)
+!               vz(ix, iy, iz) = vz(ix, iy, iz) / (1.0_num + a)
+!             END DO
+!           END DO
+!         END DO
+!       END IF
+! 
+!       IF (down == MPI_PROC_NULL) THEN
+!         DO iz = -2, nz+2
+!           DO iy = -2, ndy
+!             DO ix = -2, nx+2
+!               a = dt * REAL((ndy - iy), num) / REAL(ndy, num)
+!               vx(ix, iy, iz) = vx(ix, iy, iz) / (1.0_num + a)
+!               vy(ix, iy, iz) = vy(ix, iy, iz) / (1.0_num + a)
+!               vz(ix, iy, iz) = vz(ix, iy, iz) / (1.0_num + a)
+!             END DO
+!           END DO
+!         END DO
+!       END IF
 
       IF (back == MPI_PROC_NULL) THEN
         DO iz = nz-ndz, nz+2
@@ -86,21 +86,21 @@ CONTAINS
           END DO
         END DO
       END IF
-
-      IF (front == MPI_PROC_NULL) THEN
-        DO iz = -2, ndz
-          DO iy = -2, ny+2
-            DO ix = -2, nx+2
-              a = dt * REAL((ndz - iz), num) / REAL(ndz, num)
-              vx(ix, iy, iz) = vx(ix, iy, iz) / (1.0_num + a)
-              vy(ix, iy, iz) = vy(ix, iy, iz) / (1.0_num + a)
-              vz(ix, iy, iz) = vz(ix, iy, iz) / (1.0_num + a)
-            END DO
-          END DO
-        END DO
-      END IF
-
-    END IF
+   
+!       IF (front == MPI_PROC_NULL) THEN
+!         DO iz = -2, ndz
+!           DO iy = -2, ny+2
+!             DO ix = -2, nx+2
+!               a = dt * REAL((ndz - iz), num) / REAL(ndz, num)
+!               vx(ix, iy, iz) = vx(ix, iy, iz) / (1.0_num + a)
+!               vy(ix, iy, iz) = vy(ix, iy, iz) / (1.0_num + a)
+!               vz(ix, iy, iz) = vz(ix, iy, iz) / (1.0_num + a)
+!             END DO
+!           END DO
+!         END DO
+!       END IF
+ 
+     END IF      
 
   END SUBROUTINE damp_boundaries
 
