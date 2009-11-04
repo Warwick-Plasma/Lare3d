@@ -133,15 +133,16 @@ CONTAINS
 
 
 
-  FUNCTION get_neutral(T_v, rho_v)
+  FUNCTION get_neutral(t_v, rho_v)
 
-    REAL(num), INTENT(IN) :: T_V, rho_v
+    REAL(num), INTENT(IN) :: t_v, rho_v
     REAL(num) :: get_neutral
-    REAL(num) :: f, b, r
+    REAL(num) :: bof, r
 
-    f = f_bar * SQRT(T_v) * EXP(-T_bar / T_v) ! T from b has been cancelled
-    b = tr_bar * EXP(0.25_num * T_bar / T_v * (tr_bar * T_v - 1.0_num))
-    r = 0.5_num * (-1.0_num + SQRT(1.0_num + r_bar * rho_v * b / f))
+    bof = tr_bar / (f_bar * SQRT(t_v)) &
+        * EXP((0.25_num * (tr_bar * t_v - 1.0_num) + 1.0_num) &
+        * T_bar / t_v)
+    r = 0.5_num * (-1.0_num + SQRT(1.0_num + r_bar * rho_v * bof))
     get_neutral = r / (1.0_num + r)
 
   END FUNCTION  get_neutral
@@ -151,7 +152,7 @@ CONTAINS
   SUBROUTINE neutral_fraction(material)
 
     INTEGER, INTENT(IN) :: material
-    REAL(num) :: bof, r, T, rho0, e0, dx, x
+    REAL(num) :: t, rho0, e0, dx, x
     REAL(num), DIMENSION(2) :: ta, fa, xi_a
     REAL(num) :: ionise_pot_local
     INTEGER :: loop
@@ -169,8 +170,7 @@ CONTAINS
           rho0 = rho(ix, iy, iz)
           e0 = energy(ix, iy, iz)
           ta = (gamma - 1.0_num) &
-              * (/ MAX((e0 - ionise_pot_local) / 2.0_num, none_zero), &
-              e0 / 2.0_num /)
+              * (/ MAX((e0 - ionise_pot_local) / 2.0_num, none_zero), e0 /)
 
           IF (ta(1) > ta(2)) THEN
             PRINT *, "Temperature bounds problem", ta
@@ -183,20 +183,14 @@ CONTAINS
           DO loop = 1, 100
             dx = dx / 2.0_num
             x = T  + dx
-            bof = tr_bar / (f_bar * SQRT(x)) &
-                * EXP((0.25_num * (tr_bar * x - 1.0_num) + 1.0_num) * T_bar / x)
-            r = 0.5_num * (-1.0_num + SQRT(1.0_num + r_bar * rho0 * bof))
-            xi_a(1) = r / (1.0_num + r)
+            xi_a(1) = get_neutral(x, rho0) 
             fa(1) = x - (gamma - 1.0_num) * (e0 &
                 - (1.0_num - xi_a(1)) * ionise_pot_local) / (2.0_num - xi_a(1))
             IF (fa(1) <= 0.0_num) T = x
             IF (ABS(dx) < 1.e-8_num .OR. fa(1) == 0.0_num) EXIT
           END DO
 
-          bof = tr_bar / (f_bar * SQRT(T)) &
-              * EXP((0.25_num * (tr_bar * T - 1.0_num) + 1.0_num) * T_bar / T)
-          r = 0.5_num * (-1.0_num + SQRT(1.0_num + r_bar * rho0 * bof))
-          xi_n(ix, iy, iz) = r / (1.0_num + r)
+          xi_n(ix, iy, iz) = get_neutral(t, rho0) 
         END DO
       END DO
     END DO
