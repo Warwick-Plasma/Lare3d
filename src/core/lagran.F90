@@ -616,12 +616,12 @@ CONTAINS
             qzz(ix,iy,iz) = szz * (L2 * rho(ix,iy,iz)  &
                  * (visc1 * cf + L2 * visc2 * ABS(s)))
 #endif
-          qxy(ix,iy,iz) = qxy(ix,iy,iz) + sxy  * rho(ix,iy,iz) * visc3 
-          qxz(ix,iy,iz) = qxz(ix,iy,iz) + sxz  * rho(ix,iy,iz) * visc3 
-          qyz(ix,iy,iz) = qyz(ix,iy,iz) + syz  * rho(ix,iy,iz) * visc3 
-          qxx(ix,iy,iz) = qxx(ix,iy,iz) + sxx  * rho(ix,iy,iz) * visc3 
-          qyy(ix,iy,iz) = qyy(ix,iy,iz) + syy  * rho(ix,iy,iz) * visc3
-          qzz(ix,iy,iz) = qzz(ix,iy,iz) + szz  * rho(ix,iy,iz) * visc3 
+          qxy(ix,iy,iz) = qxy(ix,iy,iz) + 2.0_num * sxy  * rho(ix,iy,iz) * visc3 
+          qxz(ix,iy,iz) = qxz(ix,iy,iz) + 2.0_num * sxz  * rho(ix,iy,iz) * visc3 
+          qyz(ix,iy,iz) = qyz(ix,iy,iz) + 2.0_num * syz  * rho(ix,iy,iz) * visc3 
+          qxx(ix,iy,iz) = qxx(ix,iy,iz) + 2.0_num * sxx  * rho(ix,iy,iz) * visc3 
+          qyy(ix,iy,iz) = qyy(ix,iy,iz) + 2.0_num * syy  * rho(ix,iy,iz) * visc3
+          qzz(ix,iy,iz) = qzz(ix,iy,iz) + 2.0_num * SZZ  * rho(ix,iy,iz) * visc3 
 
           visc_heat(ix,iy,iz) = qxy(ix,iy,iz)*dvxy + qxz(ix,iy,iz)*dvxz &
                + qyz(ix,iy,iz)*dvyz + qxx(ix,iy,iz)*dvxdx   &
