@@ -267,8 +267,8 @@ CONTAINS
 !!$        END DO
 !!$      END DO
 !!$    END IF
-
-    CALL energy_bcs
+!!$
+!!$    CALL energy_bcs
 
   END SUBROUTINE newton_relax
 
