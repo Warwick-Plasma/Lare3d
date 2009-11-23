@@ -60,12 +60,7 @@ CONTAINS
   SUBROUTINE perpendicular_resistivity
 
     ! This subroutine calculates the cross field resistivity at the current
-    ! temperature. If you're not using the "neutral_fraction" subroutine and
-    ! the "Saha" equation of state, then this routine will give VERY strange
-    ! results which are probably meaningless.
-
-    ! normalising values are L0 = 150km, v0 = 6.5km / s, rho0 = 2.7e-4 kg / m3
-    ! t0 = 23s, T0 = 6420K, P0 = 1.2e4 Pa, B0 = 1200G (0.12T)
+    ! temperature. 
 
     REAL(num) :: f, xi_v, bxv, byv, bzv, bfieldsq, rho_v, T_v, T
     INTEGER :: ixp, iyp, izp
