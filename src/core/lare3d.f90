@@ -77,7 +77,6 @@ PROGRAM lare3d
     IF (any_open) THEN
       CALL open_bcs                  ! openboundary.f90
     END IF                 
-    CALL boundary_conditions         ! boundary.f90
     CALL output_routines(i)          ! diagnostics.f90
   END DO
 
