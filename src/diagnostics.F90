@@ -88,7 +88,7 @@ CONTAINS
       WRITE(filename, filename_desc) TRIM(data_dir), output_file
 
       CALL cfd_open(filename, rank, comm, MPI_MODE_CREATE + MPI_MODE_WRONLY)
-      CALL cfd_write_snapshot_data(time * T0, i, 0)
+      CALL cfd_write_snapshot_data(REAL(time * T0,dbl), i, 0)
 
       ALLOCATE(data(0:nx, 0:ny, 0:nz))
       CALL cfd_write_3d_cartesian_grid("Grid", "Grid", &
@@ -490,11 +490,12 @@ CONTAINS
     WRITE(20, *) 'Temperature normalisation =', TEMP0, 'K'
     WRITE(20, *) 'Pressure normalisation =', PRESSURE0, 'Pa'
 
-    WRITE(20, *) 'nprocx, nprocy = ', nprocx, nprocy
-    WRITE(20, *) 'nx, ny = ', nx, ny
+    WRITE(20, *) 'nprocx, nprocy = ', nprocx, nprocy, nprocz
+    WRITE(20, *) 'nx, ny = ', nx, ny, nz
     WRITE(20, *)
     WRITE(20, *) 'length_x = ', length_x * L0
     WRITE(20, *) 'length_y = ', length_y * L0
+    WRITE(20, *) 'length_z = ', length_z * L0
     WRITE(20, *)
 #ifndef Q_MONO
     WRITE(20, *) 'tensor shock viscosity'
