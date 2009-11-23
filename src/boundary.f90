@@ -46,16 +46,16 @@ CONTAINS
 
       ! define region for linear damping of solution at boundaries
       ! note if ndx > nx damping only in outer process
-      a = 8.0_num / 10.0_num
+      a = length_x / 10.0_num  
       DO ix = 0, nx
         ndx = ix
         IF ((xb(ix) - xb(0)) > a) EXIT
       END DO
 
-      a = 8.0_num / 10.0_num
+      a = length_y / 10.0_num  
       DO iy = 0, ny
         ndy = iy
-        IF ((yb(iy) - yb(iy)) > a) EXIT
+        IF ((yb(iy) - yb(0)) > a) EXIT
       END DO
 
       a = length_z / 10.0_num
@@ -63,7 +63,7 @@ CONTAINS
         ndz = iz
         IF ((zb(iz) - zb(0)) > a) EXIT
       END DO
-      ndz = -1
+   
     END IF
 
   END SUBROUTINE set_boundary_conditions
