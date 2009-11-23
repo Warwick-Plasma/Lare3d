@@ -10,12 +10,14 @@ FFLAGS = -O1
 # Set some of the build parameters
 TARGET = lare3d
 
-# Uncomment one of the following lines if on a cluster.
-#COPSON = -compiler intel
-#MHDCLUSTER = -f90=pgf90 -DMHDCLUSTER -fpic
-
 #Uncomment the following line to use Qmono viscosity
 #QMONO = -DQ_MONO
+
+#Uncomment the following line to run in single precision
+QSINGLE = -DQ_SINGLE
+
+#Uncomment the following line to use first order scheme for resistive update
+QFIRSTORDER = -DQ_FIRSTORDER
 
 
 # --------------------------------------------------
@@ -26,9 +28,8 @@ SRCDIR = src
 OBJDIR = obj
 BINDIR = bin
 MODULEFLAG = -module
-MACHINEFLAGS = $(COPSON) $(MHDCLUSTER)
-OPFLAGS = $(QMONO)
-FC = mpif90 $(MACHINEFLAGS) $(OPFLAGS)
+OPFLAGS = $(QMONO)  $(QSINGLE) $(QFIRSTORDER)
+FC = mpif90 $(OPFLAGS)
 PREPROFLAGS = $(NONMPIIO)
 
 OBJFILES = shared_data.o mpi_routines.o openboundary.o mpiboundary.o boundary.o normalise.o conduct.o diagnostics.o setup.o lagran.o  \
