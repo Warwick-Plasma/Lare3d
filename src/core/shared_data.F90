@@ -6,7 +6,11 @@ MODULE constants
 
   IMPLICIT NONE
 
-  INTEGER, PARAMETER :: num = KIND(1.D0)
+#ifdef Q_SINGLE
+  INTEGER, PARAMETER :: num = KIND(1.0) 
+#else
+  INTEGER, PARAMETER :: num = KIND(1.D0) 
+#endif  
   INTEGER, PARAMETER :: dbl = KIND(1.D0)
   REAL(num), PARAMETER :: pi = 3.14159265358979323_num
   REAL(num), PARAMETER :: none_zero = TINY(1.0_num) * 10000.0_num
@@ -33,7 +37,11 @@ MODULE shared_data
   IMPLICIT NONE
   INCLUDE 'mpif.h'
 
+#ifdef Q_SINGLE
+  INTEGER :: mpireal = MPI_REAL
+#else
   INTEGER :: mpireal = MPI_DOUBLE_PRECISION
+#endif  
 
   INTEGER :: nx_global, ny_global, nz_global
   ! NB: as there are now 2 ghost celss so indexing will fail if (nx, ny, nz)<2
