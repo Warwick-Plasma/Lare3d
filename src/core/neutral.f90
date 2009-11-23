@@ -39,7 +39,7 @@ CONTAINS
     tr_bar = 1.0_num / tr
 
     ! Calculate fbar^(2 / 3) in (k^-1 m^-2)
-    f_bar = (pi * me_0 * kb_0) / h_0**2
+    f_bar = pi * (me_0 / h_0) * (kb_0 / h_0)
     f_bar = f_bar**(3.0_num / 2.0_num)
 
     ! Calculate tbar in (K)
