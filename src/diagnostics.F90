@@ -490,8 +490,8 @@ CONTAINS
     WRITE(20, *) 'Temperature normalisation =', TEMP0, 'K'
     WRITE(20, *) 'Pressure normalisation =', PRESSURE0, 'Pa'
 
-    WRITE(20, *) 'nprocx, nprocy = ', nprocx, nprocy, nprocz
-    WRITE(20, *) 'nx, ny = ', nx, ny, nz
+    WRITE(20, *) 'nprocx, nprocy, nproca = ', nprocx, nprocy, nprocz
+    WRITE(20, *) 'nx, ny, nz = ', nx, ny, nz
     WRITE(20, *)
     WRITE(20, *) 'length_x = ', length_x * L0
     WRITE(20, *) 'length_y = ', length_y * L0
