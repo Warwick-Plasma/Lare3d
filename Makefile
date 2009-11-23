@@ -5,7 +5,7 @@
 #FFLAGS = -O3 -fast                            	#Intel
 #FFLAGS = -fpe0 -nothreads -traceback -fltconsistency -CB -g -inline_debug_info #Intel Debug
  
-FFLAGS = -O1
+FFLAGS = -O3 -fast
 
 # Set some of the build parameters
 TARGET = lare3d
@@ -82,7 +82,7 @@ normalise.o:normalise.f90 shared_data.o
 setup.o:setup.F90 shared_data.o normalise.o iocommon.o iocontrol.o input.o input_cartesian.o
 mpiboundary.o: mpiboundary.f90 shared_data.o
 openboundary.o: openboundary.f90 shared_data.o
-boundary.o:boundary.f90 shared_data.o mpiboundary.o openboundary.o
+boundary.o:boundary.f90 shared_data.o mpiboundary.o 
 xremap.o:xremap.f90 shared_data.o boundary.o
 yremap.o:yremap.f90 shared_data.o boundary.o
 zremap.o:zremap.f90 shared_data.o boundary.o
