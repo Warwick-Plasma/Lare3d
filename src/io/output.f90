@@ -172,7 +172,7 @@ CONTAINS
     INTEGER(8) :: mdlength
     REAL(8), INTENT(IN) :: time
 
-    mdlength = soi + num
+    mdlength = soi + 8
 
     CALL cfd_write_block_header("Snapshot", "Snapshot", TYPE_SNAPSHOT, &
         mdlength, mdlength, rank_write)
