@@ -576,7 +576,7 @@ CONTAINS
             stagger, mesh_name, mesh_class)
 
         IF (dims(1) /= nx_global+1 &
-            .OR. dims(2) /= ny_global+1 .OR. dims(3) /= nz_global) THEN
+            .OR. dims(2) /= ny_global+1 .OR. dims(3) /= nz_global+1) THEN
           IF (rank == 0) PRINT *, "Size of grid represented by one more ", &
               "variables invalid. Continuing"
           CALL cfd_skip_block
