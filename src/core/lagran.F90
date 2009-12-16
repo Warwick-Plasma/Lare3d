@@ -596,6 +596,7 @@ CONTAINS
           p_visc(ix, iy, iz) = visc1 * ABS(s) * L*cf * rho(ix, iy, iz) &
               + visc2 * (s * L)**2 * rho(ix, iy, iz)
 
+          qxx(ix, iy, iz) = 0.0_num
           qxy(ix, iy, iz) = 0.0_num
           qxz(ix, iy, iz) = 0.0_num
           qyy(ix, iy, iz) = 0.0_num
