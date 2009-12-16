@@ -67,18 +67,18 @@ CONTAINS
              bxc = (bx(ix, iy, iz) + bx(ix-1, iy, iz))
              byc = (by(ix, iy, iz) + by(ix, iy-1, iz))
              bzc = (bz(ix, iy, iz) + bz(ix, iy, iz-1))
-             b = SQRT(bxc**2 + byc**2 + bzc**2)
+             b = SQRT(bxc**2 + byc**2 + bzc**2 + b_min**2)
 
-             ux(ix, iy, iz) = bxc / SQRT(b**2 + b_min**2)
-             uy(ix, iy, iz) = byc / SQRT(b**2 + b_min**2)
-             uz(ix, iy, iz) = bzc / SQRT(b**2 + b_min**2)
+             ux(ix, iy, iz) = bxc / b
+             uy(ix, iy, iz) = byc / b
+             uz(ix, iy, iz) = bzc / b
 
              t5_2 = (e2temp(ix, iy, iz) * energy(ix, iy, iz))**pow 
              kx(ix, iy, iz) = ux(ix, iy, iz) * kappa_0 * t5_2
              ky(ix, iy, iz) = uy(ix, iy, iz) * kappa_0 * t5_2
              kz(ix, iy, iz) = uz(ix, iy, iz) * kappa_0 * t5_2 
 
-             kp(ix, iy, iz) = kappa_0 * t5_2 * b_min**2 / (b**2 + b_min**2)
+             kp(ix, iy, iz) = kappa_0 * t5_2 * b_min**2 / b**2 
 
           END DO
        END DO
