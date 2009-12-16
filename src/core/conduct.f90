@@ -56,7 +56,7 @@ CONTAINS
           DO ix = -1, nx+2
              e = energy(ix, iy, iz)
              CALL get_temp(rho(ix, iy, iz), e, eos_number, ix, iy, iz, temp)
-             e2temp(ix, iy, iz) = temp / e
+             e2temp(ix, iy, iz) = temp / MAX(e, none_zero)
           END DO
        END DO
     END DO
@@ -113,7 +113,7 @@ CONTAINS
     w = 1.9_num
     energy0 = energy 
     
-    DO loop = 1, 200
+    DO loop = 1, 100
        errmax = 0.0_num
        error = 0.0_num
        DO iz = 1, nz
@@ -285,16 +285,17 @@ CONTAINS
                 a1 = a1 * dt * e2temp(ix, iy, iz) / rho(ix, iy, iz) 
                 a2 = a2 * dt / rho(ix, iy, iz) 
 
-                Q = energy(ix, iy, iz)
+                Q = MAX(energy(ix, iy, iz), none_zero)
                 energy(ix, iy, iz) = (1.0_num-w) * energy(ix, iy, iz) &
                      + w * (energy0(ix, iy, iz)  + a2) / (1.0_num + a1)  
                 energy(ix, iy, iz) = MAX(energy(ix, iy, iz), none_zero)
-                Q = (Q - energy(ix, iy, iz)) / energy0(ix, iy, iz)
+                Q = (Q - energy(ix, iy, iz)) / MAX(energy0(ix, iy, iz), none_zero)
 
                 errmax = MAX(errmax, ABS(Q))  
              END DO
           END DO
-       END DO
+       END DO 
+
        CALL energy_bcs
 
        CALL MPI_ALLREDUCE(errmax, error, 1, mpireal, MPI_MAX, comm, errcode)
