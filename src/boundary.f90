@@ -178,37 +178,37 @@ CONTAINS
     CALL bfield_MPI
 
     IF (front == MPI_PROC_NULL .AND. zbc_front == BC_OTHER) THEN
-      bx(1:nx, 1:ny, -1) = bx(1:nx, 1:ny, 2)
-      bx(1:nx, 1:ny,  0) = bx(1:nx, 1:ny, 1)
-      by(1:nx, 1:ny, -1) = by(1:nx, 1:ny, 2)
-      by(1:nx, 1:ny,  0) = by(1:nx, 1:ny, 1)
-      bz(1:nx, 1:ny, -1) = bz(1:nx, 1:ny, 1)
-      bz(1:nx, 1:ny, -2) = bz(1:nx, 1:ny, 2)
+      bx(:, :, -1) = bx(:, :, 2)
+      bx(:, :,  0) = bx(:, :, 1)
+      by(:, :, -1) = by(:, :, 2)
+      by(:, :,  0) = by(:, :, 1)
+      bz(:, :, -1) = bz(:, :, 1)
+      bz(:, :, -2) = bz(:, :, 2)
     END IF
     IF (back == MPI_PROC_NULL .AND. zbc_back == BC_OTHER) THEN
-      bx(1:nx, 1:ny, nz+1) = bx(1:nx, 1:ny, nz  )
-      bx(1:nx, 1:ny, nz+2) = bx(1:nx, 1:ny, nz-1)
-      by(1:nx, 1:ny, nz+1) = by(1:nx, 1:ny, nz  )
-      by(1:nx, 1:ny, nz+2) = by(1:nx, 1:ny, nz-1)
-      bz(1:nx, 1:ny, nz+1) = bz(1:nx, 1:ny, nz-1)
-      bz(1:nx, 1:ny, nz+2) = bz(1:nx, 1:ny, nz-2)
+      bx(:, :, nz+1) = bx(:, :, nz  )
+      bx(:, :, nz+2) = bx(:, :, nz-1)
+      by(:, :, nz+1) = by(:, :, nz  )
+      by(:, :, nz+2) = by(:, :, nz-1)
+      bz(:, :, nz+1) = bz(:, :, nz-1)
+      bz(:, :, nz+2) = bz(:, :, nz-2)
     END IF
 
     IF (right == MPI_PROC_NULL .AND. xbc_right == BC_OTHER) THEN
-      bx(nx+1, 1:ny, :) = bx(nx-1, 1:ny, :)
-      bx(nx+2, 1:ny, :) = bx(nx-2, 1:ny, :)
-      by(nx+1, 1:ny, :) = by(nx  , 1:ny, :)
-      by(nx+2, 1:ny, :) = by(nx-1, 1:ny, :)
-      bz(nx+1, 1:ny, :) = bz(nx  , 1:ny, :)
-      bz(nx+2, 1:ny, :) = bz(nx-1, 1:ny, :)
+      bx(nx+1, :, :) = bx(nx-1, :, :)
+      bx(nx+2, :, :) = bx(nx-2, :, :)
+      by(nx+1, :, :) = by(nx  , :, :)
+      by(nx+2, :, :) = by(nx-1, :, :)
+      bz(nx+1, :, :) = bz(nx  , :, :)
+      bz(nx+2, :, :) = bz(nx-1, :, :)
     END IF
     IF (left == MPI_PROC_NULL .AND. xbc_left == BC_OTHER) THEN
-      bx(-1, 1:ny, :) = bx(1, 1:ny, :)
-      bx(-2, 1:ny, :) = bx(2, 1:ny, :)
-      by( 0, 1:ny, :) = by(1, 1:ny, :)
-      by(-1, 1:ny, :) = by(2, 1:ny, :)
-      bz( 0, 1:ny, :) = bz(1, 1:ny, :)
-      bz(-1, 1:ny, :) = bz(2, 1:ny, :)
+      bx(-1, :, :) = bx(1, :, :)
+      bx(-2, :, :) = bx(2, :, :)
+      by( 0, :, :) = by(1, :, :)
+      by(-1, :, :) = by(2, :, :)
+      bz( 0, :, :) = bz(1, :, :)
+      bz(-1, :, :) = bz(2, :, :)
     END IF
 
     IF (down == MPI_PROC_NULL .AND. ybc_down == BC_OTHER) THEN
@@ -237,21 +237,21 @@ CONTAINS
     CALL energy_MPI
 
     IF (front == MPI_PROC_NULL .AND. zbc_front == BC_OTHER) THEN
-      energy(1:nx, 1:ny,  0) = energy(1:nx, 1:ny, 1)
-      energy(1:nx, 1:ny, -1) = energy(1:nx, 1:ny, 2)
+      energy(:, :,  0) = energy(:, :, 1)
+      energy(:, :, -1) = energy(:, :, 2)
     END IF
     IF (back == MPI_PROC_NULL .AND. zbc_back == BC_OTHER) THEN
-      energy(1:nx, 1:ny, nz+1) = energy(1:nx, 1:ny, nz  )
-      energy(1:nx, 1:ny, nz+2) = energy(1:nx, 1:ny, nz-1)
+      energy(:, :, nz+1) = energy(:, :, nz  )
+      energy(:, :, nz+2) = energy(:, :, nz-1)
     END IF
 
     IF (right == MPI_PROC_NULL .AND. xbc_right == BC_OTHER) THEN
-      energy(nx+1, 1:ny, :) = energy(nx  , 1:ny, :)
-      energy(nx+2, 1:ny, :) = energy(nx-1, 1:ny, :)
+      energy(nx+1, :, :) = energy(nx  , :, :)
+      energy(nx+2, :, :) = energy(nx-1, :, :)
     END IF
     IF (left == MPI_PROC_NULL .AND. xbc_left == BC_OTHER) THEN
-      energy( 0, 1:ny, :) = energy(1, 1:ny, :)
-      energy(-1, 1:ny, :) = energy(2, 1:ny, :)
+      energy( 0, :, :) = energy(1, :, :)
+      energy(-1, :, :) = energy(2, :, :)
     END IF
 
     IF (down == MPI_PROC_NULL .AND. ybc_down == BC_OTHER) THEN
@@ -354,21 +354,21 @@ CONTAINS
     CALL density_MPI
 
     IF (front == MPI_PROC_NULL .AND. zbc_front == BC_OTHER) THEN
-      rho(1:nx, 1:ny, -1) = rho(1:nx, 1:ny, 2)
-      rho(1:nx, 1:ny,  0) = rho(1:nx, 1:ny, 1)
+      rho(:, :, -1) = rho(:, :, 2)
+      rho(:, :,  0) = rho(:, :, 1)
     END IF
     IF (back == MPI_PROC_NULL .AND. zbc_back == BC_OTHER) THEN
-      rho(1:nx, 1:ny, nz+1) = rho(1:nx, 1:ny, nz  )
-      rho(1:nx, 1:ny, nz+2) = rho(1:nx, 1:ny, nz-1)
+      rho(:, :, nz+1) = rho(:, :, nz  )
+      rho(:, :, nz+2) = rho(:, :, nz-1)
     END IF
 
     IF (right == MPI_PROC_NULL .AND. xbc_right == BC_OTHER) THEN
-      rho(nx+1, 1:ny, :) = rho(nx  , 1:ny, :)
-      rho(nx+2, 1:ny, :) = rho(nx-1, 1:ny, :)
+      rho(nx+1, :, :) = rho(nx  , :, :)
+      rho(nx+2, :, :) = rho(nx-1, :, :)
     END IF
     IF (left == MPI_PROC_NULL .AND. xbc_left == BC_OTHER) THEN
-      rho( 0, 1:ny, :) = rho(1, 1:ny, :)
-      rho(-1, 1:ny, :) = rho(2, 1:ny, :)
+      rho( 0, :, :) = rho(1, :, :)
+      rho(-1, :, :) = rho(2, :, :)
     END IF
 
     IF (down == MPI_PROC_NULL .AND. ybc_down == BC_OTHER) THEN
