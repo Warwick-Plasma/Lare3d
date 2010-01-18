@@ -15,7 +15,7 @@ CONTAINS
   SUBROUTINE conduct_heat
 
     REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: kx, ky, kz, ux, uy, uz
-    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: energy0, e2temp, kp, a1
+    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: energy0, e2temp, kp, energy1
     REAL(num) :: e, temp, t5_2 
     REAL(num) :: b, bxc, byc, bzc
     REAL(num) :: pow = 5.0_num / 2.0_num
@@ -32,13 +32,13 @@ CONTAINS
     REAL(num) :: kxy, kyy, kzy, kpy
     REAL(num) :: kxz, kyz, kzz, kpz
     REAL(num) :: uxx, uyy, uzz
-    REAL(num) :: a2, error, q, errmax, errmax_prev = 0.0_num 
+    REAL(num) :: a1, a2, error, residual, errmax, errmax_prev = 0.0_num 
     REAL(num) :: w, q_nl, q_sh, q_f
 
-    INTEGER :: loop
+    INTEGER :: loop, redblack, x1, y1, z1
 
     LOGICAL :: converged
-    REAL(num), PARAMETER :: fractional_error = 1.e-5_num
+    REAL(num), PARAMETER :: fractional_error = 1.e-3_num
     REAL(num), PARAMETER :: b_min = 1.0e-5_num
 
     ALLOCATE(kx(-1:nx+2, -1:ny+2, -1:nz+2))
@@ -49,8 +49,8 @@ CONTAINS
     ALLOCATE(uz(-1:nx+2, -1:ny+2, -1:nz+2))
     ALLOCATE(kp(-1:nx+2, -1:ny+2, -1:nz+2))
     ALLOCATE(energy0(-1:nx+2, -1:ny+2, -1:nz+2))
+    ALLOCATE(energy1(-1:nx+2, -1:ny+2, -1:nz+2))
     ALLOCATE(e2temp(-1:nx+2, -1:ny+2, -1:nz+2))
-    ALLOCATE(a1(1:nx, 1:ny, 1:nz))
 
     DO iz = -1, nz+2
        DO iy = -1, ny+2
@@ -110,104 +110,19 @@ CONTAINS
       END DO         
     END IF  
 
-    DO iz = 1, nz
-       qpz = dzc(iz-1) / (dzc(iz) * (dzc(iz) + dzc(iz-1)))
-       qmz = dzc(iz) / (dzc(iz-1) * (dzc(iz) + dzc(iz-1)))
-       q0z = (dzc(iz)**2 - dzc(iz-1)**2) &
-                / (dzc(iz) * dzc(iz-1) * (dzc(iz) + dzc(iz-1)))
-       mpz = 1.0_num / (dzc(iz) * dzb(iz))
-       mmz = 1.0_num / (dzc(iz-1) * dzb(iz))
-       m0z = (dzc(iz) + dzc(iz-1)) / (dzc(iz) * dzc(iz-1) * dzb(iz))
-       DO iy = 1, ny
-          qpy = dyc(iy-1) / (dyc(iy) * (dyc(iy) + dyc(iy-1)))
-          qmy = dyc(iy) / (dyc(iy-1) * (dyc(iy) + dyc(iy-1)))
-          q0y = (dyc(iy)**2 - dyc(iy-1)**2) &
-                  / (dyc(iy) * dyc(iy-1) * (dyc(iy) + dyc(iy-1)))
-          mpy = 1.0_num / (dyc(iy) * dyb(iy))
-          mmy = 1.0_num / (dyc(iy-1) * dyb(iy))
-          m0y = (dyc(iy) + dyc(iy-1)) / (dyc(iy) * dyc(iy-1) * dyb(iy))
-          DO ix = 1, nx
-             qpx = dxc(ix-1) / (dxc(ix) * (dxc(ix) + dxc(ix-1)))
-             qmx = dxc(ix) / (dxc(ix-1) * (dxc(ix) + dxc(ix-1)))
-             q0x = (dxc(ix)**2 - dxc(ix-1)**2) &
-                  / (dxc(ix) * dxc(ix-1) * (dxc(ix) + dxc(ix-1)))
-             mpx = 1.0_num / (dxc(ix) * dxb(ix))
-             mmx = 1.0_num / (dxc(ix-1) * dxb(ix))
-             m0x = (dxc(ix) + dxc(ix-1)) / (dxc(ix) * dxc(ix-1) * dxb(ix))
-
-             kxx = qpx * kx(ix+1, iy, iz) &
-                  - qmx * kx(ix-1, iy, iz) + q0x * kx(ix, iy, iz)
-             kyx = qpx * ky(ix+1, iy, iz) &
-                  - qmx * ky(ix-1, iy, iz) + q0x * ky(ix, iy, iz)
-             kzx = qpx * kz(ix+1, iy, iz) &
-                  - qmx * kz(ix-1, iy, iz) + q0x * kz(ix, iy, iz)
-             kpx = qpx * kp(ix+1, iy, iz) &
-                  - qmx * kp(ix-1, iy, iz) + q0x * kp(ix, iy, iz)
-
-             kxy = qpy * kx(ix, iy+1, iz) &
-                  - qmy * kx(ix, iy-1, iz) + q0y * kx(ix, iy, iz)
-             kyy = qpy * ky(ix, iy+1, iz) &
-                  - qmy * ky(ix, iy-1, iz) + q0y * ky(ix, iy, iz)
-             kzy = qpy * kz(ix, iy+1, iz) &
-                  - qmy * kz(ix, iy-1, iz) + q0y * kz(ix, iy, iz)
-             kpy = qpy * kp(ix, iy+1, iz) &
-                  - qmy * kp(ix, iy-1, iz) + q0y * kp(ix, iy, iz)
-
-             kxz = qpz * kx(ix, iy, iz+1) &
-                  - qmz * kx(ix, iy, iz-1) + q0z * kx(ix, iy, iz)
-             kyz = qpz * ky(ix, iy, iz+1) &
-                  - qmz * ky(ix, iy, iz-1) + q0z * ky(ix, iy, iz)
-             kzz = qpz * kz(ix, iy, iz+1) &
-                  - qmz * kz(ix, iy, iz-1) + q0z * kz(ix, iy, iz)
-             kpz = qpz * kp(ix, iy, iz+1) &
-                  - qmz * kp(ix, iy, iz-1) + q0z * kp(ix, iy, iz)
-
-             uxx = qpx * ux(ix+1, iy, iz) &
-                  - qmx * ux(ix-1, iy, iz) + q0x * ux(ix, iy, iz)
-             uyy = qpy * uy(ix, iy+1, iz) &
-                  - qmy * uy(ix, iy-1, iz) + q0y * uy(ix, iy, iz)
-             uzz = qpz * uz(ix, iy, iz+1) &
-                  - qmz * uz(ix, iy, iz-1) + q0z * uz(ix, iy, iz)
-
-             ! Second differentials in T
-             a1(ix,iy,iz) = m0x * ux(ix, iy, iz) * kx(ix, iy, iz) &
-                  + m0y * uy(ix, iy, iz) * ky(ix, iy, iz) &
-                  + m0z * uz(ix, iy, iz) * kz(ix, iy, iz) &
-                  + q0x * q0y * (ux(ix, iy, iz) * ky(ix, iy, iz) &
-                  + uy(ix, iy, iz) * kx(ix, iy, iz)) &
-                  + q0x * q0z * (ux(ix, iy, iz) * kz(ix, iy, iz) &
-                  + uz(ix, iy, iz) * kx(ix, iy, iz)) &
-                  + q0y * q0z * (uy(ix, iy, iz) * kz(ix, iy, iz) &
-                  + uz(ix, iy, iz) * ky(ix, iy, iz))
-
-             ! Differentials in kx, ky, kz
-             a1(ix,iy,iz) = a1(ix,iy,iz) &
-                  - ux(ix, iy, iz) * (kxx * q0x + kyx * q0y + kzx * q0z) &
-                  - uy(ix, iy, iz) * (kxy * q0x + kyy * q0y + kzy * q0z) &
-                  - uz(ix, iy, iz) * (kxz * q0x + kyz * q0y + kzz * q0z)
-
-             ! Differentials in ux, uy, uz
-             a1(ix,iy,iz) = a1(ix,iy,iz) - q0x * kx(ix, iy, iz) * (uxx + uyy + uzz) &
-                  - q0y * ky(ix, iy, iz) *(uxx + uyy + uzz) &
-                  - q0z * kz(ix, iy, iz) *(uxx + uyy + uzz)
-
-             ! add isoptropic elements
-             a1(ix,iy,iz) = a1(ix,iy,iz) + kp(ix, iy, iz) * (m0x + m0y + m0z) &
-                  - kpx * q0x - kpy * q0y - kpz * q0z 
-
-             a1(ix,iy,iz) = a1(ix,iy,iz) * dt * e2temp(ix, iy, iz) / rho(ix, iy, iz) 
-          END DO
-       END DO
-    END DO
-
     converged = .FALSE.
-    w = 1.0_num
+    w = 1.6_num
     energy0 = energy 
 
     DO loop = 1, 100
+       energy1 = energy
        errmax = 0.0_num
-       error = 0.0_num 
-       DO iz = 1, nz
+       error = 0.0_num   
+       z1 = 1
+       DO redblack = 1, 2    !red-black checker board SOR ordering
+        y1 = z1
+        DO iz = 1, nz  
+          x1 = y1
           qpz = dzc(iz-1) / (dzc(iz) * (dzc(iz) + dzc(iz-1)))
           qmz = dzc(iz) / (dzc(iz-1) * (dzc(iz) + dzc(iz-1)))
           q0z = (dzc(iz)**2 - dzc(iz-1)**2) &
@@ -223,7 +138,7 @@ CONTAINS
              mpy = 1.0_num / (dyc(iy) * dyb(iy))
              mmy = 1.0_num / (dyc(iy-1) * dyb(iy))
              m0y = (dyc(iy) + dyc(iy-1)) / (dyc(iy) * dyc(iy-1) * dyb(iy))
-             DO ix = 1, nx
+             DO ix = x1, nx, 2
                 qpx = dxc(ix-1) / (dxc(ix) * (dxc(ix) + dxc(ix-1)))
                 qmx = dxc(ix) / (dxc(ix-1) * (dxc(ix) + dxc(ix-1)))
                 q0x = (dxc(ix)**2 - dxc(ix-1)**2) &
@@ -247,36 +162,36 @@ CONTAINS
                      + mmz * e2temp(ix, iy, iz-1) * energy(ix, iy, iz-1)
 
                 rxy = qpy  &
-                     * (qpx * e2temp(ix+1, iy+1, iz) * energy(ix+1, iy+1, iz) &
-                     - qmx * e2temp(ix-1, iy+1, iz) * energy(ix-1, iy+1, iz) &
+                     * (qpx * e2temp(ix+1, iy+1, iz) * energy1(ix+1, iy+1, iz) &
+                     - qmx * e2temp(ix-1, iy+1, iz) * energy1(ix-1, iy+1, iz) &
                      + q0x * e2temp(ix, iy+1, iz) * energy(ix, iy+1, iz)) &
                      - qmy  &
-                     * (qpx * e2temp(ix+1, iy-1, iz) * energy(ix+1, iy-1, iz) &
-                     - qmx * e2temp(ix-1, iy-1, iz) * energy(ix-1, iy-1, iz) &
+                     * (qpx * e2temp(ix+1, iy-1, iz) * energy1(ix+1, iy-1, iz) &
+                     - qmx * e2temp(ix-1, iy-1, iz) * energy1(ix-1, iy-1, iz) &
                      + q0x * e2temp(ix, iy-1, iz) * energy(ix, iy-1, iz)) &
                      + q0y  &
                      * (qpx * e2temp(ix+1, iy, iz) * energy(ix+1, iy, iz) &
                      - qmx * e2temp(ix-1, iy, iz) * energy(ix-1, iy, iz))
 
                 rxz = qpz  &
-                     * (qpx * e2temp(ix+1, iy, iz+1) * energy(ix+1, iy, iz+1) &
-                     - qmx * e2temp(ix-1, iy, iz+1) * energy(ix-1, iy, iz+1) &
+                     * (qpx * e2temp(ix+1, iy, iz+1) * energy1(ix+1, iy, iz+1) &
+                     - qmx * e2temp(ix-1, iy, iz+1) * energy1(ix-1, iy, iz+1) &
                      + q0x * e2temp(ix, iy, iz+1) * energy(ix, iy, iz+1)) &
                      - qmz  &
-                     * (qpx * e2temp(ix+1, iy, iz-1) * energy(ix+1, iy, iz-1) &
-                     - qmx * e2temp(ix-1, iy, iz-1) * energy(ix-1, iy, iz-1) &
+                     * (qpx * e2temp(ix+1, iy, iz-1) * energy1(ix+1, iy, iz-1) &
+                     - qmx * e2temp(ix-1, iy, iz-1) * energy1(ix-1, iy, iz-1) &
                      + q0x * e2temp(ix, iy, iz-1) * energy(ix, iy, iz-1)) &
                      + q0z  &
                      * (qpx * e2temp(ix+1, iy, iz) * energy(ix+1, iy, iz) &
                      - qmx * e2temp(ix-1, iy, iz) * energy(ix-1, iy, iz))
 
                 ryz = qpz  &
-                     * (qpy * e2temp(ix, iy+1, iz+1) * energy(ix, iy+1, iz+1) &
-                     - qmy * e2temp(ix, iy-1, iz+1) * energy(ix, iy-1, iz+1) &
+                     * (qpy * e2temp(ix, iy+1, iz+1) * energy1(ix, iy+1, iz+1) &
+                     - qmy * e2temp(ix, iy-1, iz+1) * energy1(ix, iy-1, iz+1) &
                      + q0y * e2temp(ix, iy, iz+1) * energy(ix, iy, iz+1)) &
                      - qmz &
-                     * (qpy * e2temp(ix, iy+1, iz-1) * energy(ix, iy+1, iz-1) &
-                     - qmy * e2temp(ix, iy-1, iz-1) * energy(ix, iy-1, iz-1) &
+                     * (qpy * e2temp(ix, iy+1, iz-1) * energy1(ix, iy+1, iz-1) &
+                     - qmy * e2temp(ix, iy-1, iz-1) * energy1(ix, iy-1, iz-1) &
                      + q0y * e2temp(ix, iy, iz-1) * energy(ix, iy, iz-1)) &
                      + q0z  &
                      * (qpy * e2temp(ix, iy+1, iz) * energy(ix, iy+1, iz) &
@@ -315,7 +230,35 @@ CONTAINS
                      - qmy * uy(ix, iy-1, iz) + q0y * uy(ix, iy, iz)
                 uzz = qpz * uz(ix, iy, iz+1) &
                      - qmz * uz(ix, iy, iz-1) + q0z * uz(ix, iy, iz)
-
+                     
+                ! Second differentials in T
+                a1 = m0x * ux(ix, iy, iz) * kx(ix, iy, iz) &
+                  + m0y * uy(ix, iy, iz) * ky(ix, iy, iz) &
+                  + m0z * uz(ix, iy, iz) * kz(ix, iy, iz) &
+                  + q0x * q0y * (ux(ix, iy, iz) * ky(ix, iy, iz) &
+                  + uy(ix, iy, iz) * kx(ix, iy, iz)) &
+                  + q0x * q0z * (ux(ix, iy, iz) * kz(ix, iy, iz) &
+                  + uz(ix, iy, iz) * kx(ix, iy, iz)) &
+                  + q0y * q0z * (uy(ix, iy, iz) * kz(ix, iy, iz) &
+                  + uz(ix, iy, iz) * ky(ix, iy, iz))
+             
+                ! Differentials in kx, ky, kz
+                a1 = a1 &
+                  - ux(ix, iy, iz) * (kxx * q0x + kyx * q0y + kzx * q0z) &
+                  - uy(ix, iy, iz) * (kxy * q0x + kyy * q0y + kzy * q0z) &
+                  - uz(ix, iy, iz) * (kxz * q0x + kyz * q0y + kzz * q0z)
+             
+                ! Differentials in ux, uy, uz
+                a1 = a1 - q0x * kx(ix, iy, iz) * (uxx + uyy + uzz) &
+                  - q0y * ky(ix, iy, iz) *(uxx + uyy + uzz) &
+                  - q0z * kz(ix, iy, iz) *(uxx + uyy + uzz)
+             
+                ! add isoptropic elements
+                a1 = a1 + kp(ix, iy, iz) * (m0x + m0y + m0z) &
+                  - kpx * q0x - kpy * q0y - kpz * q0z 
+             
+                a1 = a1 * dt * e2temp(ix, iy, iz) / rho(ix, iy, iz)
+                     
                 ! Second differentials in T
                 a2 = rxx * ux(ix, iy, iz) * kx(ix, iy, iz) &
                      + ryy * uy(ix, iy, iz) * ky(ix, iy, iz) &
@@ -348,21 +291,25 @@ CONTAINS
                 ! prevent negative energy and maintain diagonal dominance
                 a2 = MAX(-energy0(ix,iy,iz), a2)
 
-                Q = energy(ix, iy, iz)
-                energy(ix, iy, iz) = (1.0_num-w) * energy(ix, iy, iz) &
-                     + w * (energy0(ix, iy, iz)  + a2) / (1.0_num + a1(ix, iy, iz))  
-                Q = (Q - energy(ix, iy, iz)) / MAX(energy(ix,iy,iz), Q)
+                residual = energy(ix, iy, iz) &
+                  - (energy0(ix, iy, iz)  + a2) / (1.0_num + a1) 
+                energy(ix, iy, iz) = MAX(energy(ix, iy, iz) - w * residual, 0.0_num) 
+                error = ABS(residual / MAX(energy(ix, iy, iz), energy0(ix, iy, iz), none_zero))     
+                errmax = MAX(errmax, error)
 
-                errmax = MAX(errmax, ABS(Q))  
              END DO
+             x1 = 3 - x1
           END DO
-       END DO 
-
-       CALL energy_bcs
+          y1 = 3 - y1
+        END DO 
+        z1 = 3 - z1
+        CALL energy_bcs   
+       
+       END DO
 
        CALL MPI_ALLREDUCE(errmax, error, 1, mpireal, MPI_MAX, comm, errcode)
        errmax = error
-print*, loop, time, errmax
+!print*, loop, time, errmax
 
        IF (errmax .GT. errmax_prev) w = (1.0_num + w) / 2.0_num
        errmax_prev = errmax
@@ -378,7 +325,7 @@ print*, loop, time, errmax
 
     DEALLOCATE(kx, ky, kz)
     DEALLOCATE(ux, uy, uz)
-    DEALLOCATE(kp, energy0, e2temp, a1)
+    DEALLOCATE(kp, energy0, e2temp, energy1)
 
   END SUBROUTINE conduct_heat
 
