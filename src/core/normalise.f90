@@ -102,15 +102,15 @@ CONTAINS
       ! will calculate the normalised thermal conductivity
       ! The temperature dependence is added later 
 	    mbar = mh * mf
-      energy0 = b0**2 / (mu0 * rho0)
-      kappa0 = energy0**(3.0_num / 2.0_num) * rho0 * l0 &
+      energy0 = B0**2 / (mu0 * rho0)
+      kappa0 = energy0**(3.0_num / 2.0_num) * rho0 * L0 &
             / (mbar / kb * energy0)**(7.0_num / 2.0_num)    
       kappa_0 = 1.e-11_num / kappa0
       ! If not running as an SI code then force normalisation off
       ! Ignore any values read from the input deck
-      b0 = 1.0_num
+      B0 = 1.0_num
       rho0 = 1.0_num
-      l0 = 1.0_num
+      L0 = 1.0_num
 
       ! Set the constants to one as well, so that
       ! you can use them in the main code
@@ -132,24 +132,24 @@ CONTAINS
     ! Average ion mass 
     mbar = mh * mf
 
-    vel0 = b0 / SQRT(mu0 * rho0) ! Velocity
+    vel0 = B0 / SQRT(mu0 * rho0) ! Velocity
     energy0 = vel0**2            ! Specific energy density
-    t0 = l0 / vel0               ! Time
+    t0 = L0 / vel0               ! Time
 
     ! Put code in here to normalise any derived quantities
-    grav0  = vel0**2 / l0      ! g in kgms^ - 2
+    grav0  = vel0**2 / L0      ! g in kgms^ - 2
 
     ! viscosity (Input as inverse Reynolds so L0 * VEL0 * RHO0 not needed)
     visc0  = 1.0_num
 
     ! resistivity (Input as inverse Lundquist so L0 * VEL0 * MU0 not needed)
     res0   = 1.0_num
-    pressure0 = b0**2 / mu0  ! Pressure
+    pressure0 = B0**2 / mu0  ! Pressure
     temp0 = mbar * pressure0 / (kb * rho0) ! Temperature in K
-    j0 = b0 / (l0 * mu0)
+    j0 = b0 / (L0 * mu0)
 
     ! Thermal conductivity
-    kappa0 = energy0**(3.0_num / 2.0_num) * rho0 * l0 &
+    kappa0 = energy0**(3.0_num / 2.0_num) * rho0 * L0 &
         / (mbar / kb * energy0)**(7.0_num / 2.0_num)
 
   END SUBROUTINE derived_quantities
