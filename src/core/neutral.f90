@@ -46,12 +46,12 @@ CONTAINS
     t_bar = ionise_pot / kb
 
     ! Calculate rbar in (kg^-1)
-    MBAR = mh * mf                     
-    r_bar = 4.0_num / MBAR
+    mbar = mh * mf                     
+    r_bar = 4.0_num / mbar
 
     ! Calculate eta_bar in (m^4 / (k s kg^2))
-    eta_bar = (0.5_num / MBAR &
-        * SQRT(16.0_num * kb_0 / (pi * MBAR)) * sigma_in)**(-1)
+    eta_bar = (0.5_num / mbar &
+        * SQRT(16.0_num * kb_0 / (pi * mbar)) * sigma_in)**(-1)
 
   END SUBROUTINE setup_neutral
 
