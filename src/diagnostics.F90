@@ -96,49 +96,49 @@ CONTAINS
           zb_global(0:nz_global) * L0, 0)
 
       IF (dump_mask(1))  THEN
-        data = rho(0:nx, 0:ny, 0:nz) * RHO0
+        data = rho(0:nx, 0:ny, 0:nz) * rho0
         CALL cfd_write_3d_cartesian_variable_parallel("Rho", "Fluid", &
             dims, stagger, "Grid", "Grid", data, subtype)
       END IF
 
       IF (dump_mask(2))  THEN
-        data = energy(0:nx, 0:ny, 0:nz) * ENERGY0
+        data = energy(0:nx, 0:ny, 0:nz) * energy0
         CALL cfd_write_3d_cartesian_variable_parallel("Energy", "Fluid", &
             dims, stagger, "Grid", "Grid", data, subtype)
       END IF
 
       IF (dump_mask(3))  THEN
-        data = vx(0:nx, 0:ny, 0:nz) * VEL0
+        data = vx(0:nx, 0:ny, 0:nz) * vel0
         CALL cfd_write_3d_cartesian_variable_parallel("Vx", "Velocity", &
             dims, stagger, "Grid", "Grid", data, subtype)
       END IF
 
       IF (dump_mask(4))  THEN
-        data = vy(0:nx, 0:ny, 0:nz) * VEL0
+        data = vy(0:nx, 0:ny, 0:nz) * vel0
         CALL cfd_write_3d_cartesian_variable_parallel("Vy", "Velocity", &
             dims, stagger, "Grid", "Grid", data, subtype)
       END IF
 
       IF (dump_mask(5))  THEN
-        data = vz(0:nx, 0:ny, 0:nz) * VEL0
+        data = vz(0:nx, 0:ny, 0:nz) * vel0
         CALL cfd_write_3d_cartesian_variable_parallel("Vz", "Velocity", &
             dims, stagger, "Grid", "Grid", data, subtype)
       END IF
 
       IF (dump_mask(6))  THEN
-        data = bx(0:nx, 0:ny, 0:nz) * B0
+        data = bx(0:nx, 0:ny, 0:nz) * b0
         CALL cfd_write_3d_cartesian_variable_parallel("Bx", "Magnetic_Field", &
             dims, stagger, "Grid", "Grid", data, subtype)
       END IF
 
       IF (dump_mask(7))  THEN
-        data = by(0:nx, 0:ny, 0:nz) * B0
+        data = by(0:nx, 0:ny, 0:nz) * b0
         CALL cfd_write_3d_cartesian_variable_parallel("By", "Magnetic_Field", &
             dims, stagger, "Grid", "Grid", data, subtype)
       END IF
 
       IF (dump_mask(8))  THEN
-        data = bz(0:nx, 0:ny, 0:nz) * B0
+        data = bz(0:nx, 0:ny, 0:nz) * b0
         CALL cfd_write_3d_cartesian_variable_parallel("Bz", "Magnetic_Field", &
             dims, stagger, "Grid", "Grid", data, subtype)
       END IF
@@ -152,7 +152,7 @@ CONTAINS
             END DO
           END DO
         END DO
-        data = data * TEMP0
+        data = data * temp0
         CALL cfd_write_3d_cartesian_variable_parallel("Temperature", "Fluid", &
             dims, stagger, "Grid", "Grid", data, subtype)
       END IF
@@ -166,7 +166,7 @@ CONTAINS
             END DO
           END DO
         END DO
-        data = data * PRESSURE0
+        data = data * pressure0
         CALL cfd_write_3d_cartesian_variable_parallel("Pressure", "Fluid", &
             dims, stagger, "Grid", "Grid", data, subtype)
       END IF
@@ -180,19 +180,19 @@ CONTAINS
             END DO
           END DO
         END DO
-        data = data * VEL0
+        data = data * vel0
         CALL cfd_write_3d_cartesian_variable_parallel("cs", "Fluid", &
             dims, stagger, "Grid", "Grid", data, subtype)
       END IF
 
       IF (dump_mask(12)) THEN
-        data = parallel_current(0:nx, 0:ny, 0:nz) * J0
+        data = parallel_current(0:nx, 0:ny, 0:nz) * j0
         CALL cfd_write_3d_cartesian_variable_parallel("j_par", "PIP", &
             dims, stagger, "Grid", "Grid", data, subtype)
       END IF
 
       IF (dump_mask(13)) THEN
-        data = perp_current(0:nx, 0:ny, 0:nz) * J0
+        data = perp_current(0:nx, 0:ny, 0:nz) * j0
         CALL cfd_write_3d_cartesian_variable_parallel("j_perp", "PIP", &
             dims, stagger, "Grid", "Grid", data, subtype)
       END IF
@@ -204,31 +204,31 @@ CONTAINS
       END IF
 
       IF (dump_mask(15)) THEN
-        data = eta_perp(0:nx, 0:ny, 0:nz) * RES0
+        data = eta_perp(0:nx, 0:ny, 0:nz) * res0
         CALL cfd_write_3d_cartesian_variable_parallel("eta_perp", "PIP", &
             dims, stagger, "Grid", "Grid", data, subtype)
       END IF
 
       IF (dump_mask(16)) THEN
-        data = eta(0:nx, 0:ny, 0:nz) * RES0
+        data = eta(0:nx, 0:ny, 0:nz) * res0
         CALL cfd_write_3d_cartesian_variable_parallel("eta", "PIP", &
             dims, stagger, "Grid", "Grid", data, subtype)
       END IF
 
       IF (dump_mask(17)) THEN
-        data = jx_r(0:nx, 0:ny, 0:nz) * J0
+        data = jx_r(0:nx, 0:ny, 0:nz) * j0
         CALL cfd_write_3d_cartesian_variable_parallel("jx", "current", &
             dims, stagger, "Grid", "Grid", data, subtype)
       END IF
 
       IF (dump_mask(18)) THEN
-        data = jy_r(0:nx, 0:ny, 0:nz) * J0
+        data = jy_r(0:nx, 0:ny, 0:nz) * j0
         CALL cfd_write_3d_cartesian_variable_parallel("jy", "current", &
             dims, stagger, "Grid", "Grid", data, subtype)
       END IF
 
       IF (dump_mask(19)) THEN
-        data = jz_r(0:nx, 0:ny, 0:nz) * J0
+        data = jz_r(0:nx, 0:ny, 0:nz) * j0
         CALL cfd_write_3d_cartesian_variable_parallel("jz", "current", &
             dims, stagger, "Grid", "Grid", data, subtype)
       END IF
@@ -246,7 +246,7 @@ CONTAINS
     END IF
 
     IF (last_call .AND. rank == 0) THEN ! output energy diagnostics etc
-      WRITE(20, *) 'final nsteps / time =', i, time * T0
+      WRITE(20, *) 'final nsteps / time =', i, time * t0
     END IF
 
   END SUBROUTINE output_routines
