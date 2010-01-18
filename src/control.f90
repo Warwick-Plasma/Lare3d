@@ -120,10 +120,12 @@ CONTAINS
     lambda0 = 0.0_num
 
     ! Turn on or off the Braginskii thermal conduction term in
-    ! the MHD equations
+    ! the MHD equations   
+    ! WARNING: this is not robust. It is known to have problems 
+    ! with steep temperature gradients and very hot regions with
+    ! large thermal conductivity. For many problems it is however
+    ! fine. An improved version which will be robust is on its way.    
     conduction = .TRUE. 
-    ! Turn on limiter for heat flux based on maximum enthalpy flow
-    heat_flux_limited = .FALSE.
 
     ! Remap kinetic energy correction. LARE does not
     ! perfectly conserve kinetic energy during the remap step
