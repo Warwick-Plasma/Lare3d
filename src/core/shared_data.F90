@@ -13,7 +13,7 @@ MODULE constants
 #endif  
   INTEGER, PARAMETER :: dbl = KIND(1.D0)
   REAL(num), PARAMETER :: pi = 3.14159265358979323_num
-  REAL(num), PARAMETER :: none_zero = TINY(1.0_num) * 10000.0_num
+  REAL(num), PARAMETER :: none_zero = TINY(1.0_num) 
   REAL(num), PARAMETER :: largest_number = HUGE(1.0_num)
   INTEGER, PARAMETER :: BC_PERIODIC = 1, BC_OTHER = 2
   INTEGER, PARAMETER :: BC_OPEN = 3
