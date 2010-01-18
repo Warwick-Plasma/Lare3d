@@ -47,7 +47,7 @@ MODULE normalise
   REAL(num) :: mbar
 
   ! Magnetic field conversion factor (in T)
-  REAL(num) :: b0 = 1.0_num
+  REAL(num) :: B0 = 1.0_num
 
   ! Specific energy density conversion factor in K
   REAL(num) :: energy0 = 1.0_num
@@ -62,7 +62,7 @@ MODULE normalise
   REAL(num) :: t0 = 1.0_num
 
   ! Length conversion factor in m
-  REAL(num) :: l0 = 1.0_num
+  REAL(num) :: L0 = 1.0_num
 
   ! Current conversion factor in A
   REAL(num) :: j0 = 1.0_num
