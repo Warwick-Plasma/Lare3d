@@ -784,9 +784,9 @@ CONTAINS
           modj = SQRT(w4**2 + w5**2 + w6**2)
 
           IF (modj >= j_max) THEN
-            eta(ix, iy, iz) = eta_background
-          ELSE
             eta(ix, iy, iz) = eta_background + eta0
+          ELSE
+            eta(ix, iy, iz) = eta_background 
           END IF
         END DO
       END DO
