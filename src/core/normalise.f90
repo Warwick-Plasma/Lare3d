@@ -40,52 +40,52 @@ MODULE normalise
   ! Mass of hydrogen ion
   REAL(num) :: mh = mh_0
 
-  ! Average mass of all particles in proton masses
+  ! Average mass of all ions in proton masses
   REAL(num) :: mf
 
-  ! Average mass of a particle (assuming even mix of hydrogen ions & electrons)
-  REAL(num) :: MBAR
+  ! Average mass of a an ion 
+  REAL(num) :: mbar
 
   ! Magnetic field conversion factor (in T)
-  REAL(num) :: B0 = 1.0_num
+  REAL(num) :: b0 = 1.0_num
 
   ! Specific energy density conversion factor in K
-  REAL(num) :: ENERGY0 = 1.0_num
+  REAL(num) :: energy0 = 1.0_num
 
   ! Velocity conversion factor in m / s
-  REAL(num) :: VEL0 = 1.0_num
+  REAL(num) :: vel0 = 1.0_num
 
   ! Density conversion factor in kgm^{ - 3}
-  REAL(num) :: RHO0 = 1.0_num
+  REAL(num) :: rho0 = 1.0_num
 
   ! Time conversion factor in units of s
-  REAL(num) :: T0 = 1.0_num
+  REAL(num) :: t0 = 1.0_num
 
   ! Length conversion factor in m
-  REAL(num) :: L0 = 1.0_num
+  REAL(num) :: l0 = 1.0_num
 
   ! Current conversion factor in A
-  REAL(num) :: J0 = 1.0_num
+  REAL(num) :: j0 = 1.0_num
 
   ! Temperature conversion factor
-  REAL(num) :: TEMP0 = 1.0_num
+  REAL(num) :: temp0 = 1.0_num
 
   ! Pressure Conversion factor
-  REAL(num) :: PRESSURE0 = 1.0_num
+  REAL(num) :: pressure0 = 1.0_num
 
   ! These conversion factors are used to convert additional variables
   ! They are locked once the basic conversion variables are set
   ! Gravity conversion factor in ms^{ - 2}
-  REAL(num) :: GRAV0 = 1.0_num
+  REAL(num) :: grav0 = 1.0_num
 
   ! Viscosity conversion factor in m^2 / s
-  REAL(num) :: VISC0 = 1.0_num
+  REAL(num) :: visc0 = 1.0_num
 
   ! Reistivity conversion factor in m^2 / s
-  REAL(num) :: RES0 = 1.0_num
+  REAL(num) :: res0 = 1.0_num
 
   ! Thermal conductivity conversion factor in kg / m / s
-  REAL(num) :: KAPPA0 = 1.0_num
+  REAL(num) :: kappa0 = 1.0_num
 
 CONTAINS
 
@@ -102,15 +102,15 @@ CONTAINS
       ! will calculate the normalised thermal conductivity
       ! The temperature dependence is added later 
 	    mbar = mh * mf
-      ENERGY0 = B0**2 / (MU0 * RHO0)
-      KAPPA0 = ENERGY0**(3.0_num / 2.0_num) * RHO0 * L0 &
-            / (MBAR / KB * ENERGY0)**(7.0_num / 2.0_num)    
-      kappa_0 = 1.e-11_num / KAPPA0
+      energy0 = b0**2 / (mu0 * rho0)
+      kappa0 = energy0**(3.0_num / 2.0_num) * rho0 * l0 &
+            / (mbar / kb * energy0)**(7.0_num / 2.0_num)    
+      kappa_0 = 1.e-11_num / kappa0
       ! If not running as an SI code then force normalisation off
       ! Ignore any values read from the input deck
-      B0 = 1.0_num
-      RHO0 = 1.0_num
-      L0 = 1.0_num
+      b0 = 1.0_num
+      rho0 = 1.0_num
+      l0 = 1.0_num
 
       ! Set the constants to one as well, so that
       ! you can use them in the main code
@@ -129,29 +129,28 @@ CONTAINS
 
   SUBROUTINE derived_quantities
 
-    ! Average particle mass is mass of proton * mass of average particle
-    ! in proton masses
-    MBAR = mh * mf
+    ! Average ion mass 
+    mbar = mh * mf
 
-    VEL0 = B0 / SQRT(MU0 * RHO0) ! Velocity
-    ENERGY0 = VEL0**2            ! Specific energy density
-    T0 = L0 / VEL0               ! Time
+    vel0 = b0 / SQRT(mu0 * rho0) ! Velocity
+    energy0 = vel0**2            ! Specific energy density
+    t0 = l0 / vel0               ! Time
 
     ! Put code in here to normalise any derived quantities
-    GRAV0  = VEL0**2 / L0      ! g in kgms^ - 2
+    grav0  = vel0**2 / l0      ! g in kgms^ - 2
 
     ! viscosity (Input as inverse Reynolds so L0 * VEL0 * RHO0 not needed)
-    VISC0  = 1.0_num
+    visc0  = 1.0_num
 
     ! resistivity (Input as inverse Lundquist so L0 * VEL0 * MU0 not needed)
-    RES0   = 1.0_num
-    PRESSURE0 = B0**2 / MU0  ! Pressure
-    TEMP0 = MBAR * PRESSURE0 / (KB * RHO0) ! Temperature in K
-    J0 = B0 / (L0 * MU0)
+    res0   = 1.0_num
+    pressure0 = b0**2 / mu0  ! Pressure
+    temp0 = mbar * pressure0 / (kb * rho0) ! Temperature in K
+    j0 = b0 / (l0 * mu0)
 
     ! Thermal conductivity
-    KAPPA0 = ENERGY0**(3.0_num / 2.0_num) * RHO0 * L0 &
-        / (MBAR / KB * ENERGY0)**(7.0_num / 2.0_num)
+    kappa0 = energy0**(3.0_num / 2.0_num) * rho0 * l0 &
+        / (mbar / kb * energy0)**(7.0_num / 2.0_num)
 
   END SUBROUTINE derived_quantities
 
