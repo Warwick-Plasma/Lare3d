@@ -58,11 +58,11 @@ CONTAINS
     t_end = 1.0_num
 
     ! Shock viscosities as detailed in manual - they are dimensionless
-    visc1 = 0.1_num
-    visc2 = 0.5_num
+    visc1 = 0.0_num
+    visc2 = 0.0_num
     ! Real viscosity expressed as the inverse Reynolds number, i.e. the
     ! same for normalised and SI input
-    visc3 = 0.01_num
+    visc3 = 0.0_num
 
     ! Set these constants to manually
     ! override the domain decomposition.
@@ -153,7 +153,7 @@ CONTAINS
 
     ! If cowling_resistivity is true then the code calculates and
     ! applies the Cowling Resistivity to the MHD equations
-    cowling_resistivity = .TRUE.
+    cowling_resistivity = .FALSE.
 
     ! Set the boundary conditions on the four edges of the simulation domain
     ! Valid constants are
@@ -174,7 +174,7 @@ CONTAINS
     ! EOS_IDEAL - Simple ideal gas for perfectly ionised plasma
     ! EOS_PI - Simple ideal gas for partially ionised plasma
     ! EOS_ION - EOS_PI plus the ionisation potential
-    eos_number = EOS_ION
+    eos_number = EOS_PI
 
   END SUBROUTINE control_variables
 

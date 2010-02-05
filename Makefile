@@ -3,9 +3,9 @@
 #FFLAGS = -r8 -fast -fastsse -O3 -Mipa=fast -Minline -Munroll	#PGI optimised
 #FFLAGS = -Mbounds -g 				#PGI Debug
 #FFLAGS = -O3 -fast                            	#Intel
-#FFLAGS = -fpe0 -nothreads -traceback -fltconsistency -CB -g -inline_debug_info #Intel Debug
+#FFLAGS = -fpe0 -nothreads -traceback -fltconsistency -CB -g  #Intel Debug
  
-FFLAGS = -O1
+FFLAGS = -O1 
 
 # Set some of the build parameters
 TARGET = lare3d
@@ -14,10 +14,10 @@ TARGET = lare3d
 #QMONO = -DQ_MONO
 
 #Uncomment the following line to run in single precision
-QSINGLE = -DQ_SINGLE
+#QSINGLE = -DQ_SINGLE
 
 #Uncomment the following line to use first order scheme for resistive update
-QFIRSTORDER = -DQ_FIRSTORDER
+#QFIRSTORDER = -DQ_FIRSTORDER
 
 
 # --------------------------------------------------

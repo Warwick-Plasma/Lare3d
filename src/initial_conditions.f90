@@ -120,8 +120,6 @@ CONTAINS
        IF (maxerr < 1.e-10_num) EXIT
     END DO
     rho_ref(nz_global+1:nz_global+2) = rho_ref(nz_global)
-    ! set the relaxation rate, James used an exponent of -1.67, here I use the value
-    ! in the 2D paper of -1.67. The tau equation is scaled by 1/t0 * 0.1
 
     ! Convert into the local 3D arrays
     vx = 0.0_num

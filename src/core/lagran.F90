@@ -547,10 +547,10 @@ CONTAINS
              flag3=MAX(SIGN(1.0_num,dzb(iz)*ABS(fy)-dyb(iy)*ABS(fz)),0.0_num)
              flag4=MAX(SIGN(1.0_num,w1-1.e-6_num),0.0_num)
 
-             w2_1=dxb(ix)**2*w1 / MAX(fx**2, none_zero)
-             w2_2=dzb(iz)**2*w1 / MAX(fz**2,none_zero)
-             w2_3=dyb(iy)**2*w1 / MAX(fy**2,none_zero)
-             w2_4=dzb(iz)**2*w1 / MAX(fz**2,none_zero)
+             w2_1=dxb(ix)**2*w1 / MAX(fx**2, 1.e-20_num)
+             w2_2=dzb(iz)**2*w1 / MAX(fz**2, 1.e-20_num)
+             w2_3=dyb(iy)**2*w1 / MAX(fy**2, 1.e-20_num)
+             w2_4=dzb(iz)**2*w1 / MAX(fz**2, 1.e-20_num)
 
              w2=w2_1*flag1*flag2 + w2_2*flag1*(1.0_num-flag2)&
                   +w2_3*(1.0_num-flag1)*flag3 + w2_4*(1.0_num-flag1)*(1.0_num-flag3)
