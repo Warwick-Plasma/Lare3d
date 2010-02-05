@@ -93,8 +93,8 @@ MODULE shared_data
   ! Heat conduction
 
   LOGICAL :: conduction
-  LOGICAL :: heat_flux_limited = .FALSE.
-  REAL(num) :: kappa_0
+  LOGICAL :: heat_flux_limiter
+  REAL(num) :: kappa_0, flux_limiter
 
   ! RTV radiation
   LOGICAL :: radiation
@@ -117,7 +117,7 @@ MODULE shared_data
   REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: eta_perp, xi_n, eta_perp0
   REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: parallel_current, perp_current
   LOGICAL :: include_neutrals, cowling_resistivity
-  REAL(num) :: f_bar, T_bar, tr_bar, ionise_pot, r_bar
+  REAL(num) :: f_bar, t_bar, tr, ionise_pot, r_bar
   REAL(num) :: eta_bar
 
   ! MPI data
