@@ -237,12 +237,12 @@ CONTAINS
     CALL energy_MPI
 
     IF (front == MPI_PROC_NULL .AND. zbc_front == BC_OTHER) THEN
-      energy(:, :,  0) = 0.0_num !energy(:, :, 1)
-      energy(:, :, -1) = 0.0_num !energy(:, :, 2)
+      energy(:, :,  0) = energy(:, :, 1)
+      energy(:, :, -1) = energy(:, :, 2)
     END IF
     IF (back == MPI_PROC_NULL .AND. zbc_back == BC_OTHER) THEN
-      energy(:, :, nz+1) = 0.0_num !energy(:, :, nz  )
-      energy(:, :, nz+2) = 0.0_num !energy(:, :, nz-1)
+      energy(:, :, nz+1) = energy(:, :, nz  )
+      energy(:, :, nz+2) = energy(:, :, nz-1)
     END IF
 
     IF (right == MPI_PROC_NULL .AND. xbc_right == BC_OTHER) THEN

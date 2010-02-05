@@ -32,11 +32,11 @@ CONTAINS
     ! they are arbitrary.
 
     ! Magnetic field normalisation in Tesla
-    B0 = 0.01_num
+    B0 = 0.12_num
     ! Length normalisation in m
-    L0 = 1.e6_num
+    L0 = 150.e3_num
     ! Density normalisation in kg / m^3
-    RHO0 = 1.67e-12_num
+    RHO0 = 2.7e-4_num
 
   END SUBROUTINE user_normalisation
 
@@ -51,18 +51,18 @@ CONTAINS
 
     ! Set the maximum number of iterations of the core solver before the code
     ! terminates. If nsteps < 0 then the code will run until t = t_end
-    nsteps = -1
+    nsteps = 1
 
     ! The maximum runtime of the code
     ! If SI_Input is true then this is in seconds
-    t_end = 100.0_num
+    t_end = 1.0_num
 
     ! Shock viscosities as detailed in manual - they are dimensionless
     visc1 = 0.1_num
     visc2 = 0.5_num
     ! Real viscosity expressed as the inverse Reynolds number, i.e. the
     ! same for normalised and SI input
-    visc3 = 0.0_num
+    visc3 = 0.01_num
 
     ! Set these constants to manually
     ! override the domain decomposition.
@@ -75,20 +75,20 @@ CONTAINS
 
     ! The length of the domain in the x direction
     ! If SI_Input is true then this is in metres
-    x_start = -2.0_num
-    x_end = 2.0_num
+    x_start = -75.0_num
+    x_end = 75.0_num
     ! Should the x grid be stretched or uniform
     x_stretch = .FALSE.
 
     ! The length of the domain in the y direction
     ! If SI_Input is true then this is in metres
-    y_start = -2.0_num
-    y_end = 2.0_num
+    y_start = -75.0_num
+    y_end = 75.0_num
     ! Should the y grid be stretched of uniform
     y_stretch = .FALSE.
 
-    z_start = -10.0_num
-    z_end = 10.0_num
+    z_start = -20.0_num
+    z_end = 130.0_num
     z_stretch = .FALSE.
 
     ! Turn on or off the resistive parts of the MHD equations
@@ -96,15 +96,15 @@ CONTAINS
 
     ! The background resistivity expressed as the inverse Lundquist
     ! number, i.e. the same for normalised and SI input
-    eta_background = 2.e-5_num
+    eta_background = 0.0_num
 
     ! The critical current for triggering anomalous resistivity
     ! and the resistivity when above the critical current
     ! The resistivity is expressed as the inverse Lundquist number, i.e. the
     ! same for normalised and SI input, bit the j_max must be in SI
     ! if using SI units
-    j_max = 5.0_num
-    eta0 = 1.e-3_num
+    j_max = 0.0_num
+    eta0 = 0.0_num
 
     ! Turn on or off the hall_mhd term in the MHD equations
     ! Well actually this does nothing as it isn't fully
@@ -125,8 +125,12 @@ CONTAINS
     ! with steep temperature gradients and very hot regions with
     ! large thermal conductivity. For many problems it is however
     ! fine. An improved version which will be robust is on its way.    
-    conduction = .TRUE. 
-
+    conduction = .FALSE. 
+    ! Apply a flux limiter to stop heat flows exceeding free streaming limit
+    heat_flux_limiter = .FALSE.
+    ! Fraction of free streaming heat flux used in limiter
+    flux_limiter = 0.01_num
+    
     ! Remap kinetic energy correction. LARE does not
     ! perfectly conserve kinetic energy during the remap step
     ! This missing energy can be added back into the simulation
@@ -139,27 +143,27 @@ CONTAINS
     !         to setup new initial conditions
     ! IC_RESTART - Load the output file with index restart_snapshot and
     ! use it as the initial conditions
-    initial = IC_RESTART
-    restart_snapshot = 11
+    initial = IC_NEW
+    restart_snapshot = 1
 
     ! Turn on or off the physics package dealing with partial ionisation
     ! If include_neutrals is true then the code will calculate the
     ! ionisation fraction of the plasma at each point in the domain
-    include_neutrals = .FALSE.
+    include_neutrals = .TRUE.
 
     ! If cowling_resistivity is true then the code calculates and
     ! applies the Cowling Resistivity to the MHD equations
-    cowling_resistivity = .FALSE.
+    cowling_resistivity = .TRUE.
 
     ! Set the boundary conditions on the four edges of the simulation domain
     ! Valid constants are
     ! BC_PERIODIC - Periodic boundary conditions
     ! BC_OPEN - Reimann characteristic boundary conditions
     ! BC_OTHER - Other boundary conditions specified in "boundary.f90"
-    xbc_left = BC_OTHER
-    xbc_right = BC_OTHER
-    ybc_up = BC_OTHER
-    ybc_down = BC_OTHER
+    xbc_left = BC_PERIODIC
+    xbc_right = BC_PERIODIC
+    ybc_up = BC_PERIODIC
+    ybc_down = BC_PERIODIC
     zbc_front = BC_OTHER
     zbc_back = BC_OTHER
 
@@ -170,7 +174,7 @@ CONTAINS
     ! EOS_IDEAL - Simple ideal gas for perfectly ionised plasma
     ! EOS_PI - Simple ideal gas for partially ionised plasma
     ! EOS_ION - EOS_PI plus the ionisation potential
-    eos_number = EOS_IDEAL
+    eos_number = EOS_ION
 
   END SUBROUTINE control_variables
 
@@ -183,7 +187,7 @@ CONTAINS
 
     ! The interval between output snapshots. If SI_Input is true
     ! Then this is in seconds
-    dt_snapshots = 1.0_num
+    dt_snapshots = 10.0_num
 
     ! dump_mask is an array which specifies which quantities the
     ! code should output to disk in a data dump.
@@ -212,7 +216,6 @@ CONTAINS
     ! N.B. if dump_mask(1:8) not true then the restart will not work
     dump_mask = .FALSE.
     dump_mask(1:10) = .TRUE. 
-    dump_mask(16) = .TRUE. 
     IF (include_neutrals)  dump_mask(14) = .TRUE. 
     IF (resistive_mhd)  dump_mask(16) = .TRUE. 
     IF (cowling_resistivity)  dump_mask(15) = .TRUE. 
