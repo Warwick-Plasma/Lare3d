@@ -15,10 +15,10 @@ MODULE neutral
 
 CONTAINS
 
+
   SUBROUTINE setup_neutral
     ! Ion neutral collision cross section(m^2)
     REAL(num) :: sigma_in = 5.0e-19_num
-    REAL(num) :: tr
 
     IF (include_neutrals) THEN
       ALLOCATE(xi_n(-1:nx+2, -1:ny+2, -1:nz+2))
@@ -36,22 +36,21 @@ CONTAINS
 
     ! Temperature of the photospheric radiation field
     tr = 7230.85_num
-    tr_bar = 1.0_num / tr
 
     ! Calculate fbar^(2 / 3) in (k^-1 m^-2)
     f_bar = pi * (me_0 / h_0) * (kb_0 / h_0)
-    f_bar = f_bar**(3.0_num / 2.0_num)
+    f_bar = SQRT(2.0_num) * f_bar**(3.0_num / 2.0_num)
 
     ! Calculate tbar in (K)
-    t_bar = ionise_pot / kb
+    t_bar = ionise_pot / kb_0
 
     ! Calculate rbar in (kg^-1)
     mbar = mh * mf                     
     r_bar = 4.0_num / mbar
 
     ! Calculate eta_bar in (m^4 / (k s kg^2))
-    eta_bar = (0.5_num / mbar &
-        * SQRT(16.0_num * kb_0 / (pi * mbar)) * sigma_in)**(-1)
+    eta_bar = 2.0_num * mbar &
+        / (SQRT(16.0_num * kb_0 / (pi * mbar)) * sigma_in)
 
   END SUBROUTINE setup_neutral
 
@@ -62,7 +61,7 @@ CONTAINS
     ! This subroutine calculates the cross field resistivity at the current
     ! temperature. 
 
-    REAL(num) :: f, xi_v, bxv, byv, bzv, bfieldsq, rho_v, T_v, T
+    REAL(num) :: f, xi_v, bxv, byv, bzv, bfieldsq, rho_v, t_v, T
     INTEGER :: ixp, iyp, izp
 
     DO iz = 0, nz
@@ -96,25 +95,25 @@ CONTAINS
               + bz(ixp, iyp, iz)) / 4.0_num
           bfieldsq = bxv**2 + byv**2 + bzv**2
 
-          T_v = 0.0_num
+          t_v = 0.0_num
           ! Get the vertex temperature
           DO izp = iz, iz + 1
             DO iyp = iy, iy + 1
               DO ixp = ix, ix + 1
                 CALL get_temp(rho(ixp, iyp, izp), energy(ixp, iyp, izp), &
                     eos_number, ixp, iyp, izp, T)
-                T_v = T_v + T
+                t_v = t_v + T
               END DO
             END DO
           END DO
-          T_v = T_v / 8.0_num
+          t_v = t_v / 8.0_num
 
-          xi_v = get_neutral(T_v, rho_v)
+          xi_v = get_neutral(t_v, rho_v)
 
           f = MAX(1.0_num - xi_v, none_zero)
           IF (f .GT. 0) THEN
             eta_perp(ix, iy, iz) = eta_bar * xi_v / f * bfieldsq &
-                / rho_v**2 / SQRT(T_v)
+                / rho_v**2 / SQRT(t_v)
           ELSE
             eta_perp(ix, iy, iz) = 0.0_num
           END IF
@@ -134,8 +133,8 @@ CONTAINS
     REAL(num) :: get_neutral
     REAL(num) :: bof, r
 
-    bof = tr_bar / (f_bar * SQRT(t_v)) &
-        * EXP((0.25_num * (tr_bar * t_v - 1.0_num) + 1.0_num) &
+    bof = 1.0_num / (f_bar * tr * SQRT(t_v)) &
+        * EXP((0.25_num * (t_v / tr - 1.0_num) + 1.0_num) &
         * T_bar / t_v)
     r = 0.5_num * (-1.0_num + SQRT(1.0_num + r_bar * rho_v * bof))
     get_neutral = r / (1.0_num + r)
@@ -213,7 +212,7 @@ CONTAINS
       ! calculated is correct here, calculate it straight from the temperature
       xi_local = get_neutral(temp_in, rho_in)  
       en_out = (kb * temp_in * (2.0_num - xi_local)) &
-          / (MBAR * (gamma - 1.0_num))
+          / (mbar * (gamma - 1.0_num))
       RETURN
     END IF
   
@@ -223,7 +222,7 @@ CONTAINS
       xi_local = get_neutral(temp_in, rho_in)    
       en_out = (kb * temp_in * (2.0_num - xi_local) &
           + (1.0_num - xi_local) * ionise_pot * (gamma - 1.0_num)) &
-          / (MBAR * (gamma - 1.0_num))
+          / (mbar * (gamma - 1.0_num))
       RETURN
     END IF
   
