@@ -35,7 +35,7 @@ CONTAINS
     ionise_pot = ionise_pot_0
 
     ! Temperature of the photospheric radiation field
-    tr = 7230.85_num
+    tr = 6400.0_num 
 
     ! Calculate fbar^(2 / 3) in (k^-1 m^-2)
     f_bar = pi * (me_0 / h_0) * (kb_0 / h_0)
@@ -118,7 +118,7 @@ CONTAINS
             eta_perp(ix, iy, iz) = 0.0_num
           END IF
 
-          eta_perp(ix, iy, iz) = MIN(eta_perp(ix, iy, iz), 0.0001_num)
+!          eta_perp(ix, iy, iz) = MIN(eta_perp(ix, iy, iz), 0.0001_num)
         END DO
       END DO
     END DO
