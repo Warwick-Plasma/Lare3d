@@ -107,11 +107,11 @@ CONTAINS
 
     ! Normalise the initial conditions
 
-    rho = rho / RHO0
-    energy = energy / ENERGY0
-    vx = vx / VEL0
-    vy = vy / VEL0
-    vz = vz / VEL0
+    rho = rho / rho0
+    energy = energy / energy0
+    vx = vx / vel0
+    vy = vy / vel0
+    vz = vz / vel0
     bx = bx / B0
     by = by / B0
     bz = bz / B0
@@ -124,15 +124,15 @@ CONTAINS
 
     ! Normalise gravity etc.
 
-    grav = grav / GRAV0
-    visc3 = visc3 / VISC0
-    eta0 = eta0 / RES0
-    eta_background = eta_background / RES0
+    grav = grav / grav0
+    visc3 = visc3 / visc0
+    eta0 = eta0 / res0
+    eta_background = eta_background / res0
 
     ! the SI value for the constant in the conductivity
     ! assuming ln(Lambda) = 18.4
     kappa_0 = 1.0e-11_num
-    kappa_0 = kappa_0 / KAPPA0
+    kappa_0 = kappa_0 / kappa0
 
     time = time / T0
     t_end = t_end / T0
@@ -149,34 +149,28 @@ CONTAINS
     ! Of partially ionised plasmas
 
     ! Normalised mass
-    REAL(num) :: MASS0
 
-    REAL(num) :: tr ! Temperature of photospheric radiation field
     REAL(num) :: eta_bar_0
 
-    MASS0 = RHO0 * L0**2
-    PRESSURE0 = B0**2 / MU0 ! Pressure 
-    ENERGY0 = B0**2 / (MU0 * RHO0)   
-    RES0 = 1.0_num
-    TEMP0 = MBAR * PRESSURE0 / (KB * RHO0) ! Temperature in K
+    pressure0 = B0**2 / mu0 ! Pressure 
+    energy0 = B0**2 / (mu0 * rho0)   
+    res0 = 1.0_num
+    temp0 = mbar * pressure0 / (kb * rho0) ! Temperature in K
     
-    f_bar = f_bar * L0**2 * TEMP0**(3.0_num / 2.0_num)
-
     ! Normalise tbar
-    t_bar = t_bar / TEMP0
+    t_bar = t_bar / temp0
 
-    ! Normalise rbar
-    r_bar = r_bar * MASS0
+    ! Redefine rbar to incluse normalisation from rho and b/f
+    r_bar = r_bar * rho0 / temp0**(3.0_num / 2.0_num)
 
     ! Normalise eta_bar
-    eta_bar_0 = 1.0_num * (RHO0**2 * SQRT(TEMP0) * RES0 / B0**2)
+    eta_bar_0 = rho0**2 * SQRT(temp0) * res0 / B0**2
     eta_bar = eta_bar / eta_bar_0
 
     ! Finally normalise ion_mass and ionise_pot which are needed in the code
-    ionise_pot = ionise_pot / (ENERGY0 * MASS0)
+    ionise_pot = ionise_pot / (energy0 * mbar)
 
-    tr = 7230.85_num / TEMP0
-    tr_bar = 1.0_num / tr
+    tr = tr / temp0
 
   END SUBROUTINE normalise_neutral
 
