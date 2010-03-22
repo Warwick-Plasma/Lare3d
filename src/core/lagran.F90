@@ -11,7 +11,8 @@ MODULE lagran
   USE boundary
   USE neutral
   USE diagnostics
-  USE eos
+  USE eos   
+  USE conduct
 
   IMPLICIT NONE
 
@@ -67,6 +68,8 @@ CONTAINS
 
       dt = actual_dt
     END IF
+
+    IF (conduction) CALL conduct_heat 
 
     DO iz = 0, nz+1
       izm = iz - 1
@@ -586,8 +589,7 @@ CONTAINS
           w1 = (bx1(ix, iy, iz)**2 + by1(ix, iy, iz)**2 + bz1(ix, iy, iz)**2) &
                 / rho(ix, iy, iz)
 
-          CALL get_cs(rho(ix, iy, iz), energy(ix, iy, iz), eos_number, &
-              ix, iy, iz, cs)
+          cs = SQRT(gamma*(gamma - 1.0_num) * energy(ix,iy,iz))    
           cf = SQRT(cs**2 + w1)
 
           p_visc(ix, iy, iz) = visc1 * ABS(s) * L*cf * rho(ix, iy, iz) &

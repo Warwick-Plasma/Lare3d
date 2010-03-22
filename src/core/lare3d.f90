@@ -14,7 +14,6 @@ PROGRAM lare3d
   USE eos
   USE neutral
   USE control 
-  USE conduct
 
   IMPLICIT NONE
 
@@ -70,7 +69,6 @@ PROGRAM lare3d
   DO
     IF ((i >= nsteps .AND. nsteps >= 0) .OR. (time >= t_end)) EXIT
     i = i + 1
-    IF (conduction) CALL conduct_heat          
     CALL eta_calc                    ! lagran.f90
     CALL set_dt                      ! diagnostics.f90  
     CALL lagrangian_step             ! lagran.f90

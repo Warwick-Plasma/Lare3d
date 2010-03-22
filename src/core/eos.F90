@@ -69,28 +69,4 @@ CONTAINS
 
 
 
-  SUBROUTINE get_cs(rho_in, energy_in, m_in, ix, iy, iz, cs_out)
-
-    REAL(num), INTENT(IN) :: rho_in, energy_in
-    INTEGER, INTENT(IN) :: m_in, ix, iy, iz
-    REAL(num), INTENT(OUT) :: cs_out
-
-    IF (m_in .EQ. EOS_IDEAL) THEN
-      cs_out = SQRT(gamma * (gamma - 1.0_num) * energy_in)
-      RETURN
-    END IF
-
-    IF (m_in .EQ. EOS_PI) THEN
-      cs_out = SQRT(gamma * (gamma - 1.0_num) * energy_in)
-      RETURN
-    END IF
-
-    IF (m_in .EQ. EOS_ION) THEN
-      cs_out = SQRT(gamma * (gamma - 1.0_num) * energy_in)
-      RETURN
-    END IF
-
-  END SUBROUTINE get_cs
-
-
 END MODULE EOS
