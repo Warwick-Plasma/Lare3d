@@ -172,15 +172,7 @@ CONTAINS
       END IF
 
       IF (dump_mask(11)) THEN
-        DO iz = 0, nz
-          DO iy = 0, ny
-            DO ix = 0, nx
-              CALL get_cs(rho(ix, iy, iz), energy(ix, iy, iz), &
-                  eos_number, ix, iy, iz, data(ix, iy, iz))
-            END DO
-          END DO
-        END DO
-        data = data * vel0
+        data = SQRT(gamma*(gamma - 1.0_num) * energy(0:nx,0:ny,0:nz)) * vel0
         CALL cfd_write_3d_cartesian_variable_parallel("cs", "Fluid", &
             dims, stagger, "Grid", "Grid", data, subtype)
       END IF
@@ -303,11 +295,10 @@ CONTAINS
         DO ix = -1, nx+2
           ixm = ix - 1
 
-          w1 = bx(ix, iy, iz)**2 + by(ix, iy, iz)**2 + bz(ix, iy, iz)**2
-          CALL get_cs(rho(ix, iy, iz), energy(ix, iy, iz), eos_number, &
-              ix, iy, iz, cs)
+          w1 = bx(ix, iy, iz)**2 + by(ix, iy, iz)**2 + bz(ix, iy, iz)**2 
+          cs = cons * energy(ix,iy,iz)      ! sound speed squared
 
-          w2 = SQRT(cs**2 + w1 / MAX(rho(ix, iy, iz), none_zero)) &
+          w2 = SQRT(cs + w1 / MAX(rho(ix, iy, iz), none_zero)) &
               + 2.0_num * SQRT(p_visc(ix, iy, iz) &
               / MAX(rho(ix, iy, iz), none_zero))
 
