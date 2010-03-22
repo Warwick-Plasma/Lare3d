@@ -64,6 +64,10 @@ clean:
 tidy:
 	@rm -rf $(OBJDIR) *.pbs.* *.sh.* $(SRCDIR)/*~ *.log
 
+.PHONEY: touch
+touch:
+	@touch src/* ; touch src/core/* 
+
 .PHONEY: datatidy
 datatidy:
 	@rm -rf Data/*
