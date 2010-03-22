@@ -94,7 +94,7 @@ MODULE shared_data
 
   LOGICAL :: conduction
   LOGICAL :: heat_flux_limiter
-  REAL(num) :: kappa_0, flux_limiter
+  REAL(num) :: kappa_0, flux_limiter, temperature_100mk  
 
   ! RTV radiation
   LOGICAL :: radiation

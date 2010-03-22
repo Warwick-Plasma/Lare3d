@@ -106,6 +106,11 @@ CONTAINS
       kappa0 = energy0**(3.0_num / 2.0_num) * rho0 * L0 &
             / (mbar / kb * energy0)**(7.0_num / 2.0_num)    
       kappa_0 = 1.e-11_num / kappa0
+
+      !find the normalised temperature corresponding to 100MK
+      temp0 = mbar * B0**2 / (kb * mu0 * rho0) ! Temperature in K
+      temperature_100mk = 1.e8_num / temp0
+
       ! If not running as an SI code then force normalisation off
       ! Ignore any values read from the input deck
       B0 = 1.0_num
