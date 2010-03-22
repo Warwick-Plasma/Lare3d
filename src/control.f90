@@ -124,9 +124,10 @@ CONTAINS
     ! WARNING: this is not robust. It is known to have problems 
     ! with steep temperature gradients and very hot regions with
     ! large thermal conductivity. For many problems it is however
-    ! fine. An improved version which will be robust is on its way.    
+    ! fine.     
     conduction = .FALSE. 
     ! Apply a flux limiter to stop heat flows exceeding free streaming limit
+    ! this is an experimental feature
     heat_flux_limiter = .FALSE.
     ! Fraction of free streaming heat flux used in limiter
     flux_limiter = 0.01_num
