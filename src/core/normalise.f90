@@ -96,7 +96,9 @@ CONTAINS
     ! L0 the normalising length (in m)
     ! Rho0 the normalising density (in kgm^{ - 3})
     ! The code will generate the rest
-
+    
+    temperature_100mk = 1.e8_num
+    
     IF (.NOT. SI) THEN
       ! Assuming you have set B0, RHO0 and L0 correctly then this
       ! will calculate the normalised thermal conductivity
@@ -108,7 +110,7 @@ CONTAINS
       kappa_0 = 1.e-11_num / kappa0
 
       !find the normalised temperature corresponding to 100MK
-      temp0 = mbar * B0**2 / (kb * mu0 * rho0) ! Temperature in K
+      temp0 = (mbar / kb) * B0**2 / (mu0 * rho0) ! Temperature in K
       temperature_100mk = 1.e8_num / temp0
 
       ! If not running as an SI code then force normalisation off
