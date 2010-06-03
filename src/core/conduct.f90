@@ -154,6 +154,7 @@ CONTAINS
           END DO
         END DO  
       END DO  
+
       DO iz = 0, nz+1
         DO iy = 0, ny+1
           DO ix = 0, nx+1  
