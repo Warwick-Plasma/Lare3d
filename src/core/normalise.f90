@@ -18,7 +18,7 @@ MODULE normalise
   REAL(num), PARAMETER :: kb_0 = 1.3806504e-23_num
 
   ! Mass of hydrogen ion
-  REAL(num), PARAMETER :: mh_0 = 1.660538782e-27_num
+  REAL(num), PARAMETER :: mh_0 = 1.67262158e-27_num
 
   ! Mass of electron
   REAL(num), PARAMETER :: me_0 = 9.10938188e-31_num
