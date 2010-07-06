@@ -61,7 +61,7 @@ CONTAINS
     END DO
 
     WRITE(*, *) ""
-    WRITE(*, '("Welcome to Lare3D Version ", I1, ".", I1, "BETA")'), &
+    WRITE(*, '("Welcome to Lare3D Version ", I1, ".", I1)'), &
         version, revision
     WRITE(*, *) ""
 

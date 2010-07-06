@@ -18,7 +18,7 @@ MODULE constants
   INTEGER, PARAMETER :: BC_PERIODIC = 1, BC_OTHER = 2
   INTEGER, PARAMETER :: BC_OPEN = 3
 
-  INTEGER, PARAMETER :: version = 2, revision = 2
+  INTEGER, PARAMETER :: version = 2, revision = 3
 
   ! IC codes
   ! This is a bitmask, remember that
