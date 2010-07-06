@@ -786,12 +786,12 @@ CONTAINS
 
      REAL(num) :: half_dt, dt6, area
      REAL(num) :: jx1, jx2, jy1, jy2, jz1, jz2
+#ifdef Q_FOURTHORDER
      REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: k1x, k2x, k3x, k4x
      REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: k1y, k2y, k3y, k4y
      REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: k1z, k2z, k3z, k4z
      REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: c1, c2, c3, c4
 
-#ifdef Q_FOURTHORDER
      ALLOCATE(k1x(0:nx, 0:ny, 0:nz), k2x(0:nx, 0:ny, 0:nz))
      ALLOCATE(k3x(0:nx, 0:ny, 0:nz), k4x(0:nx, 0:ny, 0:nz))
      ALLOCATE(k1y(0:nx, 0:ny, 0:nz), k2y(0:nx, 0:ny, 0:nz))
