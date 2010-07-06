@@ -726,55 +726,56 @@ CONTAINS
     REAL(num) :: jx, jy, jz, jxxp, jyyp, jzzp
     REAL(num) :: modj
 
-    eta = 0.0_num
 
-    DO iz = -1, nz+1
-      izp = iz + 1
-      DO iy = -1, ny+1
-        iyp = iy + 1
-        DO ix = -1, nx+1
-          ixp = ix + 1
-
-          ! jx at E3(i, j)
-          jx = (bz(ix, iyp, iz) - bz(ix, iy, iz)) / dyc(iy) &
-              - (by(ix, iy, izp) - by(ix, iy, iz)) / dzc(iz)
-
-          ! jx at E3(i+1, j)
-          jxxp = (bz(ixp, iyp, iz) - bz(ixp, iy, iz)) / dyc(iy) &
-              - (by(ixp, iy, izp) - by(ixp, iy, iz)) / dzc(iz)
-
-          ! jy at E2(i, j)
-          jy = (bx(ix, iy, izp) - bx(ix, iy, iz)) / dzc(iz) &
-              - (bz(ixp, iy, iz) - bz(ix, iy, iz)) / dxc(ix)
-
-          ! jy at E2(i, j+1)
-          jyyp = (bx(ix, iyp, izp) - bx(ix, iyp, iz)) / dzc(iz) &
-              - (bz(ixp, iyp, iz) - bz(ix, iyp, iz)) / dxc(ix)
-
-          ! jz at E1(i, j)
-          jz = (by(ixp, iy, iz) - by(ix, iy, iz)) / dxc(ix) &
-              - (bx(ix, iyp, iz) - bx(ix, iy, iz)) / dyc(iy)
-
-          ! jz at E1(i, j)
-          jzzp = (by(ixp, iy, izp) - by(ix, iy, izp)) / dxc(ix) &
-              - (bx(ix, iyp, izp) - bx(ix, iy, izp)) / dyc(iy)
-
-          ! current at V
-          w4 = (jx + jxxp) / 2.0_num
-          w5 = (jy + jyyp) / 2.0_num
-          w6 = (jz + jzzp) / 2.0_num
-          modj = SQRT(w4**2 + w5**2 + w6**2)
-
-          IF (modj >= j_max) THEN
-            eta(ix, iy, iz) = eta_background + eta0
-          ELSE
-            eta(ix, iy, iz) = eta_background 
-          END IF
+    IF (resistive_mhd) THEN
+      DO iz = -1, nz+1
+        izp = iz + 1
+        DO iy = -1, ny+1
+          iyp = iy + 1
+          DO ix = -1, nx+1
+            ixp = ix + 1
+  
+            ! jx at E3(i, j)
+            jx = (bz(ix, iyp, iz) - bz(ix, iy, iz)) / dyc(iy) &
+                - (by(ix, iy, izp) - by(ix, iy, iz)) / dzc(iz)
+  
+            ! jx at E3(i+1, j)
+            jxxp = (bz(ixp, iyp, iz) - bz(ixp, iy, iz)) / dyc(iy) &
+                - (by(ixp, iy, izp) - by(ixp, iy, iz)) / dzc(iz)
+  
+            ! jy at E2(i, j)
+            jy = (bx(ix, iy, izp) - bx(ix, iy, iz)) / dzc(iz) &
+                - (bz(ixp, iy, iz) - bz(ix, iy, iz)) / dxc(ix)
+  
+            ! jy at E2(i, j+1)
+            jyyp = (bx(ix, iyp, izp) - bx(ix, iyp, iz)) / dzc(iz) &
+                - (bz(ixp, iyp, iz) - bz(ix, iyp, iz)) / dxc(ix)
+  
+            ! jz at E1(i, j)
+            jz = (by(ixp, iy, iz) - by(ix, iy, iz)) / dxc(ix) &
+                - (bx(ix, iyp, iz) - bx(ix, iy, iz)) / dyc(iy)
+  
+            ! jz at E1(i, j)
+            jzzp = (by(ixp, iy, izp) - by(ix, iy, izp)) / dxc(ix) &
+                - (bx(ix, iyp, izp) - bx(ix, iy, izp)) / dyc(iy)
+  
+            ! current at V
+            w4 = (jx + jxxp) / 2.0_num
+            w5 = (jy + jyyp) / 2.0_num
+            w6 = (jz + jzzp) / 2.0_num
+            modj = SQRT(w4**2 + w5**2 + w6**2)
+  
+            IF (modj >= j_max) THEN
+              eta(ix, iy, iz) = eta_background + eta0
+            ELSE
+              eta(ix, iy, iz) = eta_background 
+            END IF
+          END DO
         END DO
       END DO
-    END DO
-
-    IF (.NOT. resistive_mhd) eta = 0.0_num
+    ELSE
+        eta = 0.0_num   
+    END IF 
 
   END SUBROUTINE eta_calc
 
@@ -896,6 +897,8 @@ CONTAINS
 !if complier flag set then use 4th order Runge-Kutta     
 #else    
      half_dt = dt / 2.0_num
+     dt6 = dt / 6.0_num
+
      k1x = flux_x
      k1y = flux_y
      k1z = flux_z
@@ -1052,7 +1055,6 @@ CONTAINS
      c4 = curlb        
 
      ! full update
-     dt6 = dt / 6.0_num
      k3x = k1x + 2.0_num * k2x + 2.0_num * k3x + k4x
      k3y = k1y + 2.0_num * k2y + 2.0_num * k3y + k4y
      k3z = k1z + 2.0_num * k2z + 2.0_num * k3z + k4z
@@ -1152,19 +1154,14 @@ CONTAINS
 
            jx1 = (bz(ix, iyp, iz) - bz(ix, iy, iz)) / dyc(iy) &
                - (by(ix, iy, izp) - by(ix, iy, iz)) / dzc(iz)
-
            jx2 = (bz(ixp, iyp, iz) - bz(ixp, iy, iz)) / dyc(iy) &
                - (by(ixp, iy, izp) - by(ixp, iy, iz)) / dzc(iz)
-
            jy1 = (bx(ix, iy, izp) - bx(ix, iy, iz)) / dzc(iz) &
                - (bz(ixp, iy, iz) - bz(ix, iy, iz)) / dxc(ix)
-
            jy2 = (bx(ix, iyp, izp) - bx(ix, iyp, iz)) / dzc(iz) &
                - (bz(ixp, iyp, iz) - bz(ix, iyp, iz)) / dxc(ix)
-
            jz1 = (by(ixp, iy, iz) - by(ix, iy, iz)) / dxc(ix) &
                - (bx(ix, iyp, iz) - bx(ix, iy, iz)) / dyc(iy)
-
            jz2 = (by(ixp, iy, izp) - by(ix, iy, izp)) / dxc(ix) &
                - (bx(ix, iyp, izp) - bx(ix, iy, izp)) / dyc(iy)
 
@@ -1207,19 +1204,14 @@ CONTAINS
 
              jx1 = (bz(ix, iyp, iz) - bz(ix, iy, iz)) / dyc(iy) &
                  - (by(ix, iy, izp) - by(ix, iy, iz)) / dzc(iz)
-
              jx2 = (bz(ixp, iyp, iz) - bz(ixp, iy, iz)) / dyc(iy) &
                  - (by(ixp, iy, izp) - by(ixp, iy, iz)) / dzc(iz)
-
              jy1 = (bx(ix, iy, izp) - bx(ix, iy, iz)) / dzc(iz) &
                  - (bz(ixp, iy, iz) - bz(ix, iy, iz)) / dxc(ix)
-
              jy2 = (bx(ix, iyp, izp) - bx(ix, iyp, iz)) / dzc(iz) &
                  - (bz(ixp, iyp, iz) - bz(ix, iyp, iz)) / dxc(ix)
-
              jz1 = (by(ixp, iy, iz) - by(ix, iy, iz)) / dxc(ix) &
                  - (bx(ix, iyp, iz) - bx(ix, iy, iz)) / dyc(iy)
-
              jz2 = (by(ixp, iy, izp) - by(ix, iy, izp)) / dxc(ix) &
                  - (bx(ix, iyp, izp) - bx(ix, iy, izp)) / dyc(iy)
 
@@ -1245,19 +1237,14 @@ CONTAINS
 
              jx1 = (bz(ix, iyp, iz) - bz(ix, iy, iz)) / dyc(iy) &
                  - (by(ix, iy, izp) - by(ix, iy, iz)) / dzc(iz)
-
              jx2 = (bz(ixp, iyp, iz) - bz(ixp, iy, iz)) / dyc(iy) &
                  - (by(ixp, iy, izp) - by(ixp, iy, iz)) / dzc(iz)
-
              jy1 = (bx(ix, iy, izp) - bx(ix, iy, iz)) / dzc(iz) &
                  - (bz(ixp, iy, iz) - bz(ix, iy, iz)) / dxc(ix)
-
              jy2 = (bx(ix, iyp, izp) - bx(ix, iyp, iz)) / dzc(iz) &
                  - (bz(ixp, iyp, iz) - bz(ix, iyp, iz)) / dxc(ix)
-
              jz1 = (by(ixp, iy, iz) - by(ix, iy, iz)) / dxc(ix) &
                  - (bx(ix, iyp, iz) - bx(ix, iy, iz)) / dyc(iy)
-
              jz2 = (by(ixp, iy, izp) - by(ix, iy, izp)) / dxc(ix) &
                  - (bx(ix, iyp, izp) - bx(ix, iy, izp)) / dyc(iy)
 
