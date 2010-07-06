@@ -49,7 +49,7 @@ CONTAINS
     ! will have their normal SI values
 
     IF (m_in .EQ. EOS_IDEAL) THEN
-      temp_out = energy_in * (gamma - 1.0_num) / 2.0_num
+      temp_out = energy_in * (gamma - 1.0_num) * reduced_mass
       RETURN
     END IF
 

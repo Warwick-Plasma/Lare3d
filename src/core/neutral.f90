@@ -203,7 +203,7 @@ CONTAINS
     REAL(num) :: xi_local, bof, r
   
     IF (m_in .EQ. EOS_IDEAL) THEN
-      en_out = temp_in * kb / ((gamma - 1.0_num) * mbar / 2.0_num)
+      en_out = temp_in * kb / ((gamma - 1.0_num) * mbar * reduced_mass)
       RETURN
     END IF
   

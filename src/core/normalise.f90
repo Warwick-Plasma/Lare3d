@@ -41,7 +41,10 @@ MODULE normalise
   REAL(num) :: mh = mh_0
 
   ! Average mass of all ions in proton masses
-  REAL(num) :: mf
+  REAL(num) :: mf    
+  
+  !reduced mass in units of average ion mass
+  REAL(num) :: reduced_mass
 
   ! Average mass of a an ion 
   REAL(num) :: mbar
