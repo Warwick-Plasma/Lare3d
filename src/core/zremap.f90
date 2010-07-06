@@ -313,8 +313,6 @@ CONTAINS
       izp2 = iz + 2
       DO iy = 0, ny
         iym  = iy - 1
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
         DO ix = 0, nx
           ixp  = ix + 1
 
@@ -377,8 +375,6 @@ CONTAINS
       izp2 = iz + 2
       DO iy = 0, ny
         iyp  = iy + 1
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
         DO ix = 0, nx
           ixm  = ix - 1
 
@@ -440,8 +436,6 @@ CONTAINS
       izp2 = iz + 2
       DO iy = 0, ny+1
         iym  = iy - 1
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
         DO ix = 0, nx+1
           ixm  = ix - 1
 
@@ -499,8 +493,6 @@ CONTAINS
       izp2 = iz + 2
       DO iy = 0, ny
         iym  = iy - 1
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
         DO ix = 0, nx
           ixm  = ix - 1
 
@@ -559,8 +551,6 @@ CONTAINS
       izp  = iz + 1
       izp2 = iz + 2
       DO iy = 0, ny
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
         DO ix = 0, nx
 
           v_advect = vz1(ix, iy, iz)
@@ -608,8 +598,6 @@ CONTAINS
         izp = iz + 1
         DO iy = 0, ny
           iyp = iy + 1
-          !DEC$ IVDEP
-          !DEC$ VECTOR ALWAYS
           DO ix = 0, nx
             ixp = ix + 1
 
@@ -654,8 +642,6 @@ CONTAINS
       izp  = iz + 1
       izp2 = iz + 2
       DO iy = 0, ny
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
         DO ix = 0, nx
 
           v_advect = vz1(ix, iy, iz)
@@ -703,8 +689,6 @@ CONTAINS
         izp = iz + 1
         DO iy = 0, ny
           iyp = iy + 1
-          !DEC$ IVDEP
-          !DEC$ VECTOR ALWAYS
           DO ix = 0, nx
             ixp = ix + 1
 
@@ -749,8 +733,6 @@ CONTAINS
       izp  = iz + 1
       izp2 = iz + 2
       DO iy = 0, ny
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
         DO ix = 0, nx
 
           v_advect = vz1(ix, iy, iz)
@@ -798,8 +780,6 @@ CONTAINS
         izp = iz + 1
         DO iy = 0, ny
           iyp = iy + 1
-          !DEC$ IVDEP
-          !DEC$ VECTOR ALWAYS
           DO ix = 0, nx
             ixp = ix + 1
 

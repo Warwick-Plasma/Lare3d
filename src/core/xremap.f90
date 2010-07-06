@@ -311,8 +311,6 @@ CONTAINS
       izm  = iz - 1
       DO iy = 0, ny
         iyp  = iy + 1
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
         DO ix = 0, nx
           ixm  = ix - 1
           ixp  = ix + 1
@@ -375,8 +373,6 @@ CONTAINS
       izp  = iz + 1
       DO iy = 0, ny
         iym  = iy - 1
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
         DO ix = 0, nx
           ixm  = ix - 1
           ixp  = ix + 1
@@ -465,8 +461,6 @@ CONTAINS
       izm  = iz - 1
       DO iy = 0, ny+1
         iym  = iy - 1
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
         DO ix = 0, nx
           ixm  = ix - 1
           ixp  = ix + 1
@@ -524,8 +518,6 @@ CONTAINS
       izm  = iz - 1
       DO iy = 0, ny
         iym  = iy - 1
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
         DO ix = 0, nx
           ixm  = ix - 1
           ixp  = ix + 1
@@ -583,8 +575,6 @@ CONTAINS
 
     DO iz = 0, nz
       DO iy = 0, ny
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
         DO ix = -1, nx
           ixm  = ix - 1
           ixp  = ix + 1
@@ -634,8 +624,6 @@ CONTAINS
         izp = iz + 1
         DO iy = 0, ny
           iyp = iy + 1
-          !DEC$ IVDEP
-          !DEC$ VECTOR ALWAYS
           DO ix = 0, nx-1
             ixm = ix - 1
             ixp = ix + 1
@@ -678,8 +666,6 @@ CONTAINS
 
     DO iz = 0, nz
       DO iy = 0, ny
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
         DO ix = -1, nx
           ixm  = ix - 1
           ixp  = ix + 1
@@ -729,8 +715,6 @@ CONTAINS
         izp = iz + 1
         DO iy = 0, ny
           iyp = iy + 1
-          !DEC$ IVDEP
-          !DEC$ VECTOR ALWAYS
           DO ix = 0, nx-1
             ixm = ix - 1
             ixp = ix + 1
@@ -773,8 +757,6 @@ CONTAINS
 
     DO iz = 0, nz
       DO iy = 0, ny
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
         DO ix = -1, nx
           ixm  = ix - 1
           ixp  = ix + 1
@@ -824,8 +806,6 @@ CONTAINS
         izp = iz + 1
         DO iy = 0, ny
           iyp = iy + 1
-          !DEC$ IVDEP
-          !DEC$ VECTOR ALWAYS
           DO ix = 0, nx-1
             ixm = ix - 1
             ixp = ix + 1

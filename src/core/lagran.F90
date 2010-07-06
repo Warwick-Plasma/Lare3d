@@ -2,9 +2,6 @@ MODULE lagran
 
   !-----------------------------------------------------------------
   ! This subroutine performs the Lagrangian step
-  ! Notes:
-  ! There are !#DEC$ directives in this routine
-  ! These override compilers vector analysis tools
   !-----------------------------------------------------------------
 
   USE shared_data
@@ -75,8 +72,6 @@ CONTAINS
       izm = iz - 1
       DO iy = 0, ny+1
         iym = iy - 1
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
         DO ix = 0, nx+1
           ixm = ix - 1
           bx1(ix, iy, iz) = (bx(ix, iy, iz) + bx(ixm, iy, iz)) / 2.0_num
@@ -119,8 +114,6 @@ CONTAINS
 
     DO iz = 0, nz+1
       DO iy = 0, ny+1
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
         DO ix = 0, nx+1
           dv = cv1(ix, iy, iz) / cv(ix, iy, iz) - 1.0_num
           ! predictor energy
@@ -146,8 +139,6 @@ CONTAINS
       izp = iz + 1
       DO iy = 0, ny
         iyp = iy + 1
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
         DO ix = 0, nx
           ixp = ix + 1
 
@@ -338,8 +329,6 @@ CONTAINS
       izm = iz - 1
       DO iy = 1, ny
         iym = iy - 1
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
         DO ix = 1, nx
           ixm = ix - 1
 
@@ -409,8 +398,6 @@ CONTAINS
 
     DO iz = -1, nz+2
       DO iy = -1, ny+2
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
         DO ix = -1, nx+2
           CALL get_pressure(rho(ix, iy, iz), energy(ix, iy, iz), eos_number, &
               ix, iy, iz, pressure(ix, iy, iz))
@@ -660,8 +647,6 @@ CONTAINS
       DO iy = 0, ny+1
         iym = iy - 1
         iyp = iy + 1
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
         DO ix = 0, nx+1
           ixm = ix - 1
           ixp = ix + 1
@@ -747,8 +732,6 @@ CONTAINS
       izp = iz + 1
       DO iy = -1, ny+1
         iyp = iy + 1
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
         DO ix = -1, nx+1
           ixp = ix + 1
 
