@@ -80,7 +80,6 @@ MODULE shared_data
   REAL(num) :: x_start, x_end, y_start, y_end, z_start, z_end
   REAL(num) :: gamma, eta0, j_max, dt_snapshots, lambda0, eta_background
   REAL(num) :: total_visc_heating = 0.0_num, total_ohmic_heating = 0.0_num
-  REAL(num) :: vc
 
   INTEGER :: xbc_right, ybc_up, xbc_left, ybc_down, zbc_front, zbc_back
   INTEGER :: ix, iy, iz, ixp, iyp, izp, ixm, iym, izm, xpass, ypass, zpass
@@ -91,7 +90,6 @@ MODULE shared_data
   LOGICAL :: restart
 
   ! Heat conduction
-
   LOGICAL :: conduction
   LOGICAL :: heat_flux_limiter
   REAL(num) :: kappa_0, flux_limiter, temperature_100mk  
@@ -109,7 +107,6 @@ MODULE shared_data
   INTEGER :: eos_number = EOS_IDEAL
 
   ! Damping boundary variables
-
   LOGICAL :: damping
   REAL(num) :: damp_rate
 
@@ -121,7 +118,6 @@ MODULE shared_data
   REAL(num) :: eta_bar
 
   ! MPI data
-
   INTEGER :: rank, left, right, up, down, front, back, coordinates(3)
   INTEGER :: errcode, comm, tag, nproc, nprocx, nprocy, nprocz
   INTEGER :: status(MPI_STATUS_SIZE)
