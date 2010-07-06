@@ -5,7 +5,7 @@
 #FFLAGS = -O3 -fast                            	#Intel
 #FFLAGS = -fpe0 -nothreads -traceback -fltconsistency -CB -g  #Intel Debug
  
-FFLAGS = -O1 
+FFLAGS = -O3 -fast
 
 # Set some of the build parameters
 TARGET = lare3d
@@ -16,8 +16,8 @@ TARGET = lare3d
 #Uncomment the following line to run in single precision
 #QSINGLE = -DQ_SINGLE
 
-#Uncomment the following line to use first order scheme for resistive update
-#QFIRSTORDER = -DQ_FIRSTORDER
+#Uncomment the following line to use fourth order RK scheme for resistive update
+#QFOURTHORDER = -DQ_FOURTHTORDER
 
 
 # --------------------------------------------------
