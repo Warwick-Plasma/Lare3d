@@ -868,7 +868,31 @@ CONTAINS
                * dt / (8.0_num * rho(ix, iy, iz))
          END DO
        END DO
+     END DO    
+     
+     CALL energy_bcs
+
+     DO iz = 0, nz
+       DO iy = 0, ny
+         DO ix = 0, nx
+           w1 = dt * dxc(ix) * dyc(iy) * dzc(iz) * curlb(ix, iy, iz)
+           IF ((ix == 0) .OR. (ix == nx)) THEN
+             w1 = w1 * 0.5_num
+           END IF
+
+           IF ((iy == 0) .OR. (iy == ny)) THEN
+             w1 = w1 * 0.5_num
+           END IF
+
+           IF ((iz == 0) .OR. (iz == nz)) THEN
+             w1 = w1 * 0.5_num
+           END IF
+
+           total_ohmic_heating = total_ohmic_heating + w1
+         END DO
+       END DO
      END DO
+     
 !if complier flag set then use 4th order Runge-Kutta     
 #else    
      half_dt = dt / 2.0_num
@@ -1093,6 +1117,30 @@ CONTAINS
          END DO
        END DO
      END DO
+
+     CALL energy_bcs
+
+     DO iz = 0, nz
+       DO iy = 0, ny
+         DO ix = 0, nx
+           w1 = dt6 * dxc(ix) * dyc(iy) * dzc(iz) * c1(ix, iy, iz)
+           IF ((ix == 0) .OR. (ix == nx)) THEN
+             w1 = w1 * 0.5_num
+           END IF
+
+           IF ((iy == 0) .OR. (iy == ny)) THEN
+             w1 = w1 * 0.5_num
+           END IF
+
+           IF ((iz == 0) .OR. (iz == nz)) THEN
+             w1 = w1 * 0.5_num
+           END IF
+
+           total_ohmic_heating = total_ohmic_heating + w1
+         END DO
+       END DO
+     END DO
+
 #endif
 
      DO iz = 0, nz
@@ -1127,28 +1175,6 @@ CONTAINS
        END DO
      END DO
 
-     CALL energy_bcs
-
-     DO iz = 0, nz
-       DO iy = 0, ny
-         DO ix = 0, nx
-           w1 = dt6 * dxc(ix) * dyc(iy) * dzc(iz) * c1(ix, iy, iz)
-           IF ((ix == 0) .OR. (ix == nx)) THEN
-             w1 = w1 * 0.5_num
-           END IF
-
-           IF ((iy == 0) .OR. (iy == ny)) THEN
-             w1 = w1 * 0.5_num
-           END IF
-
-           IF ((iz == 0) .OR. (iz == nz)) THEN
-             w1 = w1 * 0.5_num
-           END IF
-
-           total_ohmic_heating = total_ohmic_heating + w1
-         END DO
-       END DO
-     END DO
 
 #ifdef Q_FOURTHORDER
      DEALLOCATE(k1x, k2x, k3x, k4x, k1y, k2y, k3y, k4y, k1z, k2z, k3z, k4z)
