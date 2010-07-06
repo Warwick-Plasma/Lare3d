@@ -782,287 +782,518 @@ CONTAINS
 
   ! Calculate the effect of resistivity on the magnetic field and Ohmic heating
   ! Use the subroutine rkstep
-  SUBROUTINE resistive_effects
-  
-    REAL(num) :: flux
-    REAL(num) :: jx1, jy1, jz1, jx2, jy2, jz2 
-    
-    DO iz = 0, nz+1
-       DO iy = 0, ny+1
-          DO ix = 0, nx+1
-             bx1(ix,iy,iz) = bx(ix,iy,iz) * dyb(iy) * dzb(iz)  
-             by1(ix,iy,iz) = by(ix,iy,iz) * dxb(ix) * dzb(iz)
-             bz1(ix,iy,iz) = bz(ix,iy,iz) * dxb(ix) * dyb(iy)
-          END DO
+   SUBROUTINE resistive_effects
+
+     REAL(num) :: half_dt, dt6, area
+     REAL(num) :: jx1, jx2, jy1, jy2, jz1, jz2
+     REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: k1x, k2x, k3x, k4x
+     REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: k1y, k2y, k3y, k4y
+     REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: k1z, k2z, k3z, k4z
+     REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: c1, c2, c3, c4
+
+#ifdef Q_FOURTHORDER
+     ALLOCATE(k1x(0:nx, 0:ny, 0:nz), k2x(0:nx, 0:ny, 0:nz))
+     ALLOCATE(k3x(0:nx, 0:ny, 0:nz), k4x(0:nx, 0:ny, 0:nz))
+     ALLOCATE(k1y(0:nx, 0:ny, 0:nz), k2y(0:nx, 0:ny, 0:nz))
+     ALLOCATE(k3y(0:nx, 0:ny, 0:nz), k4y(0:nx, 0:ny, 0:nz))
+     ALLOCATE(k1z(0:nx, 0:ny, 0:nz), k2z(0:nx, 0:ny, 0:nz))
+     ALLOCATE(k3z(0:nx, 0:ny, 0:nz), k4z(0:nx, 0:ny, 0:nz))
+     ALLOCATE(c1(0:nx, 0:ny, 0:nz), c2(0:nx, 0:ny, 0:nz))
+     ALLOCATE(c3(0:nx, 0:ny, 0:nz), c4(0:nx, 0:ny, 0:nz))
+#endif
+
+     bx1 = bx(0:nx+1, 0:ny+1, 0:nz+1)
+     by1 = by(0:nx+1, 0:ny+1, 0:nz+1)
+     bz1 = bz(0:nx+1, 0:ny+1, 0:nz+1)
+
+     ! step 1
+     CALL rkstep  
+
+!default is first order in time   
+#ifndef Q_FOURTHORDER  
+     DO iz = 1, nz  
+       izm = iz - 1
+       DO iy = 1, ny
+         iym = iy - 1
+         DO ix = 0, nx
+           ixm = ix - 1
+           area = dzb(iz) * dyb(iy)
+           bx(ix, iy, iz) = bx1(ix, iy, iz) &
+            + (flux_z(ix,iy,iz) - flux_z(ix,iym,iz) + flux_z(ix,iy,izm) - flux_z(ix,iym,izm)) * dt / area &
+            - (flux_y(ix,iy,iz) - flux_y(ix,iy,izm) + flux_y(ix,iym,iz) - flux_y(ix,iym,izm)) * dt / area
+         END DO
        END DO
-    END DO
-
-    CALL resistive_flux
-
-    DO iz = 0, nz
+     END DO
+     
+     DO iz = 1, nz 
+       izm = iz - 1
        DO iy = 0, ny
-          DO ix = 0, nx
+         iym = iy - 1
+         DO ix = 1, nx
+           ixm = ix - 1
+           area = dxb(ix) * dzb(iz)
+           by(ix, iy, iz) = by1(ix, iy, iz) &
+            + (-flux_z(ix,iy,iz) + flux_z(ixm,iy,iz) - flux_z(ix,iy,izm) + flux_z(ixm,iy,izm)) * dt / area &
+            + (flux_x(ix,iy,iz) - flux_x(ix,iy,izm) + flux_x(ixm,iy,iz) - flux_x(ixm,iy,izm)) * dt / area
+         END DO
+       END DO
+     END DO
+     
+     DO iz = 0, nz
+       izm = iz - 1
+       DO iy = 1, ny
+         iym = iy - 1
+         DO ix = 1, nx
+           ixm = ix - 1  
+           area = dxb(ix) * dyb(iy)
+           bz(ix, iy, iz) = bz1(ix, iy, iz) &
+            + (flux_y(ix,iy,iz) - flux_y(ixm,iy,iz) + flux_y(ix,iym,iz) - flux_y(ixm,iym,iz)) * dt / area &
+            - (flux_x(ix,iy,iz) - flux_x(ix,iym,iz) + flux_x(ixm,iy,iz) - flux_x(ixm,iym,iz)) * dt / area
+         END DO
+       END DO
+     END DO
+     CALL bfield_bcs
+
+     DO iz = 1, nz
+       izm = iz - 1
+       DO iy = 1, ny
+         iym = iy - 1
+         DO ix = 1, nx
+           ixm = ix - 1
+           energy(ix, iy, iz) = energy(ix, iy, iz) &
+               + (curlb(ix, iy, iz) + curlb(ixm, iy, iz) &
+               + curlb(ix, iym, iz) + curlb(ix, iy, izm) &
+               + curlb(ixm, iym, iz) + curlb(ixm, iy, izm) &
+               + curlb(ix, iym, izm) + curlb(ixm, iym, izm)) &
+               * dt / (8.0_num * rho(ix, iy, iz))
+         END DO
+       END DO
+     END DO
+!if complier flag set then use 4th order Runge-Kutta     
+#else    
+     half_dt = dt / 2.0_num
+     k1x = flux_x
+     k1y = flux_y
+     k1z = flux_z
+     c1 = curlb
+     ! step 2
+     DO iz = 1, nz  
+       izm = iz - 1
+       DO iy = 1, ny
+         iym = iy - 1
+         DO ix = 0, nx
+           ixm = ix - 1
+           area = dzb(iz) * dyb(iy)
+           bx(ix, iy, iz) = bx1(ix, iy, iz) &
+               + (k1z(ix,iy,iz) - k1z(ix,iym,iz) + k1z(ix,iy,izm) - k1z(ix,iym,izm)) * dt6 / area &
+               - (k1y(ix,iy,iz) - k1y(ix,iy,izm) + k1y(ix,iym,iz) - k1y(ix,iym,izm)) * dt6 / area
+         END DO
+       END DO
+     END DO
+
+     DO iz = 1, nz 
+       izm = iz - 1
+       DO iy = 0, ny
+         iym = iy - 1
+         DO ix = 1, nx
+           ixm = ix - 1
+           area = dxb(ix) * dzb(iz)
+           by(ix, iy, iz) = by1(ix, iy, iz) &
+               + (-k1z(ix,iy,iz) + k1z(ixm,iy,iz) - k1z(ix,iy,izm) + k1z(ixm,iy,izm)) * dt6 / area &
+               + (k1x(ix,iy,iz) - k1x(ix,iy,izm) + k1x(ixm,iy,iz) - k1x(ixm,iy,izm)) * dt6 / area
+         END DO
+       END DO
+     END DO
+
+     DO iz = 0, nz
+       izm = iz - 1
+       DO iy = 1, ny
+         iym = iy - 1
+         DO ix = 1, nx
+           ixm = ix - 1  
+           area = dxb(ix) * dyb(iy)
+           bz(ix, iy, iz) = bz1(ix, iy, iz) &
+               + (k1y(ix,iy,iz) - k1y(ixm,iy,iz) + k1y(ix,iym,iz) - k1y(ixm,iym,iz)) * dt6 / area &
+               - (k1x(ix,iy,iz) - k1x(ix,iym,iz) + k1x(ixm,iy,iz) - k1x(ixm,iym,iz)) * dt6 / area
+         END DO
+       END DO
+     END DO
+
+     CALL bfield_bcs
+     CALL rkstep
+     k2x = flux_x
+     k2y = flux_y
+     k2z = flux_z
+     c2 = curlb
+
+     ! step 3
+     DO iz = 1, nz  
+       izm = iz - 1
+       DO iy = 1, ny
+         iym = iy - 1
+         DO ix = 0, nx
+           ixm = ix - 1
+           area = dzb(iz) * dyb(iy)
+           bx(ix, iy, iz) = bx1(ix, iy, iz) &
+               + (k2z(ix,iy,iz) - k2z(ix,iym,iz) + k2z(ix,iy,izm) - k2z(ix,iym,izm)) * dt6 / area &
+               - (k2y(ix,iy,iz) - k2y(ix,iy,izm) + k2y(ix,iym,iz) - k2y(ix,iym,izm)) * dt6 / area
+         END DO
+       END DO
+     END DO
+
+     DO iz = 1, nz 
+       izm = iz - 1
+       DO iy = 0, ny
+         iym = iy - 1
+         DO ix = 1, nx
+           ixm = ix - 1
+           area = dxb(ix) * dzb(iz)
+           by(ix, iy, iz) = by1(ix, iy, iz) &
+               + (-k2z(ix,iy,iz) + k2z(ixm,iy,iz) - k2z(ix,iy,izm) + k2z(ixm,iy,izm)) * dt6 / area &
+               + (k2x(ix,iy,iz) - k2x(ix,iy,izm) + k2x(ixm,iy,iz) - k2x(ixm,iy,izm)) * dt6 / area
+         END DO
+       END DO
+     END DO
+
+     DO iz = 0, nz
+       izm = iz - 1
+       DO iy = 1, ny
+         iym = iy - 1
+         DO ix = 1, nx
+           ixm = ix - 1  
+           area = dxb(ix) * dyb(iy)
+           bz(ix, iy, iz) = bz1(ix, iy, iz) &
+               + (k2y(ix,iy,iz) - k2y(ixm,iy,iz) + k2y(ix,iym,iz) - k2y(ixm,iym,iz)) * dt6 / area &
+               - (k2x(ix,iy,iz) - k2x(ix,iym,iz) + k2x(ixm,iy,iz) - k2x(ixm,iym,iz)) * dt6 / area
+         END DO
+       END DO
+     END DO
+
+
+     CALL bfield_bcs
+     CALL rkstep
+     k3x = flux_x
+     k3y = flux_y
+     k3z = flux_z
+     c3 = curlb
+
+     ! step 4
+     DO iz = 1, nz  
+       izm = iz - 1
+       DO iy = 1, ny
+         iym = iy - 1
+         DO ix = 0, nx
+           ixm = ix - 1
+           area = dzb(iz) * dyb(iy)
+           bx(ix, iy, iz) = bx1(ix, iy, iz) &
+               + (k3z(ix,iy,iz) - k3z(ix,iym,iz) + k3z(ix,iy,izm) - k3z(ix,iym,izm)) * dt6 / area &
+               - (k3y(ix,iy,iz) - k3y(ix,iy,izm) + k3y(ix,iym,iz) - k3y(ix,iym,izm)) * dt6 / area
+         END DO
+       END DO
+     END DO
+
+     DO iz = 1, nz 
+       izm = iz - 1
+       DO iy = 0, ny
+         iym = iy - 1
+         DO ix = 1, nx
+           ixm = ix - 1
+           area = dxb(ix) * dzb(iz)
+           by(ix, iy, iz) = by1(ix, iy, iz) &
+               + (-k3z(ix,iy,iz) + k3z(ixm,iy,iz) - k3z(ix,iy,izm) + k3z(ixm,iy,izm)) * dt6 / area &
+               + (k3x(ix,iy,iz) - k3x(ix,iy,izm) + k3x(ixm,iy,iz) - k3x(ixm,iy,izm)) * dt6 / area
+         END DO
+       END DO
+     END DO
+
+     DO iz = 0, nz
+       izm = iz - 1
+       DO iy = 1, ny
+         iym = iy - 1
+         DO ix = 1, nx
+           ixm = ix - 1  
+           area = dxb(ix) * dyb(iy)
+           bz(ix, iy, iz) = bz1(ix, iy, iz) &
+               + (k3y(ix,iy,iz) - k3y(ixm,iy,iz) + k3y(ix,iym,iz) - k3y(ixm,iym,iz)) * dt6 / area &
+               - (k3x(ix,iy,iz) - k3x(ix,iym,iz) + k3x(ixm,iy,iz) - k3x(ixm,iym,iz)) * dt6 / area
+         END DO
+       END DO
+     END DO
+
+     CALL bfield_bcs
+     CALL rkstep
+     k4x = flux_x
+     k4y = flux_y
+     k4z = flux_z
+     c4 = curlb        
+
+     ! full update
+     dt6 = dt / 6.0_num
+     k3x = k1x + 2.0_num * k2x + 2.0_num * k3x + k4x
+     k3y = k1y + 2.0_num * k2y + 2.0_num * k3y + k4y
+     k3z = k1z + 2.0_num * k2z + 2.0_num * k3z + k4z
+     c1 = c1 + 2.0_num * c2 + 2.0_num * c3 + c4
+
+     DO iz = 1, nz  
+       izm = iz - 1
+       DO iy = 1, ny
+         iym = iy - 1
+         DO ix = 0, nx
+           ixm = ix - 1
+           area = dzb(iz) * dyb(iy)
+           bx(ix, iy, iz) = bx1(ix, iy, iz) &
+               + (k3z(ix,iy,iz) - k3z(ix,iym,iz) + k3z(ix,iy,izm) - k3z(ix,iym,izm)) * dt6 / area &
+               - (k3y(ix,iy,iz) - k3y(ix,iy,izm) + k3y(ix,iym,iz) - k3y(ix,iym,izm)) * dt6 / area
+         END DO
+       END DO
+     END DO
+
+     DO iz = 1, nz 
+       izm = iz - 1
+       DO iy = 0, ny
+         iym = iy - 1
+         DO ix = 1, nx
+           ixm = ix - 1
+           area = dxb(ix) * dzb(iz)
+           by(ix, iy, iz) = by1(ix, iy, iz) &
+               + (-k3z(ix,iy,iz) + k3z(ixm,iy,iz) - k3z(ix,iy,izm) + k3z(ixm,iy,izm)) * dt6 / area &
+               + (k3x(ix,iy,iz) - k3x(ix,iy,izm) + k3x(ixm,iy,iz) - k3x(ixm,iy,izm)) * dt6 / area
+         END DO
+       END DO
+     END DO
+
+     DO iz = 0, nz
+       izm = iz - 1
+       DO iy = 1, ny
+         iym = iy - 1
+         DO ix = 1, nx
+           ixm = ix - 1  
+           area = dxb(ix) * dyb(iy)
+           bz(ix, iy, iz) = bz1(ix, iy, iz) &
+               + (k3y(ix,iy,iz) - k3y(ixm,iy,iz) + k3y(ix,iym,iz) - k3y(ixm,iym,iz)) * dt6 / area &
+               - (k3x(ix,iy,iz) - k3x(ix,iym,iz) + k3x(ixm,iy,iz) - k3x(ixm,iym,iz)) * dt6 / area
+         END DO
+       END DO
+     END DO
+
+     CALL bfield_bcs
+
+     DO iz = 1, nz
+       izm = iz - 1
+       DO iy = 1, ny
+         iym = iy - 1
+         DO ix = 1, nx
+           ixm = ix - 1
+           energy(ix, iy, iz) = energy(ix, iy, iz) &
+               + (c1(ix, iy, iz) + c1(ixm, iy, iz) &
+               + c1(ix, iym, iz) + c1(ix, iy, izm) &
+               + c1(ixm, iym, iz) + c1(ixm, iy, izm) &
+               + c1(ix, iym, izm) + c1(ixm, iym, izm)) &
+               * dt6 / (8.0_num * rho(ix, iy, iz))
+         END DO
+       END DO
+     END DO
+#endif
+
+     DO iz = 0, nz
+       izp = iz + 1
+       DO iy = 0, ny
+         iyp = iy + 1
+         DO ix = 0, nx
+           ixp = ix + 1
+
+           jx1 = (bz(ix, iyp, iz) - bz(ix, iy, iz)) / dyc(iy) &
+               - (by(ix, iy, izp) - by(ix, iy, iz)) / dzc(iz)
+
+           jx2 = (bz(ixp, iyp, iz) - bz(ixp, iy, iz)) / dyc(iy) &
+               - (by(ixp, iy, izp) - by(ixp, iy, iz)) / dzc(iz)
+
+           jy1 = (bx(ix, iy, izp) - bx(ix, iy, iz)) / dzc(iz) &
+               - (bz(ixp, iy, iz) - bz(ix, iy, iz)) / dxc(ix)
+
+           jy2 = (bx(ix, iyp, izp) - bx(ix, iyp, iz)) / dzc(iz) &
+               - (bz(ixp, iyp, iz) - bz(ix, iyp, iz)) / dxc(ix)
+
+           jz1 = (by(ixp, iy, iz) - by(ix, iy, iz)) / dxc(ix) &
+               - (bx(ix, iyp, iz) - bx(ix, iy, iz)) / dyc(iy)
+
+           jz2 = (by(ixp, iy, izp) - by(ix, iy, izp)) / dxc(ix) &
+               - (bx(ix, iyp, izp) - bx(ix, iy, izp)) / dyc(iy)
+
+           jx_r(ix, iy, iz) = (jx1 + jx2) / 2.0_num
+           jy_r(ix, iy, iz) = (jy1 + jy2) / 2.0_num
+           jz_r(ix, iy, iz) = (jz1 + jz2) / 2.0_num
+         END DO
+       END DO
+     END DO
+
+     CALL energy_bcs
+
+     DO iz = 0, nz
+       DO iy = 0, ny
+         DO ix = 0, nx
+           w1 = dt6 * dxc(ix) * dyc(iy) * dzc(iz) * c1(ix, iy, iz)
+           IF ((ix == 0) .OR. (ix == nx)) THEN
+             w1 = w1 * 0.5_num
+           END IF
+
+           IF ((iy == 0) .OR. (iy == ny)) THEN
+             w1 = w1 * 0.5_num
+           END IF
+
+           IF ((iz == 0) .OR. (iz == nz)) THEN
+             w1 = w1 * 0.5_num
+           END IF
+
+           total_ohmic_heating = total_ohmic_heating + w1
+         END DO
+       END DO
+     END DO
+
+#ifdef Q_FOURTHORDER
+     DEALLOCATE(k1x, k2x, k3x, k4x, k1y, k2y, k3y, k4y, k1z, k2z, k3z, k4z)
+     DEALLOCATE(c1, c2, c3, c4)
+#endif
+
+   END SUBROUTINE resistive_effects
+
+
+
+   ! calculates 'k' values from b[xyz]1 values
+   SUBROUTINE rkstep
+
+     REAL(num) :: jx, jy, jz
+     REAL(num) :: jx1, jy1, jz1, jx2, jy2, jz2
+     REAL(num) :: bxv, byv, bzv
+     REAL(num) :: magn_b
+     REAL(num) :: j_par_x, j_par_y, j_par_z
+     REAL(num) :: j_perp_x, j_perp_y, j_perp_z
+     REAL(num) :: magn_j_perp, magn_j_par
+
+     IF (.NOT. cowling_resistivity) THEN
+       ! Use simple flux calculation
+       DO iz = 0, nz
+         izp = iz + 1
+         DO iy = 0, ny
+           iyp = iy + 1
+           DO ix = 0, nx
              ixp = ix + 1
-             iyp = iy + 1
-             izp = iz + 1
-             
-             flux = flux_x(ix,iy,iz)
 
-             bz1(ix,iy,iz) = bz1(ix,iy,iz) - flux
-             bz1(ix,iyp,iz) = bz1(ix,iyp,iz) + flux
-             bz1(ixp,iy,iz) = bz1(ixp,iy,iz) - flux
-             bz1(ixp,iyp,iz) = bz1(ixp,iyp,iz) + flux
-             by1(ix,iy,iz) = by1(ix,iy,iz) + flux
-             by1(ix,iy,izp) = by1(ix,iy,izp) - flux
-             by1(ixp,iy,iz) = by1(ixp,iy,iz) + flux
-             by1(ixp,iy,izp) = by1(ixp,iy,izp) - flux
-              
-             flux = flux_y(ix,iy,iz) 
-             
-             bx1(ix,iy,iz) = bx1(ix,iy,iz) - flux
-             bx1(ix,iy,izp) = bx1(ix,iy,izp) + flux
-             bx1(ix,iyp,iz) = bx1(ix,iyp,iz) - flux
-             bx1(ix,iyp,izp) = bx1(ix,iyp,izp) + flux
-             bz1(ix,iy,iz) = bz1(ix,iy,iz) + flux
-             bz1(ixp,iy,iz) = bz1(ixp,iy,iz) - flux
-             bz1(ix,iyp,iz) = bz1(ix,iyp,iz) + flux
-             bz1(ixp,iyp,iz) = bz1(ixp,iyp,iz) - flux
-              
-             flux = flux_z(ix,iy,iz)       
-             
-             by1(ix,iy,iz) = by1(ix,iy,iz) - flux
-             by1(ixp,iy,iz) = by1(ixp,iy,iz) + flux
-             by1(ix,iy,izp) = by1(ix,iy,izp) - flux
-             by1(ixp,iy,izp) = by1(ixp,iy,izp) + flux
-             bx1(ix,iy,iz) = bx1(ix,iy,iz) + flux
-             bx1(ix,iyp,iz) = bx1(ix,iyp,iz) - flux
-             bx1(ix,iy,izp) = bx1(ix,iy,izp) + flux
-             bx1(ix,iyp,izp) = bx1(ix,iyp,izp) - flux
-    
-          END DO
+             jx1 = (bz(ix, iyp, iz) - bz(ix, iy, iz)) / dyc(iy) &
+                 - (by(ix, iy, izp) - by(ix, iy, iz)) / dzc(iz)
+
+             jx2 = (bz(ixp, iyp, iz) - bz(ixp, iy, iz)) / dyc(iy) &
+                 - (by(ixp, iy, izp) - by(ixp, iy, iz)) / dzc(iz)
+
+             jy1 = (bx(ix, iy, izp) - bx(ix, iy, iz)) / dzc(iz) &
+                 - (bz(ixp, iy, iz) - bz(ix, iy, iz)) / dxc(ix)
+
+             jy2 = (bx(ix, iyp, izp) - bx(ix, iyp, iz)) / dzc(iz) &
+                 - (bz(ixp, iyp, iz) - bz(ix, iyp, iz)) / dxc(ix)
+
+             jz1 = (by(ixp, iy, iz) - by(ix, iy, iz)) / dxc(ix) &
+                 - (bx(ix, iyp, iz) - bx(ix, iy, iz)) / dyc(iy)
+
+             jz2 = (by(ixp, iy, izp) - by(ix, iy, izp)) / dxc(ix) &
+                 - (bx(ix, iyp, izp) - bx(ix, iy, izp)) / dyc(iy)
+
+             jx = (jx1 + jx2) / 2.0_num
+             jy = (jy1 + jy2) / 2.0_num
+             jz = (jz1 + jz2) / 2.0_num 
+
+             flux_x(ix, iy, iz) = -jx * eta(ix,iy,iz) * dxc(ix) / 2.0_num
+             flux_y(ix, iy, iz) = -jy * eta(ix,iy,iz) * dyc(iy) / 2.0_num
+             flux_z(ix, iy, iz) = -jz * eta(ix,iy,iz) * dzc(iz) / 2.0_num
+             ! This isn't really curlb. It's actually heat flux
+             curlb(ix, iy, iz) = eta(ix, iy, iz) * (jx**2 + jy**2 + jz**2)
+           END DO
+         END DO
        END DO
-    END DO
+     ELSE
+       ! Use partially ionised flux calculation
+       DO iz = 0, nz
+         DO iy = 0, ny
+           iyp = iy + 1
+           DO ix = 0, nx
+             ixp = ix + 1 
 
-    DO iz = 0, nz+1
-       DO iy = 0, ny+1
-          DO ix = 0, nx+1
-             bx(ix,iy,iz) = bx1(ix,iy,iz) / (dyb(iy) * dzb(iz))  
-             by(ix,iy,iz) = by1(ix,iy,iz) / (dxb(ix) * dzb(iz))
-             bz(ix,iy,iz) = bz1(ix,iy,iz) / (dxb(ix) * dyb(iy))
-          END DO
+             jx1 = (bz(ix, iyp, iz) - bz(ix, iy, iz)) / dyc(iy) &
+                 - (by(ix, iy, izp) - by(ix, iy, iz)) / dzc(iz)
+
+             jx2 = (bz(ixp, iyp, iz) - bz(ixp, iy, iz)) / dyc(iy) &
+                 - (by(ixp, iy, izp) - by(ixp, iy, iz)) / dzc(iz)
+
+             jy1 = (bx(ix, iy, izp) - bx(ix, iy, iz)) / dzc(iz) &
+                 - (bz(ixp, iy, iz) - bz(ix, iy, iz)) / dxc(ix)
+
+             jy2 = (bx(ix, iyp, izp) - bx(ix, iyp, iz)) / dzc(iz) &
+                 - (bz(ixp, iyp, iz) - bz(ix, iyp, iz)) / dxc(ix)
+
+             jz1 = (by(ixp, iy, iz) - by(ix, iy, iz)) / dxc(ix) &
+                 - (bx(ix, iyp, iz) - bx(ix, iy, iz)) / dyc(iy)
+
+             jz2 = (by(ixp, iy, izp) - by(ix, iy, izp)) / dxc(ix) &
+                 - (bx(ix, iyp, izp) - bx(ix, iy, izp)) / dyc(iy)
+
+             jx = (jx1 + jx2) / 2.0_num
+             jy = (jy1 + jy2) / 2.0_num
+             jz = (jz1 + jz2) / 2.0_num
+
+             ! B at vertices
+             bxv = (bx(ix, iy, iz) + bx(ix, iyp, iz) + bx(ix, iy, izp) &
+                 + bx(ix, iyp, izp)) / 4.0_num
+             byv = (by(ix, iy, iz) + by(ixp, iy, iz) + by(ix, iy, izp) &
+                 + by(ixp, iy, izp)) / 4.0_num
+             bzv = (bz(ix, iy, iz) + bz(ixp, iy, iz) + bz(ix, iyp, iz) &
+                 + bz(ixp, iyp, iz)) / 4.0_num
+             magn_b = bxv**2 + byv**2 + bzv**2
+
+             ! Calculate parallel and perpendicular currents
+             j_par_x = (jx * bxv + jy * byv &
+                 + jz * bzv) * bxv / MAX(magn_b, none_zero)
+             j_par_y = (jx * bxv + jy * byv &
+                 + jz * bzv) * byv / MAX(magn_b, none_zero)
+             j_par_z = (jx * bxv + jy * byv &
+                 + jz * bzv) * bzv / MAX(magn_b, none_zero)
+
+             ! If b = 0 then there is no parallel current
+             IF (magn_b .LT. none_zero) THEN
+               j_par_x = 0.0_num
+               j_par_y = 0.0_num
+               j_par_z = 0.0_num
+             END IF
+
+             ! Calculate perpendicular current
+             j_perp_x = jx - j_par_x
+             j_perp_y = jy - j_par_y
+             j_perp_z = jz - j_par_z
+
+             magn_j_par = SQRT(j_par_x**2 + j_par_y**2 + j_par_z**2)
+             magn_j_perp = SQRT(j_perp_x**2 + j_perp_y**2 + j_perp_z**2)
+
+             parallel_current(ix, iy, iz) = magn_j_par
+             perp_current(ix, iy, iz) = magn_j_perp
+
+             ! This isn't really curlb. It's actually heat flux
+             curlb(ix, iy, iz) = eta(ix, iy, iz) * magn_j_par**2 &
+                 + (eta_perp(ix, iy, iz) + eta(ix, iy, iz)) * magn_j_perp**2
+
+             flux_x(ix, iy, iz) = -((j_par_x * eta(ix, iy, iz) &
+                 + j_perp_x * (eta_perp(ix, iy, iz) + eta(ix, iy, iz))) &
+                 * dxc(ix) / 2.0_num)
+             flux_y(ix, iy, iz) = -((j_par_y * eta(ix, iy, iz) &
+                 + j_perp_y * (eta_perp(ix, iy, iz) + eta(ix, iy, iz))) &
+                 * dyc(iy) / 2.0_num)
+             flux_z(ix, iy, iz) = -((j_par_z * eta(ix, iy, iz) &
+                 + j_perp_z * (eta_perp(ix, iy, iz) + eta(ix, iy, iz))) &
+                 * dzc(iz) / 2.0_num)
+           END DO
+         END DO
        END DO
-    END DO
+     END IF
 
-    CALL bfield_bcs
+   END SUBROUTINE rkstep
 
-    DO iz = 1, nz
-      izm = iz - 1
-      DO iy = 1, ny
-        iym = iy - 1
-        DO ix = 1, nx
-          ixm = ix - 1
-          energy(ix, iy, iz) = energy(ix, iy, iz) &
-              + (curlb(ix, iy, iz) + curlb(ixm, iy, iz) &
-              + curlb(ix, iym, iz) + curlb(ix, iy, izm) &
-              + curlb(ixm, iym, iz) + curlb(ixm, iy, izm) &
-              + curlb(ix, iym, izm) + curlb(ixm, iym, izm)) &
-              * dt / (8.0_num * rho(ix, iy, iz))
-        END DO
-      END DO
-    END DO
-
-    DO iz = 0, nz
-      izp = iz + 1
-      DO iy = 0, ny
-        iyp = iy + 1
-        DO ix = 0, nx
-          ixp = ix + 1
-
-          jx1 = (bz(ix, iyp, iz) - bz(ix, iy, iz)) / dyc(iy) &
-              - (by(ix, iy, izp) - by(ix, iy, iz)) / dzc(iz)
-
-          jx2 = (bz(ixp, iyp, iz) - bz(ixp, iy, iz)) / dyc(iy) &
-              - (by(ixp, iy, izp) - by(ixp, iy, iz)) / dzc(iz)
-
-          jy1 = (bx(ix, iy, izp) - bx(ix, iy, iz)) / dzc(iz) &
-              - (bz(ixp, iy, iz) - bz(ix, iy, iz)) / dxc(ix)
-
-          jy2 = (bx(ix, iyp, izp) - bx(ix, iyp, iz)) / dzc(iz) &
-              - (bz(ixp, iyp, iz) - bz(ix, iyp, iz)) / dxc(ix)
-
-          jz1 = (by(ixp, iy, iz) - by(ix, iy, iz)) / dxc(ix) &
-              - (bx(ix, iyp, iz) - bx(ix, iy, iz)) / dyc(iy)
-
-          jz2 = (by(ixp, iy, izp) - by(ix, iy, izp)) / dxc(ix) &
-              - (bx(ix, iyp, izp) - bx(ix, iy, izp)) / dyc(iy)
-
-          jx_r(ix, iy, iz) = (jx1 + jx2) / 2.0_num
-          jy_r(ix, iy, iz) = (jy1 + jy2) / 2.0_num
-          jz_r(ix, iy, iz) = (jz1 + jz2) / 2.0_num
-        END DO
-      END DO
-    END DO
-
-    CALL energy_bcs
-
-    DO iz = 0, nz
-      DO iy = 0, ny
-        DO ix = 0, nx
-          w1 = dt * dxc(ix) * dyc(iy) * dzc(iz) * curlb(ix, iy, iz)
-          IF ((ix == 0) .OR. (ix == nx)) THEN
-            w1 = w1 * 0.5_num
-          END IF
-
-          IF ((iy == 0) .OR. (iy == ny)) THEN
-            w1 = w1 * 0.5_num
-          END IF
-
-          IF ((iz == 0) .OR. (iz == nz)) THEN
-            w1 = w1 * 0.5_num
-          END IF
-
-          total_ohmic_heating = total_ohmic_heating + w1
-        END DO
-      END DO
-    END DO
-
-  END SUBROUTINE resistive_effects                  
-
-
-
-  SUBROUTINE resistive_flux
-
-    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: jx, jy, jz
-    REAL(num) :: jx1, jy1, jz1, jx2, jy2, jz2
-    REAL(num) :: bxv, byv, bzv
-    REAL(num) :: magn_b
-    REAL(num) :: j_par_x, j_par_y, j_par_z
-    REAL(num) :: j_perp_x, j_perp_y, j_perp_z
-    REAL(num) :: magn_j_perp, magn_j_par
-
-    ALLOCATE(jx(-1:nx+1, -1:ny+1, -1:nz+1), &
-        jy(-1:nx+1, -1:ny+1, -1:nz+1), jz(-1:nx+1, -1:ny+1, -1:nz+1))
-
-    DO iz = 0, nz
-      izp = iz + 1
-      DO iy = 0, ny
-        iyp = iy + 1
-        DO ix = 0, nx
-          ixp = ix + 1
-
-          ! jx at E3(i, j)
-          jx1 = (bz(ix, iyp, iz) - bz(ix, iy, iz)) / dyc(iy) &
-              - (by(ix, iy, izp) - by(ix, iy, iz)) / dzc(iz)
-
-          ! jx at E3(i+1, j)
-          jx2 = (bz(ixp, iyp, iz) - bz(ixp, iy, iz)) / dyc(iy) &
-              - (by(ixp, iy, izp) - by(ixp, iy, iz)) / dzc(iz)
-
-          ! jy at E2(i, j)
-          jy1 = (bx(ix, iy, izp) - bx(ix, iy, iz)) / dzc(iz) &
-              - (bz(ixp, iy, iz) - bz(ix, iy, iz)) / dxc(ix)
-
-          ! jy at E2(i, j+1)
-          jy2 = (bx(ix, iyp, izp) - bx(ix, iyp, iz)) / dzc(iz) &
-              - (bz(ixp, iyp, iz) - bz(ix, iyp, iz)) / dxc(ix)
-
-          ! jz at E1(i, j)
-          jz1 = (by(ixp, iy, iz) - by(ix, iy, iz)) / dxc(ix) &
-              - (bx(ix, iyp, iz) - bx(ix, iy, iz)) / dyc(iy)
-
-          ! jz at E1(i, j)
-          jz2 = (by(ixp, iy, izp) - by(ix, iy, izp)) / dxc(ix) &
-              - (bx(ix, iyp, izp) - bx(ix, iy, izp)) / dyc(iy)
-
-          jx(ix, iy, iz) = (jx1 + jx2) / 2.0_num
-          jy(ix, iy, iz) = (jy1 + jy2) / 2.0_num
-          jz(ix, iy, iz) = (jz1 + jz2) / 2.0_num
-
-        END DO
-      END DO
-    END DO
-
-    IF (.NOT. cowling_resistivity) THEN
-      ! Use simple flux calculation
-      DO iz = 0, nz
-        DO iy = 0, ny
-          DO ix = 0, nx
-            flux_x(ix, iy, iz) = -jx(ix, iy, iz) &
-                * eta(ix, iy, iz) * dxc(ix) * dt / 2.0_num
-            flux_y(ix, iy, iz) = -jy(ix, iy, iz) &
-                * eta(ix, iy, iz) * dyc(iy) * dt / 2.0_num
-            flux_z(ix, iy, iz) = -jz(ix, iy, iz) &
-                * eta(ix, iy, iz) * dzc(iz) * dt / 2.0_num
-            ! This isn't really curlb. It's actually heat flux
-            curlb(ix, iy, iz) = eta(ix, iy, iz) &
-                * (jx(ix, iy, iz)**2 + jy(ix, iy, iz)**2 + jz(ix, iy, iz)**2)
-          END DO
-        END DO
-      END DO
-    ELSE
-      ! Use partially ionised flux calculation
-      DO iz = 0, nz 
-        izp = iz + 1
-        DO iy = 0, ny
-          iyp = iy + 1
-          DO ix = 0, nx
-            ixp = ix + 1
-            ! B at vertices
-            bxv = (bx(ix, iy, iz) + bx(ix, iyp, iz) + bx(ix, iy, izp) &
-                + bx(ix, iyp, izp)) / 4.0_num
-            byv = (by(ix, iy, iz) + by(ixp, iy, iz) + by(ix, iy, izp) &
-                + by(ixp, iy, izp)) / 4.0_num
-            bzv = (bz(ix, iy, iz) + bz(ixp, iy, iz) + bz(ix, iyp, iz) &
-                + bz(ixp, iyp, iz)) / 4.0_num
-            magn_b = bxv**2 + byv**2 + bzv**2
-
-            ! Calculate parallel and perpendicular currents
-            j_par_x = (jx(ix, iy, iz) * bxv + jy(ix, iy, iz) * byv &
-                + jz(ix, iy, iz) * bzv) * bxv / MAX(magn_b, none_zero)
-            j_par_y = (jx(ix, iy, iz) * bxv + jy(ix, iy, iz) * byv &
-                + jz(ix, iy, iz) * bzv) * byv / MAX(magn_b, none_zero)
-            j_par_z = (jx(ix, iy, iz) * bxv + jy(ix, iy, iz) * byv &
-                + jz(ix, iy, iz) * bzv) * bzv / MAX(magn_b, none_zero)
-
-            ! If b = 0 then there is no parallel current
-            IF (magn_b .LT. none_zero) THEN
-              j_par_x = 0.0_num
-              j_par_y = 0.0_num
-              j_par_z = 0.0_num
-            END IF
-
-            ! Calculate perpendicular current
-            j_perp_x = jx(ix, iy, iz) - j_par_x
-            j_perp_y = jy(ix, iy, iz) - j_par_y
-            j_perp_z = jz(ix, iy, iz) - j_par_z
-
-            magn_j_par = SQRT(j_par_x**2 + j_par_y**2 + j_par_z**2)
-            magn_j_perp = SQRT(j_perp_x**2 + j_perp_y**2 + j_perp_z**2)
-
-            parallel_current(ix, iy, iz) = magn_j_par
-            perp_current(ix, iy, iz) = magn_j_perp
-
-            ! This isn't really curlb. It's actually heat flux
-            curlb(ix, iy, iz) = eta(ix, iy, iz) * magn_j_par**2 &
-                + (eta_perp(ix, iy, iz) + eta(ix, iy, iz)) * magn_j_perp**2
-
-            flux_x(ix, iy, iz) = -((j_par_x * eta(ix, iy, iz) &
-                + j_perp_x * (eta_perp(ix, iy, iz) + eta(ix, iy, iz))) &
-                * dxc(ix) / 2.0_num)
-            flux_y(ix, iy, iz) = -((j_par_y * eta(ix, iy, iz) &
-                + j_perp_y * (eta_perp(ix, iy, iz) + eta(ix, iy, iz))) &
-                * dyc(iy) / 2.0_num)
-            flux_z(ix, iy, iz) = -((j_par_z * eta(ix, iy, iz) &
-                + j_perp_z * (eta_perp(ix, iy, iz) + eta(ix, iy, iz))) &
-                * dzc(iz) / 2.0_num)
-          END DO
-        END DO
-      END DO
-    END IF
-
-    DEALLOCATE (jx, jy, jz)
-
-  END SUBROUTINE resistive_flux
 
 
 
