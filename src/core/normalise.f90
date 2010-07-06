@@ -44,7 +44,7 @@ MODULE normalise
   REAL(num) :: mf    
   
   !reduced mass in units of average ion mass
-  REAL(num) :: reduced_mass
+  REAL(num) :: reduced_mass = 0.5_num
 
   ! Average mass of a an ion 
   REAL(num) :: mbar
