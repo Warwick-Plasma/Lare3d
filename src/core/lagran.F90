@@ -885,8 +885,8 @@ CONTAINS
            ixm = ix - 1
            area = dzb(iz) * dyb(iy)
            bx(ix, iy, iz) = bx1(ix, iy, iz) &
-               + (k1z(ix,iy,iz) - k1z(ix,iym,iz) + k1z(ix,iy,izm) - k1z(ix,iym,izm)) * dt6 / area &
-               - (k1y(ix,iy,iz) - k1y(ix,iy,izm) + k1y(ix,iym,iz) - k1y(ix,iym,izm)) * dt6 / area
+               + (k1z(ix,iy,iz) - k1z(ix,iym,iz) + k1z(ix,iy,izm) - k1z(ix,iym,izm)) * half_dt / area &
+               - (k1y(ix,iy,iz) - k1y(ix,iy,izm) + k1y(ix,iym,iz) - k1y(ix,iym,izm)) * half_dt / area
          END DO
        END DO
      END DO
@@ -899,8 +899,8 @@ CONTAINS
            ixm = ix - 1
            area = dxb(ix) * dzb(iz)
            by(ix, iy, iz) = by1(ix, iy, iz) &
-               + (-k1z(ix,iy,iz) + k1z(ixm,iy,iz) - k1z(ix,iy,izm) + k1z(ixm,iy,izm)) * dt6 / area &
-               + (k1x(ix,iy,iz) - k1x(ix,iy,izm) + k1x(ixm,iy,iz) - k1x(ixm,iy,izm)) * dt6 / area
+               + (-k1z(ix,iy,iz) + k1z(ixm,iy,iz) - k1z(ix,iy,izm) + k1z(ixm,iy,izm)) * half_dt / area &
+               + (k1x(ix,iy,iz) - k1x(ix,iy,izm) + k1x(ixm,iy,iz) - k1x(ixm,iy,izm)) * half_dt / area
          END DO
        END DO
      END DO
@@ -913,8 +913,8 @@ CONTAINS
            ixm = ix - 1  
            area = dxb(ix) * dyb(iy)
            bz(ix, iy, iz) = bz1(ix, iy, iz) &
-               + (k1y(ix,iy,iz) - k1y(ixm,iy,iz) + k1y(ix,iym,iz) - k1y(ixm,iym,iz)) * dt6 / area &
-               - (k1x(ix,iy,iz) - k1x(ix,iym,iz) + k1x(ixm,iy,iz) - k1x(ixm,iym,iz)) * dt6 / area
+               + (k1y(ix,iy,iz) - k1y(ixm,iy,iz) + k1y(ix,iym,iz) - k1y(ixm,iym,iz)) * half_dt / area &
+               - (k1x(ix,iy,iz) - k1x(ix,iym,iz) + k1x(ixm,iy,iz) - k1x(ixm,iym,iz)) * half_dt / area
          END DO
        END DO
      END DO
@@ -935,8 +935,8 @@ CONTAINS
            ixm = ix - 1
            area = dzb(iz) * dyb(iy)
            bx(ix, iy, iz) = bx1(ix, iy, iz) &
-               + (k2z(ix,iy,iz) - k2z(ix,iym,iz) + k2z(ix,iy,izm) - k2z(ix,iym,izm)) * dt6 / area &
-               - (k2y(ix,iy,iz) - k2y(ix,iy,izm) + k2y(ix,iym,iz) - k2y(ix,iym,izm)) * dt6 / area
+               + (k2z(ix,iy,iz) - k2z(ix,iym,iz) + k2z(ix,iy,izm) - k2z(ix,iym,izm)) * half_dt / area &
+               - (k2y(ix,iy,iz) - k2y(ix,iy,izm) + k2y(ix,iym,iz) - k2y(ix,iym,izm)) * half_dt / area
          END DO
        END DO
      END DO
@@ -949,8 +949,8 @@ CONTAINS
            ixm = ix - 1
            area = dxb(ix) * dzb(iz)
            by(ix, iy, iz) = by1(ix, iy, iz) &
-               + (-k2z(ix,iy,iz) + k2z(ixm,iy,iz) - k2z(ix,iy,izm) + k2z(ixm,iy,izm)) * dt6 / area &
-               + (k2x(ix,iy,iz) - k2x(ix,iy,izm) + k2x(ixm,iy,iz) - k2x(ixm,iy,izm)) * dt6 / area
+               + (-k2z(ix,iy,iz) + k2z(ixm,iy,iz) - k2z(ix,iy,izm) + k2z(ixm,iy,izm)) * half_dt / area &
+               + (k2x(ix,iy,iz) - k2x(ix,iy,izm) + k2x(ixm,iy,iz) - k2x(ixm,iy,izm)) * half_dt / area
          END DO
        END DO
      END DO
@@ -963,8 +963,8 @@ CONTAINS
            ixm = ix - 1  
            area = dxb(ix) * dyb(iy)
            bz(ix, iy, iz) = bz1(ix, iy, iz) &
-               + (k2y(ix,iy,iz) - k2y(ixm,iy,iz) + k2y(ix,iym,iz) - k2y(ixm,iym,iz)) * dt6 / area &
-               - (k2x(ix,iy,iz) - k2x(ix,iym,iz) + k2x(ixm,iy,iz) - k2x(ixm,iym,iz)) * dt6 / area
+               + (k2y(ix,iy,iz) - k2y(ixm,iy,iz) + k2y(ix,iym,iz) - k2y(ixm,iym,iz)) * half_dt / area &
+               - (k2x(ix,iy,iz) - k2x(ix,iym,iz) + k2x(ixm,iy,iz) - k2x(ixm,iym,iz)) * half_dt / area
          END DO
        END DO
      END DO
@@ -986,8 +986,8 @@ CONTAINS
            ixm = ix - 1
            area = dzb(iz) * dyb(iy)
            bx(ix, iy, iz) = bx1(ix, iy, iz) &
-               + (k3z(ix,iy,iz) - k3z(ix,iym,iz) + k3z(ix,iy,izm) - k3z(ix,iym,izm)) * dt6 / area &
-               - (k3y(ix,iy,iz) - k3y(ix,iy,izm) + k3y(ix,iym,iz) - k3y(ix,iym,izm)) * dt6 / area
+               + (k3z(ix,iy,iz) - k3z(ix,iym,iz) + k3z(ix,iy,izm) - k3z(ix,iym,izm)) * dt / area &
+               - (k3y(ix,iy,iz) - k3y(ix,iy,izm) + k3y(ix,iym,iz) - k3y(ix,iym,izm)) * dt / area
          END DO
        END DO
      END DO
@@ -1000,8 +1000,8 @@ CONTAINS
            ixm = ix - 1
            area = dxb(ix) * dzb(iz)
            by(ix, iy, iz) = by1(ix, iy, iz) &
-               + (-k3z(ix,iy,iz) + k3z(ixm,iy,iz) - k3z(ix,iy,izm) + k3z(ixm,iy,izm)) * dt6 / area &
-               + (k3x(ix,iy,iz) - k3x(ix,iy,izm) + k3x(ixm,iy,iz) - k3x(ixm,iy,izm)) * dt6 / area
+               + (-k3z(ix,iy,iz) + k3z(ixm,iy,iz) - k3z(ix,iy,izm) + k3z(ixm,iy,izm)) * dt / area &
+               + (k3x(ix,iy,iz) - k3x(ix,iy,izm) + k3x(ixm,iy,iz) - k3x(ixm,iy,izm)) * dt / area
          END DO
        END DO
      END DO
@@ -1014,8 +1014,8 @@ CONTAINS
            ixm = ix - 1  
            area = dxb(ix) * dyb(iy)
            bz(ix, iy, iz) = bz1(ix, iy, iz) &
-               + (k3y(ix,iy,iz) - k3y(ixm,iy,iz) + k3y(ix,iym,iz) - k3y(ixm,iym,iz)) * dt6 / area &
-               - (k3x(ix,iy,iz) - k3x(ix,iym,iz) + k3x(ixm,iy,iz) - k3x(ixm,iym,iz)) * dt6 / area
+               + (k3y(ix,iy,iz) - k3y(ixm,iy,iz) + k3y(ix,iym,iz) - k3y(ixm,iym,iz)) * dt / area &
+               - (k3x(ix,iy,iz) - k3x(ix,iym,iz) + k3x(ixm,iy,iz) - k3x(ixm,iym,iz)) * dt / area
          END DO
        END DO
      END DO
