@@ -23,15 +23,13 @@ CONTAINS
   ! There is a helper function get_energy which converts temperature to energy
   ! The syntax for this function (which is in core/neutral.f90) is
   !
-  ! CALL get_energy(density, temperature, equation_of_state, ix, iy, &
+  ! CALL get_energy(density, temperature, equation_of_state, &
   !     output_energy) 
   !
   ! REAL(num) :: density - The density at point (ix, iy) on the grid
   ! REAL(num) :: temperature - The temperature at point (ix, iy) on the grid
   ! INTEGER :: equation_of_state - The code for the equation of state to use.
   !            The global equation of state for the code is eos_number
-  ! INTEGER :: ix - The current gridpoint in the x direction
-  ! INTEGER :: iy - The current gridpoint in the y direction
   ! REAL(num) :: output_energy - The specific internal energy returned by
   !              the routine
   !
@@ -146,7 +144,7 @@ CONTAINS
       DO iy = -1, ny + 2
         DO ix = -1, nx + 2                
           r1 = energy(ix,iy,iz)
-          CALL get_energy(rho(ix,iy,iz), r1, eos_number, ix, iy, iz, energy(ix,iy,iz))
+          CALL get_energy(rho(ix,iy,iz), r1, eos_number, energy(ix,iy,iz))
         END DO
       END DO
     END DO   
