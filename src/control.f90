@@ -26,10 +26,8 @@ CONTAINS
     mf = 1.0_num
 
     ! The equations describing the normalisation in LARE
-    ! Have three free parameters which must be specified by
-    ! The end user. These must be the normailisation used for
-    ! your initial conditions if not running in SI, otherwise
-    ! they are arbitrary.
+    ! have three free parameters which must be specified by
+    ! the end user. 
 
     ! Magnetic field normalisation in Tesla
     B0 = 0.12_num
@@ -47,19 +45,19 @@ CONTAINS
     ! Set the number of gridpoints in x and y directions
     nx_global = 64
     ny_global = 64
-    nz_global = 128
+    nz_global = 64
 
     ! Set the maximum number of iterations of the core solver before the code
     ! terminates. If nsteps < 0 then the code will run until t = t_end
-    nsteps = 1
+    nsteps = -1
 
     ! The maximum runtime of the code
     ! If SI_Input is true then this is in seconds
-    t_end = 1.0_num
+    t_end = 10.0_num
 
     ! Shock viscosities as detailed in manual - they are dimensionless
-    visc1 = 0.0_num
-    visc2 = 0.0_num
+    visc1 = 0.1_num
+    visc2 = 0.5_num
     ! Real viscosity expressed as the inverse Reynolds number, i.e. the
     ! same for normalised and SI input
     visc3 = 0.0_num
@@ -160,7 +158,7 @@ CONTAINS
     ! Valid constants are
     ! BC_PERIODIC - Periodic boundary conditions
     ! BC_OPEN - Reimann characteristic boundary conditions
-    ! BC_OTHER - Other boundary conditions specified in "boundary.f90"
+    ! BC_OTHER - User boundary conditions specified in "boundary.f90"
     xbc_left = BC_PERIODIC
     xbc_right = BC_PERIODIC
     ybc_up = BC_PERIODIC
@@ -169,12 +167,15 @@ CONTAINS
     zbc_back = BC_OTHER
 
     ! set to true to turn on routine for damped boundaries
+    ! these routines are in boundary.f90 and you should check these
+    ! actually do what you want.
     damping = .TRUE.
 
     ! Set the equation of state. Valid choices are
     ! EOS_IDEAL - Simple ideal gas for perfectly ionised plasma
     ! EOS_PI - Simple ideal gas for partially ionised plasma
-    ! EOS_ION - EOS_PI plus the ionisation potential
+    ! EOS_ION - EOS_PI plus the ionisation potential 
+    ! N.B. read the manual for notes on these choices
     eos_number = EOS_PI
 
   END SUBROUTINE control_variables

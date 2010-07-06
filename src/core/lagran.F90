@@ -800,218 +800,74 @@ CONTAINS
   ! Calculate the effect of resistivity on the magnetic field and Ohmic heating
   ! Use the subroutine rkstep
   SUBROUTINE resistive_effects
-
-    REAL(num) :: dt6
-    REAL(num) :: jx1, jx2, jy1, jy2, jz1, jz2
-    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: k1x, k2x, k3x, k4x
-    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: k1y, k2y, k3y, k4y
-    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: k1z, k2z, k3z, k4z
-    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: c1, c2, c3, c4
-
-    ALLOCATE(k1x(0:nx, 0:ny, 0:nz), k2x(0:nx, 0:ny, 0:nz))
-    ALLOCATE(k3x(0:nx, 0:ny, 0:nz), k4x(0:nx, 0:ny, 0:nz))
-    ALLOCATE(k1y(0:nx, 0:ny, 0:nz), k2y(0:nx, 0:ny, 0:nz))
-    ALLOCATE(k3y(0:nx, 0:ny, 0:nz), k4y(0:nx, 0:ny, 0:nz))
-    ALLOCATE(k1z(0:nx, 0:ny, 0:nz), k2z(0:nx, 0:ny, 0:nz))
-    ALLOCATE(k3z(0:nx, 0:ny, 0:nz), k4z(0:nx, 0:ny, 0:nz))
-    ALLOCATE(c1(0:nx, 0:ny, 0:nz), c2(0:nx, 0:ny, 0:nz))
-    ALLOCATE(c3(0:nx, 0:ny, 0:nz), c4(0:nx, 0:ny, 0:nz))
-
-    dt = dt / 2.0_num
-
-    bx1 = bx(0:nx+1, 0:ny+1, 0:nz+1)
-    by1 = by(0:nx+1, 0:ny+1, 0:nz+1)
-    bz1 = bz(0:nx+1, 0:ny+1, 0:nz+1)
-
-    ! step 1
-    CALL rkstep
-    k1x = flux_x
-    k1y = flux_y
-    k1z = flux_z
-    c1 = curlb
-
-#ifdef Q_FIRSTORDER
-    dt6 = dt 
-    k3x = k1x 
-    k3y = k1y 
-    k3z = k1z 
-#else
-    ! step 2
-    DO iz = 1, nz
-      DO iy = 1, ny
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
-        DO ix = 0, nx
-          bx(ix, iy, iz) = bx1(ix, iy, iz) &
-              + (k1z(ix, iy, iz) - k1z(ix, iy-1, iz)) * dt / dyb(iy) &
-              - (k1y(ix, iy, iz) - k1y(ix, iy, iz-1)) * dt / dzb(iz)
-        END DO
-      END DO
+  
+    REAL(num) :: flux
+    REAL(num) :: jx1, jy1, jz1, jx2, jy2, jz2 
+    
+    DO iz = 0, nz+1
+       DO iy = 0, ny+1
+          DO ix = 0, nx+1
+             bx1(ix,iy,iz) = bx(ix,iy,iz) * dyb(iy) * dzb(iz)  
+             by1(ix,iy,iz) = by(ix,iy,iz) * dxb(ix) * dzb(iz)
+             bz1(ix,iy,iz) = bz(ix,iy,iz) * dxb(ix) * dyb(iy)
+          END DO
+       END DO
     END DO
 
-    DO iz = 1, nz
-      DO iy = 0, ny
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
-        DO ix = 1, nx
-          by(ix, iy, iz) = by1(ix, iy, iz) &
-              + (-k1z(ix, iy, iz) + k1z(ix-1, iy, iz)) * dt / dxb(ix) &
-              + (k1x(ix, iy, iz) - k1x(ix, iy, iz-1)) * dt / dzb(iz)
-        END DO
-      END DO
-    END DO
+    CALL resistive_flux
 
     DO iz = 0, nz
-      DO iy = 1, ny
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
-        DO ix = 1, nx
-          bz(ix, iy, iz) = bz1(ix, iy, iz) &
-              + (k1y(ix, iy, iz) - k1z(ix-1, iy, iz)) * dt / dxb(ix) &
-              - (k1x(ix, iy, iz) - k1x(ix, iy-1, iz)) * dt / dyb(iy)
-        END DO
-      END DO
+       DO iy = 0, ny
+          DO ix = 0, nx
+             ixp = ix + 1
+             iyp = iy + 1
+             izp = iz + 1
+             
+             flux = flux_x(ix,iy,iz)
+
+             bz1(ix,iy,iz) = bz1(ix,iy,iz) - flux
+             bz1(ix,iyp,iz) = bz1(ix,iyp,iz) + flux
+             bz1(ixp,iy,iz) = bz1(ixp,iy,iz) - flux
+             bz1(ixp,iyp,iz) = bz1(ixp,iyp,iz) + flux
+             by1(ix,iy,iz) = by1(ix,iy,iz) + flux
+             by1(ix,iy,izp) = by1(ix,iy,izp) - flux
+             by1(ixp,iy,iz) = by1(ixp,iy,iz) + flux
+             by1(ixp,iy,izp) = by1(ixp,iy,izp) - flux
+              
+             flux = flux_y(ix,iy,iz) 
+             
+             bx1(ix,iy,iz) = bx1(ix,iy,iz) - flux
+             bx1(ix,iy,izp) = bx1(ix,iy,izp) + flux
+             bx1(ix,iyp,iz) = bx1(ix,iyp,iz) - flux
+             bx1(ix,iyp,izp) = bx1(ix,iyp,izp) + flux
+             bz1(ix,iy,iz) = bz1(ix,iy,iz) + flux
+             bz1(ixp,iy,iz) = bz1(ixp,iy,iz) - flux
+             bz1(ix,iyp,iz) = bz1(ix,iyp,iz) + flux
+             bz1(ixp,iyp,iz) = bz1(ixp,iyp,iz) - flux
+              
+             flux = flux_z(ix,iy,iz)       
+             
+             by1(ix,iy,iz) = by1(ix,iy,iz) - flux
+             by1(ixp,iy,iz) = by1(ixp,iy,iz) + flux
+             by1(ix,iy,izp) = by1(ix,iy,izp) - flux
+             by1(ixp,iy,izp) = by1(ixp,iy,izp) + flux
+             bx1(ix,iy,iz) = bx1(ix,iy,iz) + flux
+             bx1(ix,iyp,iz) = bx1(ix,iyp,iz) - flux
+             bx1(ix,iy,izp) = bx1(ix,iy,izp) + flux
+             bx1(ix,iyp,izp) = bx1(ix,iyp,izp) - flux
+    
+          END DO
+       END DO
     END DO
 
-    CALL bfield_bcs
-    CALL rkstep
-    k2x = flux_x
-    k2y = flux_y
-    k2z = flux_z
-    c2 = curlb
-
-    ! step 3
-    DO iz = 1, nz
-      DO iy = 1, ny
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
-        DO ix = 0, nx
-          bx(ix, iy, iz) = bx1(ix, iy, iz) &
-              + (k2z(ix, iy, iz) - k2z(ix, iy-1, iz)) * dt / dyb(iy) &
-              - (k2y(ix, iy, iz) - k2y(ix, iy, iz-1)) * dt / dzb(iz)
-        END DO
-      END DO
-    END DO
-
-    DO iz = 1, nz
-      DO iy = 0, ny
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
-        DO ix = 1, nx
-          by(ix, iy, iz) = by1(ix, iy, iz) &
-              + (-k2z(ix, iy, iz) + k2z(ix-1, iy, iz)) * dt / dxb(ix) &
-              + (k2x(ix, iy, iz) - k2x(ix, iy, iz-1)) * dt / dzb(iz)
-        END DO
-      END DO
-    END DO
-
-    DO iz = 0, nz
-      DO iy = 1, ny
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
-        DO ix = 1, nx
-          bz(ix, iy, iz) = bz1(ix, iy, iz) &
-              + (k2y(ix, iy, iz) - k2z(ix-1, iy, iz)) * dt / dxb(ix) &
-              - (k2x(ix, iy, iz) - k2x(ix, iy-1, iz)) * dt / dyb(iy)
-        END DO
-      END DO
-    END DO
-
-    CALL bfield_bcs
-    CALL rkstep
-    k3x = flux_x
-    k3y = flux_y
-    k3z = flux_z
-    c3 = curlb
-
-    dt = 2.0_num * dt
-
-    ! step 4
-    DO iz = 1, nz
-      DO iy = 1, ny
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
-        DO ix = 0, nx
-          bx(ix, iy, iz) = bx1(ix, iy, iz) &
-              + (k3z(ix, iy, iz) - k3z(ix, iy-1, iz)) * dt / dyb(iy) &
-              - (k3y(ix, iy, iz) - k3y(ix, iy, iz-1)) * dt / dzb(iz)
-        END DO
-      END DO
-    END DO
-
-    DO iz = 1, nz
-      DO iy = 0, ny
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
-        DO ix = 1, nx
-          by(ix, iy, iz) = by1(ix, iy, iz) &
-              + (-k3z(ix, iy, iz) + k3z(ix-1, iy, iz)) * dt / dxb(ix) &
-              + (k3x(ix, iy, iz) - k3x(ix, iy, iz-1)) * dt / dzb(iz)
-        END DO
-      END DO
-    END DO
-
-    DO iz = 0, nz
-      DO iy = 1, ny
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
-        DO ix = 1, nx
-          bz(ix, iy, iz) = bz1(ix, iy, iz) &
-              + (k3y(ix, iy, iz) - k3z(ix-1, iy, iz)) * dt / dxb(ix) &
-              - (k3x(ix, iy, iz) - k3x(ix, iy-1, iz)) * dt / dyb(iy)
-        END DO
-      END DO
-    END DO
-
-    CALL bfield_bcs
-    CALL rkstep
-    k4x = flux_x
-    k4y = flux_y
-    k4z = flux_z
-    c4 = curlb        
-
-    ! full update
-    dt6 = dt / 6.0_num
-    k3x = k1x + 2.0_num * k2x + 2.0_num * k3x + k4x
-    k3y = k1y + 2.0_num * k2y + 2.0_num * k3y + k4y
-    k3z = k1z + 2.0_num * k2z + 2.0_num * k3z + k4z
-    c1 = c1 + 2.0_num * c2 + 2.0_num * c3 + c4
-#endif
-
-    DO iz = 1, nz
-      DO iy = 1, ny
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
-        DO ix = 0, nx
-          bx(ix, iy, iz) = bx1(ix, iy, iz) &
-              + (k3z(ix, iy, iz) - k3z(ix, iy-1, iz)) * dt6 / dyb(iy) &
-              - (k3y(ix, iy, iz) - k3y(ix, iy, iz-1)) * dt6 / dzb(iz)
-        END DO
-      END DO
-    END DO
-
-    DO iz = 1, nz
-      DO iy = 0, ny
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
-        DO ix = 1, nx
-          by(ix, iy, iz) = by1(ix, iy, iz) &
-              + (-k3z(ix, iy, iz) + k3z(ix-1, iy, iz)) * dt6 / dxb(ix) &
-              + (k3x(ix, iy, iz) - k3x(ix, iy, iz-1)) * dt6 / dzb(iz)
-        END DO
-      END DO
-    END DO
-
-    DO iz = 0, nz
-      DO iy = 1, ny
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
-        DO ix = 1, nx
-          bz(ix, iy, iz) = bz1(ix, iy, iz) &
-              + (k3y(ix, iy, iz) - k3z(ix-1, iy, iz)) * dt6 / dxb(ix) &
-              - (k3x(ix, iy, iz) - k3x(ix, iy-1, iz)) * dt6 / dyb(iy)
-        END DO
-      END DO
+    DO iz = 0, nz+1
+       DO iy = 0, ny+1
+          DO ix = 0, nx+1
+             bx(ix,iy,iz) = bx1(ix,iy,iz) / (dyb(iy) * dzb(iz))  
+             by(ix,iy,iz) = by1(ix,iy,iz) / (dxb(ix) * dzb(iz))
+             bz(ix,iy,iz) = bz1(ix,iy,iz) / (dxb(ix) * dyb(iy))
+          END DO
+       END DO
     END DO
 
     CALL bfield_bcs
@@ -1023,11 +879,11 @@ CONTAINS
         DO ix = 1, nx
           ixm = ix - 1
           energy(ix, iy, iz) = energy(ix, iy, iz) &
-              + (c1(ix, iy, iz) + c1(ixm, iy, iz) &
-              + c1(ix, iym, iz) + c1(ix, iy, izm) &
-              + c1(ixm, iym, iz) + c1(ixm, iy, izm) &
-              + c1(ix, iym, izm) + c1(ixm, iym, izm)) &
-              * dt6 / (8.0_num * rho(ix, iy, iz))
+              + (curlb(ix, iy, iz) + curlb(ixm, iy, iz) &
+              + curlb(ix, iym, iz) + curlb(ix, iy, izm) &
+              + curlb(ixm, iym, iz) + curlb(ixm, iy, izm) &
+              + curlb(ix, iym, izm) + curlb(ixm, iym, izm)) &
+              * dt / (8.0_num * rho(ix, iy, iz))
         END DO
       END DO
     END DO
@@ -1036,32 +892,24 @@ CONTAINS
       izp = iz + 1
       DO iy = 0, ny
         iyp = iy + 1
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
         DO ix = 0, nx
           ixp = ix + 1
 
-          ! jx at E3(i, j)
           jx1 = (bz(ix, iyp, iz) - bz(ix, iy, iz)) / dyc(iy) &
               - (by(ix, iy, izp) - by(ix, iy, iz)) / dzc(iz)
 
-          ! jx at E3(i+1, j)
           jx2 = (bz(ixp, iyp, iz) - bz(ixp, iy, iz)) / dyc(iy) &
               - (by(ixp, iy, izp) - by(ixp, iy, iz)) / dzc(iz)
 
-          ! jy at E2(i, j)
           jy1 = (bx(ix, iy, izp) - bx(ix, iy, iz)) / dzc(iz) &
               - (bz(ixp, iy, iz) - bz(ix, iy, iz)) / dxc(ix)
 
-          ! jy at E2(i, j+1)
           jy2 = (bx(ix, iyp, izp) - bx(ix, iyp, iz)) / dzc(iz) &
               - (bz(ixp, iyp, iz) - bz(ix, iyp, iz)) / dxc(ix)
 
-          ! jz at E1(i, j)
           jz1 = (by(ixp, iy, iz) - by(ix, iy, iz)) / dxc(ix) &
               - (bx(ix, iyp, iz) - bx(ix, iy, iz)) / dyc(iy)
 
-          ! jz at E1(i, j)
           jz2 = (by(ixp, iy, izp) - by(ix, iy, izp)) / dxc(ix) &
               - (bx(ix, iyp, izp) - bx(ix, iy, izp)) / dyc(iy)
 
@@ -1077,7 +925,7 @@ CONTAINS
     DO iz = 0, nz
       DO iy = 0, ny
         DO ix = 0, nx
-          w1 = dt6 * dxc(ix) * dyc(iy) * dzc(iz) * c1(ix, iy, iz)
+          w1 = dt * dxc(ix) * dyc(iy) * dzc(iz) * curlb(ix, iy, iz)
           IF ((ix == 0) .OR. (ix == nx)) THEN
             w1 = w1 * 0.5_num
           END IF
@@ -1095,18 +943,11 @@ CONTAINS
       END DO
     END DO
 
-    ! Once more to get j_perp and j_par correct
-    CALL rkstep
-
-    DEALLOCATE(k1x, k2x, k3x, k4x, k1y, k2y, k3y, k4y, k1z, k2z, k3z, k4z)
-    DEALLOCATE(c1, c2, c3, c4)
-
-  END SUBROUTINE resistive_effects
+  END SUBROUTINE resistive_effects                  
 
 
 
-  ! calculates 'k' values from b[xyz]1 values
-  SUBROUTINE rkstep
+  SUBROUTINE resistive_flux
 
     REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: jx, jy, jz
     REAL(num) :: jx1, jy1, jz1, jx2, jy2, jz2
@@ -1119,13 +960,11 @@ CONTAINS
     ALLOCATE(jx(-1:nx+1, -1:ny+1, -1:nz+1), &
         jy(-1:nx+1, -1:ny+1, -1:nz+1), jz(-1:nx+1, -1:ny+1, -1:nz+1))
 
-    DO iz = -1, nz+1
+    DO iz = 0, nz
       izp = iz + 1
-      DO iy = -1, ny+1
+      DO iy = 0, ny
         iyp = iy + 1
-        !DEC$ IVDEP
-        !DEC$ VECTOR ALWAYS
-        DO ix = -1, nx+1
+        DO ix = 0, nx
           ixp = ix + 1
 
           ! jx at E3(i, j)
@@ -1155,6 +994,7 @@ CONTAINS
           jx(ix, iy, iz) = (jx1 + jx2) / 2.0_num
           jy(ix, iy, iz) = (jy1 + jy2) / 2.0_num
           jz(ix, iy, iz) = (jz1 + jz2) / 2.0_num
+
         END DO
       END DO
     END DO
@@ -1163,15 +1003,13 @@ CONTAINS
       ! Use simple flux calculation
       DO iz = 0, nz
         DO iy = 0, ny
-          !DEC$ IVDEP
-          !DEC$ VECTOR ALWAYS
           DO ix = 0, nx
             flux_x(ix, iy, iz) = -jx(ix, iy, iz) &
-                * eta(ix, iy, iz) * dxc(ix) / 2.0_num
+                * eta(ix, iy, iz) * dxc(ix) * dt / 2.0_num
             flux_y(ix, iy, iz) = -jy(ix, iy, iz) &
-                * eta(ix, iy, iz) * dyc(iy) / 2.0_num
+                * eta(ix, iy, iz) * dyc(iy) * dt / 2.0_num
             flux_z(ix, iy, iz) = -jz(ix, iy, iz) &
-                * eta(ix, iy, iz) * dzc(iz) / 2.0_num
+                * eta(ix, iy, iz) * dzc(iz) * dt / 2.0_num
             ! This isn't really curlb. It's actually heat flux
             curlb(ix, iy, iz) = eta(ix, iy, iz) &
                 * (jx(ix, iy, iz)**2 + jy(ix, iy, iz)**2 + jz(ix, iy, iz)**2)
@@ -1180,11 +1018,10 @@ CONTAINS
       END DO
     ELSE
       ! Use partially ionised flux calculation
-      DO iz = 0, nz
+      DO iz = 0, nz 
+        izp = iz + 1
         DO iy = 0, ny
           iyp = iy + 1
-          !DEC$ IVDEP
-          !DEC$ VECTOR ALWAYS
           DO ix = 0, nx
             ixp = ix + 1
             ! B at vertices
@@ -1233,7 +1070,8 @@ CONTAINS
                 + j_perp_y * (eta_perp(ix, iy, iz) + eta(ix, iy, iz))) &
                 * dyc(iy) / 2.0_num)
             flux_z(ix, iy, iz) = -((j_par_z * eta(ix, iy, iz) &
-                + j_perp_z * (eta_perp(ix, iy, iz) + eta(ix, iy, iz))))
+                + j_perp_z * (eta_perp(ix, iy, iz) + eta(ix, iy, iz))) &
+                * dzc(iz) / 2.0_num)
           END DO
         END DO
       END DO
@@ -1241,7 +1079,8 @@ CONTAINS
 
     DEALLOCATE (jx, jy, jz)
 
-  END SUBROUTINE rkstep
+  END SUBROUTINE resistive_flux
+
 
 
 
