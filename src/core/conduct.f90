@@ -22,7 +22,7 @@ CONTAINS
     REAL(num) :: b, bxc, byc, bzc, bpx, bpy, bpz 
     REAL(num) :: ux, uy, uz
     REAL(num) :: pow = 5.0_num / 2.0_num  
-    REAL(num) :: a1, a2, a3, error, errmax, errlast, abs_error 
+    REAL(num) :: a1, a2, a3, error, errmax, abs_error 
     REAL(num) :: w, residual, q_shx, q_shy, q_shz, q_sh, q_f, q_nl
 
     INTEGER :: loop, redblack, x1, y1, z1 
@@ -178,7 +178,6 @@ CONTAINS
 		! interate to get energy^{n+1} by SOR Guass-Seidel 		
     iterate: DO loop = 1, 100
       errmax = 0.0_num 
-      errlast = 0.0_num
       error = 0.0_num
       z1 = 1 
       DO redblack = 1, 2
@@ -288,9 +287,6 @@ CONTAINS
 
       CALL MPI_ALLREDUCE(errmax, error, 1, mpireal, MPI_MAX, comm, errcode)
       errmax = error 
-
-      IF (errmax > errlast) w = (1.0_num + w) / 2.0_num
-      errlast = errmax                              
       
       IF (errmax .LT. abs_error) THEN
         converged = .TRUE.  
