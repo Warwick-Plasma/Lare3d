@@ -25,7 +25,7 @@ MODULE constants
   INTEGER, PARAMETER :: IC_NEW = 1, IC_RESTART = 2
 
   ! Equation of state codes
-  INTEGER, PARAMETER :: EOS_IDEAL = 1, EOS_ION = 2, EOS_PI = 3
+  INTEGER, PARAMETER :: EOS_IDEAL = 1, EOS_ION = 2, EOS_PI = 4
 
 END MODULE constants
 
