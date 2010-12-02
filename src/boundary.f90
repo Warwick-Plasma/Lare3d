@@ -315,9 +315,9 @@ CONTAINS
       vz(:, ny+1, :) = 0.0_num
     END IF
     IF (down == MPI_PROC_NULL .AND. ybc_down == BC_OTHER) THEN
-      vx(:, -1, :) = 0.0_num
-      vy(:, -1, :) = 0.0_num
-      vz(:, -1, :) = 0.0_num
+      vx(:, -2:0, :) = 0.0_num
+      vy(:, -2:0, :) = 0.0_num
+      vz(:, -2:0, :) = 0.0_num
     END IF    
 
   END SUBROUTINE velocity_bcs
