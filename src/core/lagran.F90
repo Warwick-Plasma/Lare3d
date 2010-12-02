@@ -318,8 +318,6 @@ CONTAINS
       END DO
     END DO
 
-    IF (any_open) CALL store_boundary_dv
-
     CALL remap_v_bcs
 
     CALL visc_heating
@@ -591,17 +589,17 @@ CONTAINS
 
 #ifndef Q_MONO
             qxy(ix,iy,iz) = sxy * (L2 * rho(ix,iy,iz)  &
-                 * (visc1 * cf + L2 * visc2 * ABS(s)))
+                 * (visc1 * cf + L2 * visc2 * ABS(sxy)))
             qxz(ix,iy,iz) = sxz * (L2 * rho(ix,iy,iz)  &
-                 * (visc1 * cf + L2 * visc2 * ABS(s)))
+                 * (visc1 * cf + L2 * visc2 * ABS(sxz)))
             qyz(ix,iy,iz) = syz * (L2 * rho(ix,iy,iz)  &
-                 * (visc1 * cf + L2 * visc2 * ABS(s)))
+                 * (visc1 * cf + L2 * visc2 * ABS(syz)))
             qxx(ix,iy,iz) = sxx * (L2 * rho(ix,iy,iz)  &
-                 * (visc1 * cf + L2 * visc2 * ABS(s)))
+                 * (visc1 * cf + L2 * visc2 * ABS(sxx)))
             qyy(ix,iy,iz) = syy * (L2 * rho(ix,iy,iz)  &
-                 * (visc1 * cf + L2 * visc2 * ABS(s)))
+                 * (visc1 * cf + L2 * visc2 * ABS(syy)))
             qzz(ix,iy,iz) = szz * (L2 * rho(ix,iy,iz)  &
-                 * (visc1 * cf + L2 * visc2 * ABS(s)))
+                 * (visc1 * cf + L2 * visc2 * ABS(szz)))
 #endif
           qxy(ix,iy,iz) = qxy(ix,iy,iz) + 2.0_num * sxy  * rho(ix,iy,iz) * visc3 
           qxz(ix,iy,iz) = qxz(ix,iy,iz) + 2.0_num * sxz  * rho(ix,iy,iz) * visc3 
@@ -1308,79 +1306,5 @@ CONTAINS
    END SUBROUTINE rkstep
 
 
-
-
-
-  SUBROUTINE store_boundary_dv
-
-    REAL(num) :: dvx, dvy, dvz
-
-    IF (xbc_right == BC_OPEN .AND. right == MPI_PROC_NULL) THEN
-      DO iz = -2, nz+2
-        DO iy = -2, ny+2
-          dvx = 2.0_num * (vx(nx, iy, iz) - vx1(nx, iy, iz))
-          dvy = 2.0_num * (vy(nx, iy, iz) - vy1(nx, iy, iz))
-          dvz = 2.0_num * (vz(nx, iy, iz) - vz1(nx, iy, iz))
-          dv_right(iy, iz) = SQRT(dvx**2 + dvy**2 + dvz**2)
-        END DO
-      END DO
-    END IF
-
-    IF (xbc_left == BC_OPEN .AND. left == MPI_PROC_NULL) THEN
-      DO iz = -2, nz+2
-        DO iy = -2, ny+2
-          dvx = 2.0_num * (vx(0, iy, iz) - vx1(0, iy, iz))
-          dvy = 2.0_num * (vy(0, iy, iz) - vy1(0, iy, iz))
-          dvz = 2.0_num * (vz(0, iy, iz) - vz1(0, iy, iz))
-          dv_left(iy, iz) = SQRT(dvx**2 + dvy**2 + dvz**2)
-        END DO
-      END DO
-    END IF
-
-    IF (ybc_up == BC_OPEN .AND. up == MPI_PROC_NULL) THEN
-      DO iz = -2, nz+2
-        DO ix = -2, nx+2
-          dvx = 2.0_num * (vx(ix, ny, iz) - vx1(ix, ny, iz))
-          dvy = 2.0_num * (vy(ix, ny, iz) - vy1(ix, ny, iz))
-          dvz = 2.0_num * (vz(ix, ny, iz) - vz1(ix, ny, iz))
-          dv_up(ix, iz) = SQRT(dvx**2 + dvy**2 + dvz**2)
-        END DO
-      END DO
-    END IF
-
-    IF (ybc_down == BC_OPEN .AND. down == MPI_PROC_NULL) THEN
-      DO iz = -2, nz+2
-        DO ix = -2, nx+2
-          dvx = 2.0_num * (vx(ix, 0, iz) - vx1(ix, 0, iz))
-          dvy = 2.0_num * (vy(ix, 0, iz) - vy1(ix, 0, iz))
-          dvz = 2.0_num * (vz(ix, 0, iz) - vz1(ix, 0, iz))
-          dv_down(ix, iz) = SQRT(dvx**2 + dvy**2 + dvz**2)
-        END DO
-      END DO
-    END IF
-
-    IF (zbc_back == BC_OPEN .AND. back == MPI_PROC_NULL) THEN
-      DO iy = -2, ny+2
-        DO ix = -2, nx+2
-          dvx = 2.0_num * (vx(ix, iy, nz) - vx1(ix, iy, nz))
-          dvy = 2.0_num * (vy(ix, iy, nz) - vy1(ix, iy, nz))
-          dvz = 2.0_num * (vz(ix, iy, nz) - vz1(ix, iy, nz))
-          dv_back(ix, iy) = SQRT(dvx**2 + dvy**2 + dvz**2)
-        END DO
-      END DO
-    END IF
-
-    IF (zbc_front == BC_OPEN .AND. front == MPI_PROC_NULL) THEN
-      DO iy = -2, ny+2
-        DO ix = -2, nx+2
-          dvx = 2.0_num * (vx(ix, iy, 0) - vx1(ix, iy, 0))
-          dvy = 2.0_num * (vy(ix, iy, 0) - vy1(ix, iy, 0))
-          dvz = 2.0_num * (vz(ix, iy, 0) - vz1(ix, iy, 0))
-          dv_front(ix, iy) = SQRT(dvx**2 + dvy**2 + dvz**2)
-        END DO
-      END DO
-    END IF
-
-  END SUBROUTINE store_boundary_dv
 
 END MODULE lagran
