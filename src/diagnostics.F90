@@ -224,18 +224,13 @@ CONTAINS
         CALL cfd_write_3d_cartesian_variable_parallel("jz", "current", &
             dims, stagger, "Grid", "Grid", data, subtype)
       END IF
-#ifdef PARALLEL_DEBUG
-      data = rank
-      CALL cfd_write_3d_cartesian_variable_parallel("rank", "parallel", &
-          dims, stagger, "Grid", "Grid", data, subtype)
-#endif
 
       ! Close the file
       CALL cfd_close()
 
       output_file = output_file + 1
 
-    END IF
+    END IF           
 
     IF (last_call .AND. rank == 0) THEN ! output energy diagnostics etc
       WRITE(20, *) 'final nsteps / time =', i, time * t0
