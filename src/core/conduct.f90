@@ -54,7 +54,7 @@ CONTAINS
           bxc = bx(ix,iy,iz) 
           byc = (by(ix,iy,iz) + by(ix+1,iy,iz) + by(ix,iy-1,iz) + by(ix+1,iy-1,iz)) / 4.0_num
           bzc = (bz(ix,iy,iz) + bz(ix+1,iy,iz) + bz(ix,iy,iz-1) + bz(ix+1,iy,iz-1)) / 4.0_num
-          bpx = SQRT(bxc**2 + byc**2 + bzc**2)
+          bpx = SQRT(bxc**2 + byc**2 + bzc**2 + b_min**2)
           bpx = MAX(bpx, none_zero) 
   
           exb = (energy(ix,iy,iz) + energy(ix+1,iy,iz)) / 2.0_num
@@ -75,7 +75,7 @@ CONTAINS
           bxc = (bx(ix,iy,iz) + bx(ix,iy+1,iz) + bx(ix-1,iy,iz) + bx(ix-1,iy+1,iz)) / 4.0_num
           byc = by(ix,iy,iz)      
           bzc = (bz(ix,iy,iz) + bz(ix,iy+1,iz) + bz(ix,iy,iz-1) + bz(ix,iy+1,iz-1)) / 4.0_num
-          bpy = SQRT(bxc**2 + byc**2 + bzc**2)
+          bpy = SQRT(bxc**2 + byc**2 + bzc**2 + b_min**2)
           bpy = MAX(bpy, none_zero) 
   
           eyb = (energy(ix,iy,iz) + energy(ix,iy+1,iz)) / 2.0_num
@@ -96,7 +96,7 @@ CONTAINS
           bxc = (bx(ix,iy,iz) + bx(ix,iy,iz+1) + bx(ix-1,iy,iz) + bx(ix-1,iy,iz+1)) / 4.0_num
           byc = (by(ix,iy,iz) + by(ix,iy,iz+1) + by(ix,iy-1,iz) + by(ix,iy-1,iz+1)) / 4.0_num         
           bzc = bz(ix,iy,iz) 
-          bpz = SQRT(bxc**2 + byc**2 + bzc**2)
+          bpz = SQRT(bxc**2 + byc**2 + bzc**2 + b_min**2)
           bpz = MAX(bpz, none_zero) 
           
           ezb = (energy(ix,iy,iz) + energy(ix,iy,iz+1)) / 2.0_num
