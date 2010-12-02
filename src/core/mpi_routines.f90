@@ -103,7 +103,6 @@ CONTAINS
     ALLOCATE(p_visc(-1:nx+2, -1:ny+2, -1:nz+2))
     ALLOCATE(eta(-1:nx+2, -1:ny+2, -1:nz+2))
     ALLOCATE(lambda_i(-1:nx+2, -1:ny+2, -1:nz+2))
-    ALLOCATE(bzone(-1:nx+2, -1:ny+2, -1:nz+2))
     ! shocked and resistive need to be larger to allow offset = 4 in shock_test
     ALLOCATE(cv(-1:nx+2, -1:ny+2, -1:nz+2), cv1(-1:nx+2, -1:ny+2, -1:nz+2))
     ALLOCATE(xc(-1:nx+2), xb(-2:nx+2), dxb(-1:nx+2), dxc(-1:nx+2))
@@ -113,10 +112,6 @@ CONTAINS
     ALLOCATE(jx_r(0:nx+1, 0:ny+1, 0:nz+1))
     ALLOCATE(jy_r(0:nx+1, 0:ny+1, 0:nz+1))
     ALLOCATE(jz_r(0:nx+1, 0:ny+1, 0:nz+1))
-
-    ALLOCATE(dv_left(-2:ny+2, -2:nz+2), dv_right(-2:ny+2, -2:nz+2))
-    ALLOCATE(dv_up(-2:nx+2, -2:nz+2), dv_down(-2:nx+2, -2:nz+2))
-    ALLOCATE(dv_back(-2:nx+2, -2:ny+2), dv_front(-2:nx+2, -2:ny+2))
 
     IF (rank == 0) start_time = MPI_WTIME()
 
@@ -149,7 +144,7 @@ CONTAINS
     DEALLOCATE(vx1, vy1, vz1)
     DEALLOCATE(bx, by, bz)
     DEALLOCATE(delta_ke, p_visc)
-    DEALLOCATE(eta, lambda_i, bzone)
+    DEALLOCATE(eta, lambda_i)
     DEALLOCATE(cv, cv1)
     DEALLOCATE(xc, xb, dxb, dxc)
     DEALLOCATE(yc, yb, dyb, dyc)
