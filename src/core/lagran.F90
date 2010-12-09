@@ -1227,7 +1227,8 @@ CONTAINS
        END DO
      ELSE
        ! Use partially ionised flux calculation
-       DO iz = 0, nz
+       DO iz = 0, nz 
+         izp = iz + 1
          DO iy = 0, ny
            iyp = iy + 1
            DO ix = 0, nx
