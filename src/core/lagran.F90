@@ -74,9 +74,9 @@ CONTAINS
         iym = iy - 1
         DO ix = 0, nx+1
           ixm = ix - 1
-          bx1(ix, iy, iz) = (bx(ix, iy, iz) + bx(ixm, iy, iz)) / 2.0_num
-          by1(ix, iy, iz) = (by(ix, iy, iz) + by(ix, iym, iz)) / 2.0_num
-          bz1(ix, iy, iz) = (bz(ix, iy, iz) + bz(ix, iy, izm)) / 2.0_num
+          bx1(ix, iy, iz) = (bx(ix, iy, iz) + bx(ixm, iy, iz)) * 0.5_num
+          by1(ix, iy, iz) = (by(ix, iy, iz) + by(ix, iym, iz)) * 0.5_num
+          bz1(ix, iy, iz) = (bz(ix, iy, iz) + bz(ix, iy, izm)) * 0.5_num
         END DO
       END DO
     END DO
@@ -105,7 +105,7 @@ CONTAINS
     REAL(num) :: cvx, cvxp, cvy, cvyp, cvz, cvzp
     REAL(num) :: dv
 
-    dt2 = dt / 2.0_num
+    dt2 = dt * 0.5_num
     CALL viscosity_and_b_update
 
     bx1 = bx1 * cv1(0:nx+1, 0:ny+1, 0:nz+1)
@@ -151,73 +151,73 @@ CONTAINS
           pypzp   = pressure(ix , iyp, izp)
           pxpypzp = pressure(ixp, iyp, izp)
 
-          w1 = (p + pyp + pzp + pypzp) / 4.0_num
-          w2 = (pxp + pxpyp + pxpzp + pxpypzp) / 4.0_num
+          w1 = (p + pyp + pzp + pypzp) * 0.25_num
+          w2 = (pxp + pxpyp + pxpzp + pxpypzp) * 0.25_num
           fx = -(w2 - w1) / dxc(ix)
-          w1 = (p + pxp + pzp + pxpzp) / 4.0_num
-          w2 = (pyp + pxpyp + pypzp + pxpypzp) / 4.0_num
+          w1 = (p + pxp + pzp + pxpzp) * 0.25_num
+          w2 = (pyp + pxpyp + pypzp + pxpypzp) * 0.25_num
           fy = -(w2 - w1) / dyc(iy)
-          w1 = (p + pxp + pyp + pxpyp) / 4.0_num
-          w2 = (pzp + pxpzp + pypzp + pxpypzp) / 4.0_num
+          w1 = (p + pxp + pyp + pxpyp) * 0.25_num
+          w2 = (pzp + pxpzp + pypzp + pxpypzp) * 0.25_num
           fz = -(w2 - w1) / dzc(iz)
 
           ! add diagonal components
           w1 = (qxx(ix, iy, iz) + qxx(ix, iyp, iz) &
-              + qxx(ix, iy, izp) + qxx(ix, iyp, izp)) / 4.0_num
+              + qxx(ix, iy, izp) + qxx(ix, iyp, izp)) * 0.25_num
           w2 = (qxx(ixp, iy, iz) + qxx(ixp, iyp, iz) &
-              + qxx(ixp, iy, izp) + qxx(ixp, iyp, izp)) / 4.0_num
+              + qxx(ixp, iy, izp) + qxx(ixp, iyp, izp)) * 0.25_num
           fx = fx + (w2 - w1) / dxc(ix)
   
           w1 = (qyy(ix, iy, iz) + qyy(ixp, iy, iz) &
-              + qyy(ix, iy, izp) + qyy(ixp, iy, izp)) / 4.0_num
+              + qyy(ix, iy, izp) + qyy(ixp, iy, izp)) * 0.25_num
           w2 = (qyy(ix, iyp, iz) + qyy(ixp, iyp, iz) &
-              + qyy(ix, iyp, izp) + qyy(ixp, iyp, izp)) / 4.0_num
+              + qyy(ix, iyp, izp) + qyy(ixp, iyp, izp)) * 0.25_num
           fy = fy + (w2 - w1) / dyc(iy)
   
           w1 = (qzz(ix, iy, iz) + qzz(ixp, iy, iz) &
-              + qzz(ix, iyp, iz) + qzz(ixp, iyp, iz)) / 4.0_num
+              + qzz(ix, iyp, iz) + qzz(ixp, iyp, iz)) * 0.25_num
           w2 = (qzz(ix, iy, izp) + qzz(ixp, iy, izp) &
-              + qzz(ix, iyp, izp) + qzz(ixp, iyp, izp)) / 4.0_num
+              + qzz(ix, iyp, izp) + qzz(ixp, iyp, izp)) * 0.25_num
           fz = fz + (w2 - w1) / dzc(iz)
   
           ! add shear viscosity forces
           ! fx
           w1 = (qxy(ix, iy, iz) + qxy(ixp, iy, iz) &
-              + qxy(ix, iy, izp) + qxy(ixp, iy, izp)) / 4.0_num
+              + qxy(ix, iy, izp) + qxy(ixp, iy, izp)) * 0.25_num
           w2 = (qxy(ix, iyp, iz) + qxy(ixp, iyp, iz) &
-              + qxy(ix, iyp, izp) + qxy(ixp, iyp, izp)) / 4.0_num
+              + qxy(ix, iyp, izp) + qxy(ixp, iyp, izp)) * 0.25_num
           fx = fx + (w2 - w1) / dyc(iy)
   
           w1 = (qxz(ix, iy, iz) + qxz(ixp, iy, iz) &
-              + qxz(ix, iyp, iz) + qxz(ixp, iyp, iz)) / 4.0_num
+              + qxz(ix, iyp, iz) + qxz(ixp, iyp, iz)) * 0.25_num
           w2 = (qxz(ix, iy, izp) + qxz(ixp, iy, izp) &
-              + qxz(ix, iyp, izp) + qxz(ixp, iyp, izp)) / 4.0_num
+              + qxz(ix, iyp, izp) + qxz(ixp, iyp, izp)) * 0.25_num
           fx = fx + (w2 - w1) / dzc(iz)
   
           ! fy
           w1 = (qxy(ix, iy, iz) + qxy(ix, iyp, iz) &
-              + qxy(ix, iy, izp) + qxy(ix, iyp, izp)) / 4.0_num
+              + qxy(ix, iy, izp) + qxy(ix, iyp, izp)) * 0.25_num
           w2 = (qxy(ixp, iy, iz) + qxy(ixp, iyp, iz) &
-              + qxy(ixp, iy, izp) + qxy(ixp, iyp, izp)) / 4.0_num
+              + qxy(ixp, iy, izp) + qxy(ixp, iyp, izp)) * 0.25_num
           fy = fy + (w2 - w1) / dxc(ix)
   
           w1 = (qyz(ix, iy, iz) + qyz(ixp, iy, iz) &
-              + qyz(ix, iyp, iz) + qyz(ixp, iyp, iz)) / 4.0_num
+              + qyz(ix, iyp, iz) + qyz(ixp, iyp, iz)) * 0.25_num
           w2 = (qyz(ix, iy, izp) + qyz(ixp, iy, izp) &
-              + qyz(ix, iyp, izp) + qyz(ixp, iyp, izp)) / 4.0_num
+              + qyz(ix, iyp, izp) + qyz(ixp, iyp, izp)) * 0.25_num
           fy = fy + (w2 - w1) / dzc(iz)
  
           ! fz
           w1 = (qxz(ix, iy, iz) + qxz(ix, iyp, iz) &
-              + qxz(ix, iy, izp) + qxz(ix, iyp, izp)) / 4.0_num
+              + qxz(ix, iy, izp) + qxz(ix, iyp, izp)) * 0.25_num
           w2 = (qxz(ixp, iy, iz) + qxz(ixp, iyp, iz) &
-              + qxz(ixp, iy, izp) + qxz(ixp, iyp, izp)) / 4.0_num
+              + qxz(ixp, iy, izp) + qxz(ixp, iyp, izp)) * 0.25_num
           fz = fz + (w2 - w1) / dxc(ix)
  
           w1 = (qyz(ix, iy, iz) + qyz(ixp, iy, iz) &
-              + qyz(ix, iy, izp) + qyz(ixp, iy, izp)) / 4.0_num
+              + qyz(ix, iy, izp) + qyz(ixp, iy, izp)) * 0.25_num
           w2 = (qyz(ix, iyp, iz) + qyz(ixp, iyp, iz) &
-              + qyz(ix, iyp, izp) + qyz(ixp, iyp, izp)) / 4.0_num
+              + qyz(ix, iyp, izp) + qyz(ixp, iyp, izp)) * 0.25_num
           fz = fz + (w2 - w1) / dyc(iy)
 
           cvx = cv1(ix, iy, iz) + cv1(ix, iyp, iz) &
@@ -331,22 +331,22 @@ CONTAINS
           ixm = ix - 1
 
           vxb = (vx1(ix, iy, iz) + vx1(ix, iym, iz) &
-              + vx1(ix, iy, izm) + vx1(ix, iym, izm)) / 4.0_num
+              + vx1(ix, iy, izm) + vx1(ix, iym, izm)) * 0.25_num
 
           vxbm = (vx1(ixm, iy, iz) + vx1(ixm, iym, iz) &
-              + vx1(ixm, iy, izm) + vx1(ixm, iym, izm)) / 4.0_num
+              + vx1(ixm, iy, izm) + vx1(ixm, iym, izm)) * 0.25_num
 
           vyb = (vy1(ix, iy, iz) + vy1(ixm, iy, iz) &
-              + vy1(ix, iy, izm) + vy1(ixm, iy, izm)) / 4.0_num
+              + vy1(ix, iy, izm) + vy1(ixm, iy, izm)) * 0.25_num
 
           vybm = (vy1(ix, iym, iz) + vy1(ixm, iym, iz) &
-              + vy1(ix, iym, izm) + vy1(ixm, iym, izm)) / 4.0_num
+              + vy1(ix, iym, izm) + vy1(ixm, iym, izm)) * 0.25_num
 
           vzb = (vz1(ix, iy, iz) + vz1(ixm, iy, iz) &
-              + vz1(ix, iym, iz) + vz1(ixm, iym, iz)) / 4.0_num
+              + vz1(ix, iym, iz) + vz1(ixm, iym, iz)) * 0.25_num
 
           vzbm = (vz1(ix, iy, izm) + vz1(ixm, iy, izm) &
-              + vz1(ix, iym, izm) + vz1(ixm, iym, izm)) / 4.0_num
+              + vz1(ix, iym, izm) + vz1(ixm, iym, izm)) * 0.25_num
 
           dv = ((vxb - vxbm) / dxb(ix) + (vyb - vybm) / dyb(iy) &
               + (vzb - vzbm) / dzb(iz)) * dt
@@ -360,10 +360,8 @@ CONTAINS
           ! energy at end of Lagrangian step
 
           energy(ix, iy, iz) = energy(ix, iy, iz) &
-              - pressure(ix, iy, iz) * dv / rho(ix, iy, iz)
-
-          energy(ix, iy, iz) = energy(ix, iy, iz) &
-                + dt * visc_heat(ix, iy, iz) / rho(ix, iy, iz)
+              - pressure(ix, iy, iz) * dv / rho(ix, iy, iz) &
+              + dt * visc_heat(ix, iy, iz) / rho(ix, iy, iz)
 
           ! density at end of Lagrangian step
           rho(ix, iy, iz) = rho(ix, iy, iz) / (1.0_num + dv)
@@ -415,27 +413,27 @@ CONTAINS
 
           ! vx at Sx(i, j, k)
           vxb = (vx(ix, iy, iz) + vx(ix, iym, iz) &
-              + vx(ix, iy, izm) + vx(ix, iym, izm)) / 4.0_num
+              + vx(ix, iy, izm) + vx(ix, iym, izm)) * 0.25_num
 
           ! vx at Sx(i-1, j, k)
           vxbm = (vx(ixm, iy, iz) + vx(ixm, iym, iz) &
-              + vx(ixm, iy, izm) + vx(ixm, iym, izm)) / 4.0_num
+              + vx(ixm, iy, izm) + vx(ixm, iym, izm)) * 0.25_num
 
           ! vy at Sy(i, j, k)
           vyb = (vy(ix, iy, iz) + vy(ixm, iy, iz) &
-              + vy(ix, iy, izm) + vy(ixm, iy, izm)) / 4.0_num
+              + vy(ix, iy, izm) + vy(ixm, iy, izm)) * 0.25_num
 
           ! vy at Sy(i, j-1, k)
           vybm = (vy(ix, iym, iz) + vy(ixm, iym, iz) &
-              + vy(ix, iym, izm) + vy(ixm, iym, izm)) / 4.0_num
+              + vy(ix, iym, izm) + vy(ixm, iym, izm)) * 0.25_num
 
           ! vz at Sz(i, j, k)
           vzb = (vz(ix, iy, iz) + vz(ixm, iy, iz) &
-              + vz(ix, iym, iz) + vz(ixm, iym, iz)) / 4.0_num
+              + vz(ix, iym, iz) + vz(ixm, iym, iz)) * 0.25_num
 
           ! vz at Sz(i, j, k-1)
           vzbm = (vz(ix, iy, izm) + vz(ixm, iy, izm) &
-              + vz(ix, iym, izm) + vz(ixm, iym, izm)) / 4.0_num
+              + vz(ix, iym, izm) + vz(ixm, iym, izm)) * 0.25_num
 
           dvxdx = (vxb - vxbm) / dxb(ix)
           dvydy = (vyb - vybm) / dyb(iy)
@@ -446,69 +444,69 @@ CONTAINS
 
           ! vx at Sy(i, j, k)
           vxb = (vx(ix, iy, iz) + vx(ixm, iy, iz) &
-              + vx(ix, iy, izm) + vx(ixm, iy, izm)) / 4.0_num
+              + vx(ix, iy, izm) + vx(ixm, iy, izm)) * 0.25_num
 
           ! vx at Sy(i, j-1, k)
           vxbm = (vx(ix, iym, iz) + vx(ixm, iym, iz) &
-              + vx(ix, iym, izm) + vx(ixm, iym, izm)) / 4.0_num
+              + vx(ix, iym, izm) + vx(ixm, iym, izm)) * 0.25_num
 
           ! vy at Sx(i, j, k)
           vyb = (vy(ix, iy, iz) + vy(ix, iym, iz) &
-              + vy(ix, iy, izm) + vy(ix, iym, izm)) / 4.0_num
+              + vy(ix, iy, izm) + vy(ix, iym, izm)) * 0.25_num
 
           ! vy at Sx(i-1, j, k)
           vybm = (vy(ixm, iy, iz) + vy(ixm, iym, iz) &
-              + vy(ixm, iy, izm) + vy(ixm, iym, izm)) / 4.0_num
+              + vy(ixm, iy, izm) + vy(ixm, iym, izm)) * 0.25_num
 
           dvxdy = (vxb - vxbm) / dyb(iy)
           dvydx = (vyb - vybm) / dxb(ix)
           dvxy = dvxdy + dvydx
-          sxy = dvxy / 2.0_num
-          sxx = 2.0_num * dvxdx / 3.0_num - (dvydy + dvzdz) / 3.0_num
-          syy = 2.0_num * dvydy / 3.0_num - (dvxdx + dvzdz) / 3.0_num
-          szz = 2.0_num * dvzdz / 3.0_num - (dvxdx + dvydy) / 3.0_num
+          sxy = dvxy * 0.5_num
+          sxx = 2.0_num * dvxdx * third - (dvydy + dvzdz) * third
+          syy = 2.0_num * dvydy * third - (dvxdx + dvzdz) * third
+          szz = 2.0_num * dvzdz * third - (dvxdx + dvydy) * third
 
           ! vx at Sz(i, j, k)
           vxb = (vx(ix, iy, iz) + vx(ixm, iy, iz) &
-              + vx(ix, iym, iz) + vx(ixm, iym, iz)) / 4.0_num
+              + vx(ix, iym, iz) + vx(ixm, iym, iz)) * 0.25_num
 
           ! vx at Sz(i, j, k-1)
           vxbm = (vx(ix, iy, izm) + vx(ixm, iy, izm) &
-              + vx(ix, iym, izm) + vx(ixm, iym, izm)) / 4.0_num
+              + vx(ix, iym, izm) + vx(ixm, iym, izm)) * 0.25_num
 
           ! vz at Sx(i, j, k)
           vzb = (vz(ix, iy, iz) + vz(ix, iym, iz) &
-              + vz(ix, iy, izm) + vz(ix, iym, izm)) / 4.0_num
+              + vz(ix, iy, izm) + vz(ix, iym, izm)) * 0.25_num
 
           ! vz at Sx(i-1, j, k)
           vzbm = (vz(ixm, iy, iz) + vz(ixm, iym, iz) &
-              + vz(ixm, iy, izm) + vz(ixm, iym, izm)) / 4.0_num
+              + vz(ixm, iy, izm) + vz(ixm, iym, izm)) * 0.25_num
 
           dvxdz = (vxb - vxbm) / dzb(iz)
           dvzdx = (vzb - vzbm) / dxb(ix)
           dvxz = dvxdz + dvzdx
-          sxz = dvxz / 2.0_num
+          sxz = dvxz * 0.5_num
 
           ! vy at Sz(i, j, k)
           vyb = (vy(ix, iy, iz) + vy(ixm, iy, iz) &
-              + vy(ix, iym, iz) + vy(ixm, iym, iz)) / 4.0_num
+              + vy(ix, iym, iz) + vy(ixm, iym, iz)) * 0.25_num
 
           ! vy at Sz(i, j, k-1)
           vybm = (vy(ix, iy, izm) + vy(ixm, iy, izm) &
-              + vy(ix, iym, izm) + vy(ixm, iym, izm)) / 4.0_num
+              + vy(ix, iym, izm) + vy(ixm, iym, izm)) * 0.25_num
 
           ! vz at Sy(i, j, k)
           vzb = (vz(ix, iy, iz) + vz(ixm, iy, iz) &
-              + vz(ix, iy, izm) + vz(ixm, iy, izm)) / 4.0_num
+              + vz(ix, iy, izm) + vz(ixm, iy, izm)) * 0.25_num
 
           ! vz at Sy(i, j-1, k)
           vzbm = (vz(ix, iym, iz) + vz(ixm, iym, iz) &
-              + vz(ix, iym, izm) + vz(ixm, iym, izm)) / 4.0_num
+              + vz(ix, iym, izm) + vz(ixm, iym, izm)) * 0.25_num
 
           dvydz = (vyb - vybm) / dzb(iz)
           dvzdy = (vzb - vzbm) / dyb(iy)
           dvyz = dvydz + dvzdy
-          syz = dvyz / 2.0_num
+          syz = dvyz * 0.5_num
 
           p = energy(ix, iy, iz) * (gamma - 1.0_num) * rho(ix, iy, iz)
           pxp = energy(ixp, iy, iz) * (gamma - 1.0_num) * rho(ixp, iy, iz)
@@ -651,60 +649,60 @@ CONTAINS
 
           ! vx at Sx(i, j, k)
           vxb = (vx1(ix, iy, iz) + vx1(ix, iym, iz) &
-              + vx1(ix, iy, izm) + vx1(ix, iym, izm)) / 4.0_num
+              + vx1(ix, iy, izm) + vx1(ix, iym, izm)) * 0.25_num
 
           ! vx at Sx(i-1, j, k)
           vxbm = (vx1(ixm, iy, iz) + vx1(ixm, iym, iz) &
-              + vx1(ixm, iy, izm) + vx1(ixm, iym, izm)) / 4.0_num
+              + vx1(ixm, iy, izm) + vx1(ixm, iym, izm)) * 0.25_num
 
           ! vy at Sy(i, j, k)
           vyb = (vy1(ix, iy, iz) + vy1(ixm, iy, iz) &
-              + vy1(ix, iy, izm) + vy1(ixm, iy, izm)) / 4.0_num
+              + vy1(ix, iy, izm) + vy1(ixm, iy, izm)) * 0.25_num
 
           ! vy at Sy(i, j-1, k)
           vybm = (vy1(ix, iym, iz) + vy1(ixm, iym, iz) &
-              + vy1(ix, iym, izm) + vy1(ixm, iym, izm)) / 4.0_num
+              + vy1(ix, iym, izm) + vy1(ixm, iym, izm)) * 0.25_num
 
           ! vz at Sz(i, j, k)
           vzb = (vz1(ix, iy, iz) + vz1(ixm, iy, iz) &
-              + vz1(ix, iym, iz) + vz1(ixm, iym, iz)) / 4.0_num
+              + vz1(ix, iym, iz) + vz1(ixm, iym, iz)) * 0.25_num
 
           ! vz at Sz(i, j, k-1)
           vzbm = (vz1(ix, iy, izm) + vz1(ixm, iy, izm) &
-              + vz1(ix, iym, izm) + vz1(ixm, iym, izm)) / 4.0_num
+              + vz1(ix, iym, izm) + vz1(ixm, iym, izm)) * 0.25_num
 
           dvxdx = (vxb - vxbm) / dxb(ix)
           dvydy = (vyb - vybm) / dyb(iy)
           dvzdz = (vzb - vzbm) / dzb(iz)
 
           vxb = (vx1(ix, iy, iz) + vx1(ixm, iy, iz) &
-              + vx1(ix, iy, izm) + vx1(ixm, iy, izm)) / 4.0_num
+              + vx1(ix, iy, izm) + vx1(ixm, iy, izm)) * 0.25_num
           vxbm = (vx1(ix, iym, iz) + vx1(ixm, iym, iz) &
-              + vx1(ix, iym, izm) + vx1(ixm, iym, izm)) / 4.0_num
+              + vx1(ix, iym, izm) + vx1(ixm, iym, izm)) * 0.25_num
           vyb = (vy1(ix, iy, iz) + vy1(ix, iym, iz) &
-              + vy1(ix, iy, izm) + vy1(ix, iym, izm)) / 4.0_num
+              + vy1(ix, iy, izm) + vy1(ix, iym, izm)) * 0.25_num
           vybm = (vy1(ixm, iy, iz) + vy1(ixm, iym, iz) &
-              + vy1(ixm, iy, izm) + vy1(ixm, iym, izm)) / 4.0_num
+              + vy1(ixm, iy, izm) + vy1(ixm, iym, izm)) * 0.25_num
           dvxy = (vxb - vxbm) / dyb(iy) + (vyb - vybm) / dxb(ix)
 
           vxb = (vx1(ix, iy, iz) + vx1(ixm, iy, iz) &
-              + vx1(ix, iym, iz) + vx1(ixm, iym, iz)) / 4.0_num
+              + vx1(ix, iym, iz) + vx1(ixm, iym, iz)) * 0.25_num
           vxbm = (vx1(ix, iy, izm) + vx1(ixm, iy, izm) &
-              + vx1(ix, iym, izm) + vx1(ixm, iym, izm)) / 4.0_num
+              + vx1(ix, iym, izm) + vx1(ixm, iym, izm)) * 0.25_num
           vzb = (vz1(ix, iy, iz) + vz1(ix, iym, iz) &
-              + vz1(ix, iy, izm) + vz1(ix, iym, izm)) / 4.0_num
+              + vz1(ix, iy, izm) + vz1(ix, iym, izm)) * 0.25_num
           vzbm = (vz1(ixm, iy, iz) + vz1(ixm, iym, iz) &
-              + vz1(ixm, iy, izm) + vz1(ixm, iym, izm)) / 4.0_num
+              + vz1(ixm, iy, izm) + vz1(ixm, iym, izm)) * 0.25_num
           dvxz = (vxb - vxbm) / dzb(iz) + (vzb - vzbm) / dxb(ix)
 
           vyb = (vy1(ix, iy, iz) + vy1(ixm, iy, iz) &
-              + vy1(ix, iym, iz) + vy1(ixm, iym, iz)) / 4.0_num
+              + vy1(ix, iym, iz) + vy1(ixm, iym, iz)) * 0.25_num
           vybm = (vy1(ix, iy, izm) + vy1(ixm, iy, izm) &
-              + vy1(ix, iym, izm) + vy1(ixm, iym, izm)) / 4.0_num
+              + vy1(ix, iym, izm) + vy1(ixm, iym, izm)) * 0.25_num
           vzb = (vz1(ix, iy, iz) + vz1(ixm, iy, iz) &
-              + vz1(ix, iy, izm) + vz1(ixm, iy, izm)) / 4.0_num
+              + vz1(ix, iy, izm) + vz1(ixm, iy, izm)) * 0.25_num
           vzbm = (vz1(ix, iym, iz) + vz1(ixm, iym, iz) &
-              + vz1(ix, iym, izm) + vz1(ixm, iym, izm)) / 4.0_num
+              + vz1(ix, iym, izm) + vz1(ixm, iym, izm)) * 0.25_num
           dvyz = (vyb - vybm) / dzb(iz) + (vzb - vzbm) / dyb(iy)
 
           visc_heat(ix, iy, iz) = &
@@ -758,9 +756,9 @@ CONTAINS
                 - (bx(ix, iyp, izp) - bx(ix, iy, izp)) / dyc(iy)
   
             ! current at V
-            w4 = (jx + jxxp) / 2.0_num
-            w5 = (jy + jyyp) / 2.0_num
-            w6 = (jz + jzzp) / 2.0_num
+            w4 = (jx + jxxp) * 0.5_num
+            w5 = (jy + jyyp) * 0.5_num
+            w6 = (jz + jzzp) * 0.5_num
             modj = SQRT(w4**2 + w5**2 + w6**2)
   
             IF (modj >= j_max) THEN
@@ -894,8 +892,8 @@ CONTAINS
      
 !if complier flag set then use 4th order Runge-Kutta     
 #else    
-     half_dt = dt / 2.0_num
-     dt6 = dt / 6.0_num
+     half_dt = dt * 0.5_num
+     dt6 = dt * sixth
 
      k1x = flux_x
      k1y = flux_y
@@ -1163,9 +1161,9 @@ CONTAINS
            jz2 = (by(ixp, iy, izp) - by(ix, iy, izp)) / dxc(ix) &
                - (bx(ix, iyp, izp) - bx(ix, iy, izp)) / dyc(iy)
 
-           jx_r(ix, iy, iz) = (jx1 + jx2) / 2.0_num
-           jy_r(ix, iy, iz) = (jy1 + jy2) / 2.0_num
-           jz_r(ix, iy, iz) = (jz1 + jz2) / 2.0_num
+           jx_r(ix, iy, iz) = (jx1 + jx2) * 0.5_num
+           jy_r(ix, iy, iz) = (jy1 + jy2) * 0.5_num
+           jz_r(ix, iy, iz) = (jz1 + jz2) * 0.5_num
          END DO
        END DO
      END DO
@@ -1213,13 +1211,13 @@ CONTAINS
              jz2 = (by(ixp, iy, izp) - by(ix, iy, izp)) / dxc(ix) &
                  - (bx(ix, iyp, izp) - bx(ix, iy, izp)) / dyc(iy)
 
-             jx = (jx1 + jx2) / 2.0_num
-             jy = (jy1 + jy2) / 2.0_num
-             jz = (jz1 + jz2) / 2.0_num 
+             jx = (jx1 + jx2) * 0.5_num
+             jy = (jy1 + jy2) * 0.5_num
+             jz = (jz1 + jz2) * 0.5_num 
 
-             flux_x(ix, iy, iz) = -jx * eta(ix,iy,iz) * dxc(ix) / 2.0_num
-             flux_y(ix, iy, iz) = -jy * eta(ix,iy,iz) * dyc(iy) / 2.0_num
-             flux_z(ix, iy, iz) = -jz * eta(ix,iy,iz) * dzc(iz) / 2.0_num
+             flux_x(ix, iy, iz) = -jx * eta(ix,iy,iz) * dxc(ix) * 0.5_num
+             flux_y(ix, iy, iz) = -jy * eta(ix,iy,iz) * dyc(iy) * 0.5_num
+             flux_z(ix, iy, iz) = -jz * eta(ix,iy,iz) * dzc(iz) * 0.5_num
              ! This isn't really curlb. It's actually heat flux
              curlb(ix, iy, iz) = eta(ix, iy, iz) * (jx**2 + jy**2 + jz**2)
            END DO
@@ -1247,17 +1245,17 @@ CONTAINS
              jz2 = (by(ixp, iy, izp) - by(ix, iy, izp)) / dxc(ix) &
                  - (bx(ix, iyp, izp) - bx(ix, iy, izp)) / dyc(iy)
 
-             jx = (jx1 + jx2) / 2.0_num
-             jy = (jy1 + jy2) / 2.0_num
-             jz = (jz1 + jz2) / 2.0_num
+             jx = (jx1 + jx2) * 0.5_num
+             jy = (jy1 + jy2) * 0.5_num
+             jz = (jz1 + jz2) * 0.5_num
 
              ! B at vertices
              bxv = (bx(ix, iy, iz) + bx(ix, iyp, iz) + bx(ix, iy, izp) &
-                 + bx(ix, iyp, izp)) / 4.0_num
+                 + bx(ix, iyp, izp)) * 0.25_num
              byv = (by(ix, iy, iz) + by(ixp, iy, iz) + by(ix, iy, izp) &
-                 + by(ixp, iy, izp)) / 4.0_num
+                 + by(ixp, iy, izp)) * 0.25_num
              bzv = (bz(ix, iy, iz) + bz(ixp, iy, iz) + bz(ix, iyp, iz) &
-                 + bz(ixp, iyp, iz)) / 4.0_num
+                 + bz(ixp, iyp, iz)) * 0.25_num
              magn_b = bxv**2 + byv**2 + bzv**2
 
              ! Calculate parallel and perpendicular currents
@@ -1292,13 +1290,13 @@ CONTAINS
 
              flux_x(ix, iy, iz) = -((j_par_x * eta(ix, iy, iz) &
                  + j_perp_x * (eta_perp(ix, iy, iz) + eta(ix, iy, iz))) &
-                 * dxc(ix) / 2.0_num)
+                 * dxc(ix) * 0.5_num)
              flux_y(ix, iy, iz) = -((j_par_y * eta(ix, iy, iz) &
                  + j_perp_y * (eta_perp(ix, iy, iz) + eta(ix, iy, iz))) &
-                 * dyc(iy) / 2.0_num)
+                 * dyc(iy) * 0.5_num)
              flux_z(ix, iy, iz) = -((j_par_z * eta(ix, iy, iz) &
                  + j_perp_z * (eta_perp(ix, iy, iz) + eta(ix, iy, iz))) &
-                 * dzc(iz) / 2.0_num)
+                 * dzc(iz) * 0.5_num)
            END DO
          END DO
        END DO

@@ -148,7 +148,7 @@ CONTAINS
     ! Turn on or off the physics package dealing with partial ionisation
     ! If include_neutrals is true then the code will calculate the
     ! ionisation fraction of the plasma at each point in the domain
-    include_neutrals = .TRUE.
+    include_neutrals = .FALSE.
 
     ! If cowling_resistivity is true then the code calculates and
     ! applies the Cowling Resistivity to the MHD equations
@@ -169,14 +169,14 @@ CONTAINS
     ! set to true to turn on routine for damped boundaries
     ! these routines are in boundary.f90 and you should check these
     ! actually do what you want.
-    damping = .TRUE.
+    damping = .FALSE.
 
     ! Set the equation of state. Valid choices are
     ! EOS_IDEAL - Simple ideal gas for perfectly ionised plasma
     ! EOS_PI - Simple ideal gas for partially ionised plasma
     ! EOS_ION - EOS_PI plus the ionisation potential 
     ! N.B. read the manual for notes on these choices
-    eos_number = EOS_PI  
+    eos_number = EOS_IDEAL 
     ! EOS_IDEAL also requires that you specific a reduced mass factor
     ! This is the reduced mass in units of the average ion mass
     ! This has no meaning for other EOS choices

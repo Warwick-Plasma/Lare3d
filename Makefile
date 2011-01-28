@@ -5,7 +5,7 @@
 #FFLAGS = -O3 -fast                            	#Intel
 #FFLAGS = -fpe0 -nothreads -traceback -fltconsistency -CB -g  #Intel Debug
  
-FFLAGS = -O3 
+FFLAGS = -O3 -fast
 
 # Set some of the build parameters
 TARGET = lare3d
