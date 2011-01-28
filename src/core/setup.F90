@@ -452,7 +452,7 @@ CONTAINS
 
       WRITE(file3, '(a, "/en.dat")') TRIM(data_dir)
       OPEN(unit = 30, STATUS = 'REPLACE', FILE = file3, &
-          FORM = "binary", iostat = ios)
+          FORM="UNFORMATTED", ACCESS="STREAM", iostat = ios)
 
       IF (ios .NE. 0) THEN
         PRINT *, "Unable to open file en.dat for writing. This is ", &
