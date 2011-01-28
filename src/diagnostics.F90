@@ -275,8 +275,10 @@ CONTAINS
     ! with setting 'dt_multiplier' if you expect massive changes across
     ! cells.
 
-    REAL(num) :: cons, dt1, dt3, dt4, dt5, dt_local, dxlocal
-    REAL(num) :: dtr_local, dth_local, cs
+    REAL(num) :: cons, dt1, dt2, dt3, dt4, dt5, dt6, dt7, dt_local, dxlocal
+    REAL(num) :: vxbp, vxbm, vybp, vybm, dvx, dvy, avxp, avxm, avyp, avym  
+    REAL(num) :: vzbp, vzbm, dvz, avzp, avzm  
+    REAL(num) :: dtr_local, dth_local, cs, volume, ax, ay, az
 
     dt_local = largest_number
     dtr_local = largest_number
@@ -293,19 +295,40 @@ CONTAINS
           w1 = bx(ix, iy, iz)**2 + by(ix, iy, iz)**2 + bz(ix, iy, iz)**2 
           cs = cons * energy(ix,iy,iz)      ! sound speed squared
 
-          w2 = SQRT(cs + w1 / MAX(rho(ix, iy, iz), none_zero)) &
-              + 2.0_num * SQRT(p_visc(ix, iy, iz) &
-              / MAX(rho(ix, iy, iz), none_zero))
+          w2 = SQRT(cs + w1 / MAX(rho(ix, iy, iz), none_zero) &
+              + 2.0_num * p_visc(ix, iy, iz) / MAX(rho(ix, iy, iz), none_zero))
 
-          w2 = w2 * (1.0_num + visc1)
+          ! find ideal MHD CFL limit for Lagrangian step
+          dt1 = MIN(dxb(ix), dyb(iy), dzb(iz)) / w2 
+          dt_local = MIN(dt_local, dt1)
 
-          ! find ideal MHD CFL limit
-          dt1 = dxb(ix) / (w2 + ABS(vx(ix, iy, iz)))
-          dt_local = MIN(dt_local, dt1)
-          dt1 = dyb(iy) / (w2 + ABS(vy(ix, iy, iz)))
-          dt_local = MIN(dt_local, dt1)
-          dt1 = dzb(iz) / (w2 + ABS(vz(ix, iy, iz)))
-          dt_local = MIN(dt_local, dt1)
+          ax = 0.25_num * dyb(iy) * dzb(iz) 
+          vxbp = (vx(ix,iy,iz) + vx(ix,iym,iz) + vx(ix,iy,izm) + vx(ix,iym,izm)) * ax
+          vxbm = (vx(ixm,iy,iz) + vx(ixm,iym,iz) + vx(ixm,iy,izm) + vx(ixm,iym,izm)) * ax
+          ay = 0.25_num * dxb(ix) * dzb(iz) 
+          vybp = (vy(ix,iy,iz) + vy(ixm,iy,iz) + vy(ix,iy,izm) + vy(ixm,iy,izm)) * ay
+          vybm = (vy(ix,iym,iz) + vy(ixm,iym,iz) + vy(ix,iym,izm) + vy(ixm,iym,izm)) * ay
+          az = 0.25_num * dyb(iy) * dxb(ix) 
+          vzbp = (vz(ix,iy,iz) + vz(ix,iym,iz) + vz(ixm,iy,iz) + vz(ixm,iym,iz)) * az
+          vzbm = (vz(ix,iy,izm) + vz(ix,iym,izm) + vz(ixm,iy,izm) + vz(ixm,iym,izm)) * az
+          
+          dvx = ABS(vxbp - vxbm)
+          dvy = ABS(vybp - vybm) 
+          dvz = ABS(vzbp - vzbm) 
+          avxp = ABS(vxbp)
+          avxm = ABS(vxbm)
+          avyp = ABS(vybp)
+          avym = ABS(vybm)
+          avzp = ABS(vzbp)
+          avzm = ABS(vzbm)
+           
+          volume = ax * dxb(ix)
+          dt5 = volume / MAX(avxp, avxm, dvx, none_zero * volume)
+          dt6 = volume / MAX(avyp, avym, dvy, none_zero * volume)
+          dt7 = volume / MAX(avzp, avzm, dvz, none_zero * volume)
+          
+          ! fix dt for remap step 
+          dt_local = MIN(dt_local, dt5, dt6, dt7)
 
           ! note resistive limits assumes uniform resistivity hence cautious
           ! factor 0.2
@@ -327,14 +350,6 @@ CONTAINS
           dtr_local = MIN(dtr_local, dt3)
           dth_local = MIN(dth_local, dt4)
 
-          ! correct to stop overlapping of Lagrangian cells
-
-          w1 = ABS(vx(ix, iy, iz) - vx(ixm, iy, iz)) / dxb(ix) &
-              + ABS(vy(ix, iy, iz) - vy(ix, iym, iz)) / dyb(iy) &
-              + ABS(vz(ix, iy, iz) - vz(ix, iy, izm)) / dzb(iz)
-
-          dt5 = 1.0_num / MAX(w1, none_zero)
-          dt_local = MIN(dt_local, dt5)
         END DO
       END DO
     END DO
