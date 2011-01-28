@@ -12,6 +12,9 @@ MODULE constants
   INTEGER, PARAMETER :: num = KIND(1.D0) 
 #endif  
   INTEGER, PARAMETER :: dbl = KIND(1.D0)
+
+  REAL(num), PARAMETER :: dt_multiplier = 0.9_num
+
   REAL(num), PARAMETER :: pi = 3.14159265358979323_num
   REAL(num), PARAMETER :: none_zero = TINY(1.0_num) 
   REAL(num), PARAMETER :: largest_number = HUGE(1.0_num)  
@@ -72,7 +75,6 @@ MODULE shared_data
 
   REAL(num) :: w1, w2, w3, w4, w5, w6, w7, w8, w9
   REAL(num) :: dt, dt2, dtr, dth, t_end, time
-  REAL(num) :: dt_multiplier = 0.8_num
   REAL(num) :: length_x, length_y, length_z, visc1, visc2, visc3
   REAL(num) :: x_start, x_end, y_start, y_end, z_start, z_end
   REAL(num) :: gamma, eta0, j_max, dt_snapshots, lambda0, eta_background
