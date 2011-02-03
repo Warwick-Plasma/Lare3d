@@ -323,9 +323,9 @@ CONTAINS
           avzm = ABS(vzbm)
            
           volume = ax * dxb(ix)
-          dt5 = volume / MAX(avxp, avxm, dvx, none_zero * volume)
-          dt6 = volume / MAX(avyp, avym, dvy, none_zero * volume)
-          dt7 = volume / MAX(avzp, avzm, dvz, none_zero * volume)
+          dt5 = volume / MAX(avxp, avxm, dvx, 1.e-10_num * volume)
+          dt6 = volume / MAX(avyp, avym, dvy, 1.e-10_num  * volume)
+          dt7 = volume / MAX(avzp, avzm, dvz, 1.e-10_num  * volume)
           
           ! fix dt for remap step 
           dt_local = MIN(dt_local, dt5, dt6, dt7)
