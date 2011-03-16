@@ -39,14 +39,11 @@ PROGRAM lare3d
   CALL set_boundary_conditions   ! boundary.f90
   CALL open_files                ! setup.f90
   CALL grid                      ! setup.f90 
+  CALL set_initial_conditions  ! initial_conditions.f90
   
   IF (IAND(initial, IC_RESTART) .NE. 0) THEN
     CALL restart_data            ! setup.f90
     restart = .TRUE.
-  END IF
-
-  IF (IAND(initial, IC_NEW) .NE. 0) THEN
-    CALL set_initial_conditions  ! initial_conditions.f90
   END IF
 
   ! Initial conditions, parameters etc. specified in SI
