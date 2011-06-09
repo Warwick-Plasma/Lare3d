@@ -35,7 +35,7 @@ CONTAINS
 
     ! 1 ints, 2 reals + meshtype Header
     mdlen = meshtype_header_offset + 1 * soi + 2 * num
-    blocklen = mdlen + nx * num
+    blocklen = mdlen + 1_8 * nx * num
 
     ! Now written header, write metadata
     CALL cfd_write_block_header(name, class, TYPE_MESH, blocklen, mdlen, &
@@ -68,7 +68,7 @@ CONTAINS
           cfd_errcode)
     END IF
 
-    current_displacement = current_displacement + 2 * num + nx * num
+    current_displacement = current_displacement + 1_8 * (2 + nx) * num
 
   END SUBROUTINE cfd_write_1d_cartesian_grid
 
@@ -105,7 +105,7 @@ CONTAINS
 
     ! 2 ints, 6 reals + meshtype Header
     mdlen = meshtype_header_offset + 2 * soi + 4 * num
-    blocklen = mdlen + (nx+ny) * num
+    blocklen = mdlen + 1_8 * (nx+ny) * num
 
     ! Now written header, write metadata
     CALL cfd_write_block_header(name, class, TYPE_MESH, blocklen, mdlen, &
@@ -147,7 +147,7 @@ CONTAINS
           cfd_errcode)
     END IF
 
-    current_displacement = current_displacement + 4 * num + (nx+ny) * num
+    current_displacement = current_displacement + 1_8 * (4 + nx+ny) * num
 
   END SUBROUTINE cfd_write_2d_cartesian_grid
 
@@ -188,7 +188,7 @@ CONTAINS
 
     ! 3 ints, 6 reals + meshtype Header
     mdlen = meshtype_header_offset + 3 * soi + 6 * num
-    blocklen = mdlen + (nx+ny+nz) * num
+    blocklen = mdlen + 1_8 * (nx+ny+nz) * num
 
     ! Now written header, write metadata
     CALL cfd_write_block_header(name, class, TYPE_MESH, blocklen, mdlen, &
@@ -239,7 +239,7 @@ CONTAINS
           cfd_errcode)
     END IF
 
-    current_displacement = current_displacement + 6 * num + (nx+ny+nz) * num
+    current_displacement = current_displacement + 1_8 * (6 + nx+ny+nz) * num
 
   END SUBROUTINE cfd_write_3d_cartesian_grid
 
@@ -286,7 +286,7 @@ CONTAINS
 
     ! 3 INTs 5 REALs 2STRINGs
     mdlen = meshtype_header_offset + 3 * soi + 5 * num + 2 * max_string_len
-    blocklen = mdlen + num * nx * ny * nz
+    blocklen = mdlen + 1_8 * num * nx * ny * nz
 
     ! Write the common stuff
     CALL cfd_write_block_header(name, class, TYPE_MESH_VARIABLE, blocklen, &
@@ -346,7 +346,7 @@ CONTAINS
     CALL MPI_FILE_WRITE_ALL(cfd_filehandle, variable, len_var, mpireal, &
         cfd_status, cfd_errcode)
 
-    current_displacement = current_displacement + num * nx * ny * nz
+    current_displacement = current_displacement + 1_8 * num * nx * ny * nz
 
   END SUBROUTINE cfd_write_3d_cartesian_variable_parallel
 
@@ -390,7 +390,7 @@ CONTAINS
 
     ! 3 INTs 2 REALs
     mdlen = meshtype_header_offset + 2 * soi + 4 * num + 2 * max_string_len
-    blocklen = mdlen + num * nx * ny
+    blocklen = mdlen + 1_8 * num * nx * ny
 
     CALL cfd_write_block_header(name, class, TYPE_MESH_VARIABLE, blocklen, &
         mdlen, default_rank)
@@ -443,7 +443,7 @@ CONTAINS
     CALL MPI_FILE_WRITE_ALL(cfd_filehandle, variable, len_var, mpireal, &
         cfd_status, cfd_errcode)
 
-    current_displacement = current_displacement + num * nx * ny
+    current_displacement = current_displacement + 1_8 * num * nx * ny
 
   END SUBROUTINE cfd_write_2d_cartesian_variable_parallel
 
@@ -483,7 +483,7 @@ CONTAINS
     nx = dims
     ! 1 INTs 3 REALs 2 Strings
     mdlen = meshtype_header_offset + 1 * soi + 3 * num + 2 * max_string_len
-    blocklen = mdlen + num * nx
+    blocklen = mdlen + 1_8 * num * nx
 
     CALL cfd_write_block_header(name, class, TYPE_MESH_VARIABLE, blocklen, &
         mdlen, default_rank)
@@ -535,7 +535,7 @@ CONTAINS
     CALL MPI_FILE_WRITE_ALL(cfd_filehandle, variable, len_var, mpireal, &
         cfd_status, cfd_errcode)
 
-    current_displacement = current_displacement + num * nx
+    current_displacement = current_displacement + 1_8 * num * nx
 
   END SUBROUTINE cfd_write_1d_cartesian_variable_parallel
 
@@ -577,7 +577,7 @@ CONTAINS
 
     ! 1 INTs 3 REALs
     mdlen = meshtype_header_offset + 1 * soi + 3 * num + 2 * max_string_len
-    blocklen = mdlen + num * nx
+    blocklen = mdlen + 1_8 * num * nx
 
     CALL cfd_write_block_header(name, class, TYPE_MESH_VARIABLE, blocklen, &
         mdlen, rank_write)
@@ -630,7 +630,7 @@ CONTAINS
     IF (cfd_rank == rank_write) CALL MPI_FILE_WRITE(cfd_filehandle, variable, &
         len_var, mpireal, cfd_status, cfd_errcode)
 
-    current_displacement = current_displacement + num * nx
+    current_displacement = current_displacement + 1_8 * num * nx
 
   END SUBROUTINE cfd_write_1d_cartesian_variable
 
@@ -675,7 +675,7 @@ CONTAINS
 
     ! 2 INTs 4 REALs
     mdlen = meshtype_header_offset + 2 * soi + 4 * num + 2 * max_string_len
-    blocklen = mdlen + num * nx * ny
+    blocklen = mdlen + 1_8 * num * nx * ny
 
     CALL cfd_write_block_header(name, class, TYPE_MESH_VARIABLE, blocklen, &
         mdlen, rank_write)
@@ -729,7 +729,7 @@ CONTAINS
     IF (cfd_rank == rank_write) CALL MPI_FILE_WRITE(cfd_filehandle, variable, &
         len_var, mpireal, cfd_status, cfd_errcode)
 
-    current_displacement = current_displacement + num * nx * ny
+    current_displacement = current_displacement + 1_8 * num * nx * ny
 
   END SUBROUTINE cfd_write_2d_cartesian_variable
 
@@ -777,7 +777,7 @@ CONTAINS
 
     ! 3 INTs 5 REALs
     mdlen = meshtype_header_offset + 3 * soi + 5 * num + 2 * max_string_len
-    blocklen = mdlen + num * nx * ny * nz
+    blocklen = mdlen + 1_8 * num * nx * ny * nz
 
     CALL cfd_write_block_header(name, class, TYPE_MESH_VARIABLE, blocklen, &
         mdlen, rank_write)
@@ -833,7 +833,7 @@ CONTAINS
 
     IF (cfd_rank == rank_write) CALL MPI_FILE_WRITE(cfd_filehandle, variable, &
         len_var, mpireal, cfd_status, cfd_errcode)
-    current_displacement = current_displacement + num * nx * ny * nz
+    current_displacement = current_displacement + 1_8 * num * nx * ny * nz
 
   END SUBROUTINE cfd_write_3d_cartesian_variable
 
