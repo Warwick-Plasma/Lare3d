@@ -91,7 +91,7 @@ CONTAINS
     !solve for density
     mu_m = 1.0_num    ! the reduced mass in units of proton mass
     IF (eos_number==EOS_IDEAL .AND. (.NOT. neutral_gas)) mu_m = 0.5_num    
-    DO loop = 1, 100
+    DO loop = 1, 1000
        maxerr = 0.0_num    
       DO iz = nz_global, 0, -1
         IF (zc_global(iz) < 0.0_num) THEN
@@ -120,7 +120,7 @@ CONTAINS
              maxerr = MAX(maxerr, ABS(mu_m(iz) - r1))
           END DO
        END IF 
-       IF (maxerr < 1.e-10_num) EXIT
+       IF (maxerr < 1.e-16_num) EXIT
     END DO
     rho_ref(nz_global+1:nz_global+2) = rho_ref(nz_global)
 
