@@ -152,7 +152,8 @@ CONTAINS
                       / (2.0_num - xi_n(ix,iy,iz))                  
             END DO
           END DO
-        END DO
+        END DO  
+        IF (eos_number == EOS_IDEAL .AND. neutral_gas) data = data * 2.0_num
         CALL cfd_write_3d_cartesian_variable_parallel("Temperature", "Fluid", &
             dims, stagger, "Grid", "Grid", data, subtype)
       END IF
@@ -295,7 +296,8 @@ CONTAINS
           cs = cons * energy(ix,iy,iz)      ! sound speed squared
 
           w2 = SQRT(cs + w1 / MAX(rho(ix, iy, iz), none_zero) &
-              + 2.0_num * p_visc(ix, iy, iz) / MAX(rho(ix, iy, iz), none_zero))
+              + 2.0_num * p_visc(ix, iy, iz) / MAX(rho(ix, iy, iz), none_zero)) &
+              * (1.0_num + visc1)
 
           ! find ideal MHD CFL limit for Lagrangian step
           dt1 = MIN(dxb(ix), dyb(iy), dzb(iz)) / w2 
