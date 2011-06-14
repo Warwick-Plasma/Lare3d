@@ -153,7 +153,7 @@ CONTAINS
           END IF   
           energy(ix,iy,iz) = (energy(ix,iy,iz) * (2.0_num - xi_v) &
              + (1.0_num - xi_v) * ionise_pot * (gamma - 1.0_num)) &
-             / ((gamma - 1.0_num))
+             / (gamma - 1.0_num)
         END DO
       END DO
     END DO   
