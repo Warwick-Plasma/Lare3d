@@ -1,7 +1,6 @@
 MODULE initial_conditions
 
   USE shared_data
-  USE eos
   USE neutral
 
   IMPLICIT NONE
@@ -90,8 +89,8 @@ CONTAINS
     ENDDO
 
     !solve for density
-    mu_m = 0.5_num    ! the reduced mass in units of proton mass
-    IF (include_neutrals) xi_n = 0.0_num 
+    mu_m = 1.0_num    ! the reduced mass in units of proton mass
+    IF (eos_number==EOS_IDEAL .AND. (.NOT. neutral_gas)) mu_m = 0.5_num    
     DO loop = 1, 100
        maxerr = 0.0_num    
       DO iz = nz_global, 0, -1
@@ -143,8 +142,18 @@ CONTAINS
     DO iz = -1, nz + 2
       DO iy = -1, ny + 2
         DO ix = -1, nx + 2                
-          r1 = energy(ix,iy,iz)
-          CALL get_energy(rho(ix,iy,iz), r1, eos_number, energy(ix,iy,iz))
+         IF (eos_number /= EOS_IDEAL) THEN         
+            xi_v = get_neutral(energy(ix,iy,iz), rho(ix,iy,iz), yb(iy))
+          ELSE  
+            IF (neutral_gas) THEN
+              xi_v = 1.0_num
+            ELSE
+              xi_v = 0.0_num
+            END IF
+          END IF   
+          energy(ix,iy,iz) = (energy(ix,iy,iz) * (2.0_num - xi_v) &
+             + (1.0_num - xi_v) * ionise_pot * (gamma - 1.0_num)) &
+             / ((gamma - 1.0_num))
         END DO
       END DO
     END DO   

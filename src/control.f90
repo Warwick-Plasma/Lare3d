@@ -171,12 +171,13 @@ CONTAINS
     ! EOS_ION - EOS_PI plus the ionisation potential 
     ! N.B. read the manual for notes on these choices
     eos_number = EOS_IDEAL 
-    ! EOS_IDEAL also requires that you specific a reduced mass factor
-    ! This is the reduced mass in units of the average ion mass
-    ! This has no meaning for other EOS choices
-    ! For fully ionised simple cases set to 0.5
-    ! For neutral hydrogen set to 1.0
-    reduced_mass = 0.5 
+    ! EOS_IDEAL also requires that you specific whether
+    ! the gas is ionised or not. Some startified atmospheres
+    ! only work for neutral hydrogen for example
+    ! For fully ionised gas set .FALSE.
+    ! For neutral hydrogen set .TRUE.
+    ! This flag is ignored for all other EOS choices.
+    neutral_gas = .TRUE.
 
   END SUBROUTINE control_variables
 

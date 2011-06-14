@@ -6,8 +6,8 @@
 !*************************************************************************
 MODULE diagnostics
 
-  USE shared_data; USE boundary; USE normalise
-  USE eos
+  USE shared_data
+  USE boundary
   USE output_cartesian
   USE output
   USE iocontrol
@@ -147,8 +147,9 @@ CONTAINS
         DO iz = 0, nz
           DO iy = 0, ny
             DO ix = 0, nx
-              CALL get_temp(rho(ix, iy, iz), energy(ix, iy, iz), &
-                  eos_number, ix, iy, iz, data(ix, iy, iz))
+               data(ix,iy,iz) = (gamma - 1.0_num) &
+                      * (energy(ix,iy,iz) - (1.0_num - xi_n(ix,iy,iz)) * ionise_pot) &
+                      / (2.0_num - xi_n(ix,iy,iz))                  
             END DO
           END DO
         END DO
@@ -160,8 +161,8 @@ CONTAINS
         DO iz = 0, nz
           DO iy = 0, ny
             DO ix = 0, nx
-              CALL get_pressure(rho(ix, iy, iz), energy(ix, iy, iz), &
-                  eos_number, ix, iy, iz, data(ix, iy, iz))
+               data(ix,iy,iz) = (energy(ix,iy,iz) - (1.0_num - xi_n(ix,iy,iz)) * ionise_pot) &
+                          * (gamma - 1.0_num) * rho(ix,iy,iz)
             END DO
           END DO
         END DO

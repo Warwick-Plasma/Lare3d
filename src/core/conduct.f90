@@ -2,7 +2,6 @@ MODULE conduct
 
   USE shared_data
   USE boundary
-  USE eos
 
   IMPLICIT NONE
 
@@ -18,17 +17,17 @@ CONTAINS
     REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: uykx, uyky, uykz 
     REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: uzkx, uzky, uzkz  
     REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: energy0, limiter
-    REAL(num) :: e2t, exb, eyb, ezb 
+    REAL(num) :: exb, eyb, ezb 
     REAL(num) :: b, bxc, byc, bzc, bpx, bpy, bpz 
     REAL(num) :: ux, uy, uz
     REAL(num) :: pow = 5.0_num / 2.0_num  
-    REAL(num) :: a1, a2, a3, error, errmax, abs_error 
+    REAL(num) :: a1, a2, a3, error, errmax
     REAL(num) :: w, residual, q_shx, q_shy, q_shz, q_sh, q_f, q_nl
 
     INTEGER :: loop, redblack, x1, y1, z1 
 
     LOGICAL :: converged
-    REAL(num), PARAMETER :: fractional_error = 1.e-3_num
+    REAL(num), PARAMETER :: fractional_error = 1.e-4_num
     REAL(num), PARAMETER :: b_min = 1.e-3_num
 
     ALLOCATE(uxkx(-1:nx+1,-1:ny+1,-1:nz+1), uxky(-1:nx+1,-1:ny+1,-1:nz+1))
@@ -40,12 +39,6 @@ CONTAINS
     ALLOCATE(energy0(-1:nx+2,-1:ny+2,-1:nz+2))
     ALLOCATE(limiter(-1:nx+2,-1:ny+2,-1:nz+2))
             
-		! find factor required to convert between energy and temperature
-		! N.B. only works for simple EOS
-    e2t = (gamma - 1.0_num) / reduced_mass
-    a1 = fractional_error * MAXVAL(energy)  
-    CALL MPI_ALLREDUCE(a1, abs_error, 1, mpireal, MPI_MAX, comm, errcode)
-    
     DO iz = -1, nz + 1
       DO iy = -1, ny + 1
         DO ix = -1, nx + 1 
@@ -271,7 +264,7 @@ CONTAINS
               residual = energy(ix,iy,iz) &
                     - (energy0(ix,iy,iz)  + a2) / (1.0_num + a1) 
               energy(ix,iy,iz) = MAX(energy(ix,iy,iz) - w * residual, 0.0_num) 
-              error = ABS(residual) 
+              error = ABS(residual) / energy0(ix,iy)
               errmax = MAX(errmax, error)
 
             END DO 
@@ -288,7 +281,7 @@ CONTAINS
       CALL MPI_ALLREDUCE(errmax, error, 1, mpireal, MPI_MAX, comm, errcode)
       errmax = error 
       
-      IF (errmax .LT. abs_error) THEN
+      IF (errmax .LT. fractional_error) THEN
         converged = .TRUE.  
         EXIT iterate
       END IF

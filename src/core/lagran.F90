@@ -8,7 +8,6 @@ MODULE lagran
   USE boundary
   USE neutral
   USE diagnostics
-  USE eos   
   USE conduct
 
   IMPLICIT NONE
@@ -124,9 +123,9 @@ CONTAINS
           e1 = energy(ix, iy, iz) - pressure(ix, iy, iz) * dv / rho(ix, iy, iz)
           e1 = e1  + visc_heat(ix, iy, iz) * dt2 / rho(ix, iy, iz) 
 
-          ! now define the predictor step pressures
-          CALL get_pressure(rho(ix, iy, iz) * cv(ix, iy, iz) / cv1(ix, iy, iz),&
-              e1, eos_number, ix, iy, iz, pressure(ix, iy, iz))
+          ! now define the predictor step pressures 
+          pressure(ix,iy,iz) = (e1 - (1.0_num - xi_n(ix,iy,iz)) * ionise_pot) &
+                  * (gamma - 1.0_num) * rho(ix,iy,iz) * cv(ix,iy,iz) / cv1(ix,iy,iz)
 #ifdef Q_MONO
           ! add shock viscosity
           pressure(ix, iy, iz) = pressure(ix, iy, iz) + p_visc(ix, iy, iz)
@@ -395,8 +394,8 @@ CONTAINS
     DO iz = -1, nz+2
       DO iy = -1, ny+2
         DO ix = -1, nx+2
-          CALL get_pressure(rho(ix, iy, iz), energy(ix, iy, iz), eos_number, &
-              ix, iy, iz, pressure(ix, iy, iz))
+           pressure(ix,iy,iz) = (energy(ix,iy,iz) - (1.0_num - xi_n(ix,iy,iz)) * ionise_pot) &
+                  * (gamma - 1.0_num) * rho(ix,iy,iz)
         END DO
       END DO
     END DO

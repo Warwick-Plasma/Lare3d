@@ -114,8 +114,8 @@ MODULE shared_data
   REAL(num) :: B0, L0, rho0
   ! mass fraction - mass of ions in units of proton mass
   REAL(num) :: mf  
-  ! average particle mass in units of mf*mh, i.e. 0.5 is fully ionised
-  REAL(num) :: reduced_mass
+  !convertion factor to get normalised temperature from normalised energy  
+  REAL(num) :: e2t
   !convertion factor to get temperature in MK from normalised energy  
   REAL(num) :: e2tmk
   ! normalisation used for radiative losses
@@ -137,7 +137,7 @@ MODULE shared_data
   ! Partially ionised plasma
   REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: eta_perp, xi_n, eta_perp0
   REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: parallel_current, perp_current
-  LOGICAL :: include_neutrals, cowling_resistivity
+  LOGICAL :: include_neutrals, cowling_resistivity, neutral_gas
   REAL(num) :: f_bar, t_bar, tr, ionise_pot, r_bar
   REAL(num) :: eta_bar
 

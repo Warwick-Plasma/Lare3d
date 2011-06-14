@@ -35,7 +35,7 @@ PREPROFLAGS = $(NONMPIIO)
 OBJFILES = shared_data.o mpi_routines.o openboundary.o mpiboundary.o boundary.o normalise.o conduct.o diagnostics.o setup.o lagran.o  \
  remap.o xremap.o yremap.o zremap.o initial_conditions.o\
  output_cartesian.o iocontrol.o output.o iocommon.o input.o inputfunctions.o\
- input_cartesian.o eos.o neutral.o control.o\
+ input_cartesian.o neutral.o control.o\
  welcome.o lare3d.o
 FULLTARGET = $(BINDIR)/$(TARGET)
 
@@ -90,7 +90,7 @@ boundary.o:boundary.f90 shared_data.o mpiboundary.o
 xremap.o:xremap.f90 shared_data.o boundary.o
 yremap.o:yremap.f90 shared_data.o boundary.o
 zremap.o:zremap.f90 shared_data.o boundary.o
-diagnostics.o:diagnostics.F90 shared_data.o boundary.o normalise.o output_cartesian.o output.o iocontrol.o eos.o
+diagnostics.o:diagnostics.F90 shared_data.o boundary.o normalise.o output_cartesian.o output.o iocontrol.o 
 iocommon.o:iocommon.f90 shared_data.o
 output.o:output.f90 shared_data.o iocommon.o
 output_cartesian.o: output_cartesian.f90 shared_data.o iocommon.o output.o
@@ -98,12 +98,11 @@ iocontrol.o: iocontrol.f90 shared_data.o iocommon.o output.o input.o
 input.o: input.f90 shared_data.o iocommon.o inputfunctions.o
 inputfunctions.o: inputfunctions.f90 shared_data.o iocommon.o  
 input_cartesian.o: input_cartesian.f90 iocommon.o inputfunctions.o
-conduct.o:conduct.f90 shared_data.o boundary.o eos.o
-lagran.o:lagran.F90 shared_data.o boundary.o diagnostics.o eos.o neutral.o conduct.o
+conduct.o:conduct.f90 shared_data.o boundary.o
+lagran.o:lagran.F90 shared_data.o boundary.o diagnostics.o neutral.o conduct.o
 remap.o:remap.f90 shared_data.o xremap.o yremap.o zremap.o
-initial_conditions.o:initial_conditions.f90 shared_data.o normalise.o eos.o neutral.o
-eos.o:eos.F90 shared_data.o 
-neutral.o: neutral.f90 shared_data.o boundary.o normalise.o eos.o
+initial_conditions.o:initial_conditions.f90 shared_data.o normalise.o neutral.o
+neutral.o: neutral.f90 shared_data.o boundary.o normalise.o
 control.o: control.f90 shared_data.o normalise.o
 welcome.o: welcome.f90 shared_data.o
-lare3d.o:lare3d.f90 shared_data.o setup.o boundary.o diagnostics.o lagran.o remap.o mpi_routines.o welcome.o initial_conditions.o openboundary.o eos.o control.o  
+lare3d.o:lare3d.f90 shared_data.o setup.o boundary.o diagnostics.o lagran.o remap.o mpi_routines.o welcome.o initial_conditions.o openboundary.o control.o  

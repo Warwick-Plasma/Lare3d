@@ -149,7 +149,9 @@ CONTAINS
     DEALLOCATE(xc, xb, dxb, dxc)
     DEALLOCATE(yc, yb, dyb, dyc)
     DEALLOCATE(grav)
-    DEALLOCATE(jx_r, jy_r, jz_r)
+    DEALLOCATE(jx_r, jy_r, jz_r)  
+    
+    IF (ALLOCATED(xi_n)) DEALLOCATE(xi_n)
 
   END SUBROUTINE mpi_close
 
