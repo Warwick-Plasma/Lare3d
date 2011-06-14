@@ -139,13 +139,9 @@ CONTAINS
     initial = IC_NEW
     restart_snapshot = 1
 
-    ! Turn on or off the physics package dealing with partial ionisation
-    ! If include_neutrals is true then the code will calculate the
-    ! ionisation fraction of the plasma at each point in the domain
-    include_neutrals = .FALSE.
-
     ! If cowling_resistivity is true then the code calculates and
-    ! applies the Cowling Resistivity to the MHD equations
+    ! applies the Cowling Resistivity to the MHD equations     
+    ! only possible if not EOS_IDEAL
     cowling_resistivity = .FALSE.
 
     ! Set the boundary conditions on the four edges of the simulation domain
@@ -219,7 +215,7 @@ CONTAINS
     ! N.B. if dump_mask(1:8) not true then the restart will not work
     dump_mask = .FALSE.
     dump_mask(1:10) = .TRUE. 
-    IF (include_neutrals)  dump_mask(14) = .TRUE. 
+    IF (eos_number /= EOS_IDEAL)  dump_mask(14) = .TRUE. 
     IF (resistive_mhd)  dump_mask(16) = .TRUE. 
     IF (cowling_resistivity)  dump_mask(15) = .TRUE. 
 

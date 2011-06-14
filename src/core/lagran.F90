@@ -56,7 +56,7 @@ CONTAINS
 
       DO subcycle = 1, substeps
         CALL eta_calc
-        IF (include_neutrals) CALL neutral_fraction(eos_number)
+        IF (eos_number /= EOS_IDEAL) CALL neutral_fraction(eos_number)
         IF (cowling_resistivity) CALL perpendicular_resistivity
         ! IF (hall_mhd) CALL hall_effects
         IF (resistive_mhd) CALL resistive_effects

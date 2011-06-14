@@ -137,7 +137,7 @@ MODULE shared_data
   ! Partially ionised plasma
   REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: eta_perp, xi_n, eta_perp0
   REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: parallel_current, perp_current
-  LOGICAL :: include_neutrals, cowling_resistivity, neutral_gas
+  LOGICAL :: cowling_resistivity, neutral_gas
   REAL(num) :: f_bar, t_bar, tr, ionise_pot, r_bar
   REAL(num) :: eta_bar
 

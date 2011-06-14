@@ -112,7 +112,7 @@ CONTAINS
                +grav_global(iz-1)*dzb_global(iz)*dg)
         END IF
       END DO
-      IF (include_neutrals) THEN     !note this always assumes EOS_PI
+      IF (eos_number /= EOS_IDEAL) THEN     !note this always assumes EOS_PI
           DO iz = 0, nz_global 
              xi_v = get_neutral(t_ref(iz), rho_ref(iz)) 
              r1 = mu_m(iz)
