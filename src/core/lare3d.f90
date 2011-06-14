@@ -11,7 +11,6 @@ PROGRAM lare3d
   USE mpi_routines
   USE welcome
   USE normalise
-  USE eos
   USE neutral
   USE control 
 
@@ -31,32 +30,28 @@ PROGRAM lare3d
   CALL welcome_message     ! welcome.f90
 
   CALL setup_neutral ! neutral.f90
-  IF (.NOT. SI) THEN
-    CALL normalise_neutral  ! setup.f90
-  END IF
+  CALL normalise_neutral  ! setup.f90
 
-  CALL set_normalisation         ! normalise.f90
   CALL set_boundary_conditions   ! boundary.f90
   CALL open_files                ! setup.f90
   CALL grid                      ! setup.f90 
-  CALL set_initial_conditions  ! initial_conditions.f90
   
   IF (IAND(initial, IC_RESTART) .NE. 0) THEN
+    CALL set_initial_conditions  ! initial_conditions.f90
     CALL restart_data            ! setup.f90
     restart = .TRUE.
   END IF
 
-  ! Initial conditions, parameters etc. specified in SI
-  IF (SI) THEN
-    ! Normalise everything
-    CALL normalise_code          ! setup.f90
+  ! Initial conditions, parameters etc. 
+  IF (IAND(initial, IC_NEW) .NE. 0) THEN    
+    CALL set_initial_conditions  ! initial_conditions.f90
   END IF
 
   CALL set_boundary_conditions   ! boundary.f90
   CALL boundary_conditions       ! boundary.f90
   CALL eta_calc                  ! lagran.f90
 
-  IF (include_neutrals) CALL neutral_fraction(eos_number) ! neutral.f90
+  IF (eos_number /= EOS_IDEAL) CALL neutral_fraction ! neutral.f90
   IF (cowling_resistivity) CALL perpendicular_resistivity ! neutral.f90
 
   IF (rank .EQ. 0) PRINT *, "Initial conditions setup OK. Running Code"

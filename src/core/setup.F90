@@ -1,7 +1,6 @@
 MODULE setup
 
   USE shared_data
-  USE normalise
   USE iocommon
   USE iocontrol
   USE input
@@ -13,7 +12,6 @@ MODULE setup
   PUBLIC :: before_control, after_control
   PUBLIC :: grid
   PUBLIC :: open_files, close_files, restart_data
-  PUBLIC :: normalise_code, normalise_neutral
 
   REAL(num), DIMENSION(:), ALLOCATABLE :: dxnew, dynew, dznew
 
@@ -56,123 +54,6 @@ CONTAINS
     vz = 0.0_num
 
   END SUBROUTINE after_control
-
-
-
-  SUBROUTINE normalise_code
-
-    ! Normalise physical parameters (eta, grav, visc3 etc.)
-    CALL normalise_constants    ! setup.f90
-    ! Normalise the grid
-    CALL normalise_grid         ! setup.f90
-    ! Normalise the actual initial conditions
-    CALL normalise_eqm          ! setup.f90
-    ! Normalise the constants needed for the
-    ! partially ionised plasma routines
-    CALL normalise_neutral ! setup.f90
-
-  END SUBROUTINE normalise_code
-
-
-
-  SUBROUTINE normalise_grid
-
-    ! Normalise the grid, including control volumes
-
-    xb = xb / L0
-    xc = xc / L0
-    xb_global = xb_global / L0
-    dxc = dxc / L0
-    dxb = dxb / L0
-
-    yb = yb / L0
-    yc = yc / L0
-    yb_global = yb_global / L0
-    dyc = dyc / L0
-    dyb = dyb / L0
-
-    zb = zb / L0
-    zc = zc / L0
-    zb_global = zb_global / L0
-    dzc = dzc / L0
-    dzb = dzb / L0
-
-    cv = cv / L0**3
-
-  END SUBROUTINE normalise_grid
-
-
-
-  SUBROUTINE normalise_eqm
-
-    ! Normalise the initial conditions
-
-    rho = rho / rho0
-    energy = energy / energy0
-    vx = vx / vel0
-    vy = vy / vel0
-    vz = vz / vel0
-    bx = bx / B0
-    by = by / B0
-    bz = bz / B0
-
-  END SUBROUTINE normalise_eqm
-
-
-
-  SUBROUTINE normalise_constants
-
-    ! Normalise gravity etc.
-
-    grav = grav / grav0
-    visc3 = visc3 / visc0
-    eta0 = eta0 / res0
-    eta_background = eta_background / res0
-
-    ! the SI value for the constant in the conductivity
-    ! assuming ln(Lambda) = 18.4
-    kappa_0 = 1.0e-11_num
-    kappa_0 = kappa_0 / kappa0
-
-    time = time / T0
-    t_end = t_end / T0
-    dt_snapshots = dt_snapshots / T0
-    lambda_i = lambda_i / L0
-
-  END SUBROUTINE normalise_constants
-
-
-
-  SUBROUTINE normalise_neutral
-
-    ! Normalise constants used in the calculation of properties
-    ! Of partially ionised plasmas
-
-    ! Normalised mass
-
-    REAL(num) :: eta_bar_0
-
-    pressure0 = B0**2 / mu0 ! Pressure 
-    energy0 = B0**2 / (mu0 * rho0)   
-    res0 = 1.0_num
-    temp0 = mbar * pressure0 / (kb * rho0) ! Temperature in K
-    
-    ! Normalise tbar
-    t_bar = t_bar / temp0
-
-    ! Redefine rbar to incluse normalisation from rho and b/f
-    r_bar = r_bar * rho0 / temp0**(3.0_num / 2.0_num)
-
-    ! Normalise eta_bar
-    eta_bar_0 = rho0**2 * SQRT(temp0) * res0 / B0**2
-    eta_bar = eta_bar / eta_bar_0
-
-    ! Finally normalise ion_mass and ionise_pot which are needed in the code
-    ionise_pot = ionise_pot / (energy0 * mbar)
-
-    tr = tr / temp0
-
-  END SUBROUTINE normalise_neutral
 
 
 

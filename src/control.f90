@@ -11,12 +11,6 @@ MODULE control
 CONTAINS
 
   SUBROUTINE user_normalisation
-    ! Set the normalising constants for LARE
-    ! This is needed to allow the use of some physics
-    ! Modules which are coded in SI units
-
-    ! Should the code use SI units
-    SI = .FALSE.
 
     ! Gamma is the ratio of specific heat capacities
     gamma = 5.0_num / 3.0_num

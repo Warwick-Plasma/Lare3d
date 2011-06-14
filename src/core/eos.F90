@@ -1,7 +1,6 @@
 MODULE EOS
 
   USE shared_data
-  USE normalise
 
   IMPLICIT NONE
 
@@ -41,12 +40,6 @@ CONTAINS
     REAL(num), INTENT(IN) :: rho_in, energy_in
     INTEGER, INTENT(IN) :: m_in, ix, iy, iz
     REAL(num), INTENT(OUT) :: temp_out
-
-    ! mbar and kb will be the correct form for the normalisation when
-    ! the code is running, or when setting up initial conditions with
-    ! SI_Code = F, mbar and kb are both 1.0, reducing to the normal case
-    ! when setting up initial conditions with SI_Code = T, kb and mbar
-    ! will have their normal SI values
 
     IF (m_in .EQ. EOS_IDEAL) THEN
       temp_out = energy_in * (gamma - 1.0_num) * reduced_mass
