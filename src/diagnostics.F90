@@ -296,8 +296,7 @@ CONTAINS
           cs = cons * energy(ix,iy,iz)      ! sound speed squared
 
           w2 = SQRT(cs + w1 / MAX(rho(ix, iy, iz), none_zero) &
-              + 2.0_num * p_visc(ix, iy, iz) / MAX(rho(ix, iy, iz), none_zero)) &
-              * (1.0_num + visc1)
+              + 2.0_num * p_visc(ix, iy, iz) / MAX(rho(ix, iy, iz), none_zero)) 
 
           ! find ideal MHD CFL limit for Lagrangian step
           dt1 = MIN(dxb(ix), dyb(iy), dzb(iz)) / w2 
