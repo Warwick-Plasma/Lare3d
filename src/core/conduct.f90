@@ -42,7 +42,7 @@ CONTAINS
             
 		! find factor required to convert between energy and temperature
 		! N.B. only works for simple EOS
-    e2t = (gamma - 1.0_num) / 2.0_num
+    e2t = (gamma - 1.0_num) / reduced_mass
     a1 = fractional_error * MAXVAL(energy)  
     CALL MPI_ALLREDUCE(a1, abs_error, 1, mpireal, MPI_MAX, comm, errcode)
     

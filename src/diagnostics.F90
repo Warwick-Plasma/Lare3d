@@ -92,8 +92,8 @@ CONTAINS
 
       ALLOCATE(data(0:nx, 0:ny, 0:nz))
       CALL cfd_write_3d_cartesian_grid("Grid", "Grid", &
-          xb_global(0:nx_global) * L0, yb_global(0:ny_global) * L0, &
-          zb_global(0:nz_global) * L0, 0)
+          xb_global(0:nx_global), yb_global(0:ny_global), &
+          zb_global(0:nz_global), 0)
 
       IF (dump_mask(1))  THEN
         data = rho(0:nx, 0:ny, 0:nz) 
