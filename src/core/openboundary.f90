@@ -18,15 +18,15 @@ CONTAINS
 
     REAL(num) :: bperp
 
-    ! update ghost cells based on Riemann problem with farfield
+    ! proc_y_maxdate ghost cells based on Riemann problem with farfield
     ! only expected to work perfectly for prblems with straight B field
     ! through boundaries which do not drastically change shape during the
     ! simulation.
      
      fraction = 0.9_num
 
-    ! right boundary
-    IF (xbc_right == BC_OPEN .AND. right == MPI_PROC_NULL) THEN
+    ! proc_x_max boundary
+    IF (xbc_max == BC_OPEN .AND. proc_x_max == MPI_PROC_NULL) THEN
       DO iz = -1, nz+1
         DO iy = -1, ny+1
           ! variables carried out of domain by Riemann invariants
@@ -74,8 +74,8 @@ CONTAINS
       END DO
     END IF
 
-    ! left bounday
-    IF (xbc_left == BC_OPEN .AND. left == MPI_PROC_NULL) THEN
+    ! proc_x_min bounday
+    IF (xbc_min == BC_OPEN .AND. proc_x_min == MPI_PROC_NULL) THEN
       DO iz = -1, nz+1
         DO iy = -1, ny+1
           vxbc(1) = -vx(0, iy, iz)
@@ -121,7 +121,7 @@ CONTAINS
     END IF
 
     ! top boundary
-    IF (ybc_up == BC_OPEN .AND. up == MPI_PROC_NULL) THEN
+    IF (ybc_max == BC_OPEN .AND. proc_y_max == MPI_PROC_NULL) THEN
       DO iz = -1, nz+1
         DO ix = -1, nx+1
           vxbc(1) = vy(ix, ny, iz)
@@ -167,7 +167,7 @@ CONTAINS
     END IF
 
     ! bottom boundary
-    IF (ybc_down == BC_OPEN .AND. down == MPI_PROC_NULL) THEN
+    IF (ybc_min == BC_OPEN .AND. proc_y_min == MPI_PROC_NULL) THEN
       DO iz = -1, nz+1
         DO ix = -1, nx+1
           vxbc(1) = -vy(ix, 0, iz)
@@ -212,8 +212,8 @@ CONTAINS
       END DO
     END IF
 
-    ! back boundary
-    IF (zbc_back == BC_OPEN .AND. back == MPI_PROC_NULL) THEN
+    ! proc_z_max boundary
+    IF (zbc_max == BC_OPEN .AND. proc_z_max == MPI_PROC_NULL) THEN
       DO iy = -1, ny+1
         DO ix = -1, nx+1
           vxbc(1) = vz(ix, iy, nz)
@@ -258,8 +258,8 @@ CONTAINS
       END DO
     END IF
 
-    ! front boundary
-    IF (zbc_front == BC_OPEN .AND. front == MPI_PROC_NULL) THEN
+    ! proc_z_min boundary
+    IF (zbc_min == BC_OPEN .AND. proc_z_min == MPI_PROC_NULL) THEN
       DO iy = -1, ny+1
         DO ix = -1, nx+1
           vxbc(1) = -vz(ix, iy, 0)
@@ -505,7 +505,7 @@ CONTAINS
     REAL(num), DIMENSION(7) :: pstar, uxstar, uystar, uzstar, rhostar
     REAL(num), DIMENSION(7) :: lambdastar, pmagstar, bzstar
 
-    ! Setup the far field variables
+    ! Setproc_y_max the far field variables
     byfar2 = SQRT(byfar**2 + bzfar**2)
     phi = ATAN2(bzfar, byfar)
     pmagfar = 0.5_num * (byfar2**2 - bxfar**2)
@@ -521,7 +521,7 @@ CONTAINS
         - SQRT((c0far**2 + cxfar**2 + ctfar**2)**2 &
         - 4.0_num * c0far**2 * cxfar**2)))
 
-    ! Setup the speeds
+    ! Setproc_y_max the speeds
     c0 = SQRT(gamma * (gamma - 1.0_num) * ebc(1))
     cx = SQRT(bxbc(1)**2 / rbc(1))
     ct = SQRT((bybc(1)**2 + bzbc(1)**2) / rbc(1))
@@ -564,7 +564,7 @@ CONTAINS
 
     END DO
 
-    ! Now setup the constants that are defined in the solution
+    ! Now setproc_y_max the constants that are defined in the solution
     a = (cffar**2 - cxfar**2)
     b = (lambdafar / rhofar)
     c = (csfar**2 - cxfar**2)
@@ -598,7 +598,7 @@ CONTAINS
     rbc(0) = rhog
     ebc(0) = MAX(pg - pmagg, none_zero) / ((gamma - 1.0_num) * rhog)
 
-    ! rotate back to grid coordinate system
+    ! rotate proc_z_max to grid coordinate system
     bxbc(0) = bxg
     bybc(0) = byg * COS(phi) - bzg * SIN(phi)
     bzbc(0) = byg * SIN(phi) + bzg * COS(phi)

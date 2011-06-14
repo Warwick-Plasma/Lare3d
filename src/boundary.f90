@@ -1,6 +1,6 @@
 !*******************************************************************
 ! All the ghost cell values are controlled by these routines.
-! To speed things up it may be worth having this routine hard coded
+! To speed things proc_y_max it may be worth having this routine hard coded
 ! for each particular run, i.e. remove all if statements.
 !*******************************************************************
 
@@ -21,32 +21,32 @@ CONTAINS
     LOGICAL :: second_call = .FALSE.
 
     IF (second_call) THEN
-      IF (xbc_right == BC_OPEN) THEN
+      IF (xbc_max == BC_OPEN) THEN
         bx(nx+2,:,:) = bx(nx+1,:,:)
         by(nx+2,:,:) = by(nx+1,:,:)
         bz(nx+2,:,:) = bz(nx+1,:,:)
       END IF        
-      IF (xbc_left == BC_OPEN) THEN
+      IF (xbc_min == BC_OPEN) THEN
         bx(-2,:,:) = bx(-1,:,:)
         by(-1,:,:) = by(0,:,:)
         bz(-1,:,:) = bz(0,:,:)
       END IF        
-      IF (ybc_up == BC_OPEN) THEN
+      IF (ybc_max == BC_OPEN) THEN
         bx(:,ny+2,:) = bx(:,ny+1,:)
         by(:,ny+2,:) = by(:,ny+1,:)
         bz(:,ny+2,:) = bz(:,ny+1,:)
       END IF        
-      IF (ybc_down == BC_OPEN) THEN
+      IF (ybc_min == BC_OPEN) THEN
         bx(:,-1,:) = bx(:,0,:)
         by(:,-2,:) = by(:,-1,:)
         bz(:,-1,:) = bz(:,0,:)
       END IF
-      IF (zbc_front == BC_OPEN) THEN
+      IF (zbc_min == BC_OPEN) THEN
         bx(:,:,-1) = bx(:,:,0)
         by(:,:,-1) = by(:,:,0)
         bz(:,:,-2) = bz(:,:,-1)
       END IF        
-      IF (zbc_back == BC_OPEN) THEN
+      IF (zbc_max == BC_OPEN) THEN
         bx(:,:,nz+2) = bx(:,:,nz+1)
         by(:,:,nz+2) = by(:,:,nz+1)
         bz(:,:,nz+2) = bz(:,:,nz+1)
@@ -56,9 +56,9 @@ CONTAINS
 
     IF (first_call) THEN
       any_open = .FALSE.
-      IF ((xbc_right == BC_OPEN) .OR. (xbc_left == BC_OPEN) &
-          .OR. (ybc_up == BC_OPEN) .OR. (ybc_down == BC_OPEN) &
-          .OR. (zbc_front == BC_OPEN) .OR. (zbc_back == BC_OPEN)) any_open = .TRUE.
+      IF ((xbc_max == BC_OPEN) .OR. (xbc_min == BC_OPEN) &
+          .OR. (ybc_max == BC_OPEN) .OR. (ybc_min == BC_OPEN) &
+          .OR. (zbc_min == BC_OPEN) .OR. (zbc_max == BC_OPEN)) any_open = .TRUE.
       first_call = .FALSE.
       second_call = .TRUE.
     END IF
@@ -85,7 +85,7 @@ CONTAINS
   
     IF (damping) THEN
   
-      IF (right == MPI_PROC_NULL) THEN
+      IF (proc_x_max == MPI_PROC_NULL) THEN
         d = 3.0_num * x_end / 4.0_num
         DO iz = -1, nz+1
           DO iy = -1, ny+1
@@ -101,7 +101,7 @@ CONTAINS
         END DO
       END IF
         
-      IF (left == MPI_PROC_NULL) THEN
+      IF (proc_x_min == MPI_PROC_NULL) THEN
         d = 3.0_num * x_start / 4.0_num
         DO iz = -2, nz+2
           DO iy = -2, ny+2
@@ -117,7 +117,7 @@ CONTAINS
         END DO
       END IF
   
-      IF (up == MPI_PROC_NULL) THEN
+      IF (proc_y_max == MPI_PROC_NULL) THEN
         d = 3.0_num * y_end / 4.0_num
         DO iz = -2, nz+2
           DO iy = ny-ndy, ny+2
@@ -133,7 +133,7 @@ CONTAINS
         END DO
       END IF
   
-      IF (down == MPI_PROC_NULL) THEN
+      IF (proc_y_min == MPI_PROC_NULL) THEN
         d = 3.0_num * y_start / 4.0_num
         DO iz = -2, nz+2
           DO iy = -2, ndy
@@ -149,7 +149,7 @@ CONTAINS
         END DO
       END IF
   
-      IF (back == MPI_PROC_NULL) THEN
+      IF (proc_z_max == MPI_PROC_NULL) THEN
         d = 3.0_num * z_end / 4.0_num
         DO iz = nz-ndz, nz+2
           DO iy = -2, ny+2
@@ -165,7 +165,7 @@ CONTAINS
         END DO
       END IF
    
-      IF (front == MPI_PROC_NULL) THEN
+      IF (proc_z_min == MPI_PROC_NULL) THEN
         d = 3.0_num * z_start / 4.0_num
         DO iz = -2, ndz
           DO iy = -2, ny+2
@@ -191,7 +191,7 @@ CONTAINS
 
     CALL bfield_MPI
 
-    IF (front == MPI_PROC_NULL .AND. zbc_front == BC_OTHER) THEN
+    IF (proc_z_min == MPI_PROC_NULL .AND. zbc_min == BC_OTHER) THEN
       bx(:, :, -1) = bx(:, :, 2)
       bx(:, :,  0) = bx(:, :, 1)
       by(:, :, -1) = by(:, :, 2)
@@ -199,7 +199,7 @@ CONTAINS
       bz(:, :, -1) = bz(:, :, 1)
       bz(:, :, -2) = bz(:, :, 2)
     END IF
-    IF (back == MPI_PROC_NULL .AND. zbc_back == BC_OTHER) THEN
+    IF (proc_z_max == MPI_PROC_NULL .AND. zbc_max == BC_OTHER) THEN
       bx(:, :, nz+1) = bx(:, :, nz  )
       bx(:, :, nz+2) = bx(:, :, nz-1)
       by(:, :, nz+1) = by(:, :, nz  )
@@ -208,7 +208,7 @@ CONTAINS
       bz(:, :, nz+2) = bz(:, :, nz-2)
     END IF
 
-    IF (right == MPI_PROC_NULL .AND. xbc_right == BC_OTHER) THEN
+    IF (proc_x_max == MPI_PROC_NULL .AND. xbc_max == BC_OTHER) THEN
       bx(nx+1, :, :) = bx(nx-1, :, :)
       bx(nx+2, :, :) = bx(nx-2, :, :)
       by(nx+1, :, :) = by(nx  , :, :)
@@ -216,7 +216,7 @@ CONTAINS
       bz(nx+1, :, :) = bz(nx  , :, :)
       bz(nx+2, :, :) = bz(nx-1, :, :)
     END IF
-    IF (left == MPI_PROC_NULL .AND. xbc_left == BC_OTHER) THEN
+    IF (proc_x_min == MPI_PROC_NULL .AND. xbc_min == BC_OTHER) THEN
       bx(-1, :, :) = bx(1, :, :)
       bx(-2, :, :) = bx(2, :, :)
       by( 0, :, :) = by(1, :, :)
@@ -225,7 +225,7 @@ CONTAINS
       bz(-1, :, :) = bz(2, :, :)
     END IF
     
-    IF (down == MPI_PROC_NULL .AND. ybc_down == BC_OTHER) THEN
+    IF (proc_y_min == MPI_PROC_NULL .AND. ybc_min == BC_OTHER) THEN
       bx(:,  0, :) = bx(:, 1, :)
       bx(:, -1, :) = bx(:, 2, :)
       by(:, -1, :) = by(:, 1, :)
@@ -233,7 +233,7 @@ CONTAINS
       bz(:,  0, :) = bz(:, 1, :)
       bz(:, -1, :) = bz(:, 2, :)
     END IF
-    IF (up == MPI_PROC_NULL .AND. ybc_up == BC_OTHER) THEN
+    IF (proc_y_max == MPI_PROC_NULL .AND. ybc_max == BC_OTHER) THEN
       bx(:, ny+1, :) = bx(:, ny  , :)
       bx(:, ny+2, :) = bx(:, ny-1, :)
       by(:, ny+1, :) = by(:, ny-1, :)
@@ -251,29 +251,29 @@ CONTAINS
 
     CALL energy_MPI
 
-    IF (front == MPI_PROC_NULL .AND. zbc_front == BC_OTHER) THEN
+    IF (proc_z_min == MPI_PROC_NULL .AND. zbc_min == BC_OTHER) THEN
       energy(:, :,  0) = energy(:, :, 1)
       energy(:, :, -1) = energy(:, :, 2)
     END IF
-    IF (back == MPI_PROC_NULL .AND. zbc_back == BC_OTHER) THEN
+    IF (proc_z_max == MPI_PROC_NULL .AND. zbc_max == BC_OTHER) THEN
       energy(:, :, nz+1) = energy(:, :, nz  )
       energy(:, :, nz+2) = energy(:, :, nz-1)
     END IF
 
-    IF (right == MPI_PROC_NULL .AND. xbc_right == BC_OTHER) THEN
+    IF (proc_x_max == MPI_PROC_NULL .AND. xbc_max == BC_OTHER) THEN
       energy(nx+1, :, :) = energy(nx  , :, :)
       energy(nx+2, :, :) = energy(nx-1, :, :)
     END IF
-    IF (left == MPI_PROC_NULL .AND. xbc_left == BC_OTHER) THEN
+    IF (proc_x_min == MPI_PROC_NULL .AND. xbc_min == BC_OTHER) THEN
       energy( 0, :, :) = energy(1, :, :)
       energy(-1, :, :) = energy(2, :, :)
     END IF
 
-    IF (down == MPI_PROC_NULL .AND. ybc_down == BC_OTHER) THEN
+    IF (proc_y_min == MPI_PROC_NULL .AND. ybc_min == BC_OTHER) THEN
       energy(:,  0, :) = energy(:, 1, :)
       energy(:, -1, :) = energy(:, 2, :)
     END IF
-    IF (up == MPI_PROC_NULL .AND. ybc_up == BC_OTHER) THEN
+    IF (proc_y_max == MPI_PROC_NULL .AND. ybc_max == BC_OTHER) THEN
       energy(:, ny+1, :) = energy(:, ny  , :)
       energy(:, ny+2, :) = energy(:, ny-1, :)
     END IF
@@ -287,34 +287,34 @@ CONTAINS
 
     CALL velocity_MPI
 
-    IF (front == MPI_PROC_NULL .AND. zbc_front == BC_OTHER) THEN
+    IF (proc_z_min == MPI_PROC_NULL .AND. zbc_min == BC_OTHER) THEN
       vx(:, :, -2:0) = 0.0_num
       vy(:, :, -2:0) = 0.0_num
       vz(:, :, -2:0) = 0.0_num
     END IF
-    IF (back == MPI_PROC_NULL .AND. zbc_back == BC_OTHER) THEN
+    IF (proc_z_max == MPI_PROC_NULL .AND. zbc_max == BC_OTHER) THEN
       vx(:, :, nz:nz+2) = 0.0_num
       vy(:, :, nz:nz+2) = 0.0_num
       vz(:, :, nz:nz+2) = 0.0_num
     END IF
 
-    IF (right == MPI_PROC_NULL .AND. xbc_right == BC_OTHER) THEN
+    IF (proc_x_max == MPI_PROC_NULL .AND. xbc_max == BC_OTHER) THEN
       vx(nx:nx+2, :, :) = 0.0_num
       vy(nx:nx+2, :, :) = 0.0_num
       vz(nx:nx+2, :, :) = 0.0_num
     END IF
-    IF (left == MPI_PROC_NULL .AND. xbc_left == BC_OTHER) THEN
+    IF (proc_x_min == MPI_PROC_NULL .AND. xbc_min == BC_OTHER) THEN
       vx(-2:0, :, :) = 0.0_num
       vy(-2:0, :, :) = 0.0_num
       vz(-2:0, :, :) = 0.0_num
     END IF
 
-    IF (up == MPI_PROC_NULL .AND. ybc_up == BC_OTHER) THEN
+    IF (proc_y_max == MPI_PROC_NULL .AND. ybc_max == BC_OTHER) THEN
       vx(:, ny+1, :) = 0.0_num
       vy(:, ny+1, :) = 0.0_num
       vz(:, ny+1, :) = 0.0_num
     END IF
-    IF (down == MPI_PROC_NULL .AND. ybc_down == BC_OTHER) THEN
+    IF (proc_y_min == MPI_PROC_NULL .AND. ybc_min == BC_OTHER) THEN
       vx(:, -2:0, :) = 0.0_num
       vy(:, -2:0, :) = 0.0_num
       vz(:, -2:0, :) = 0.0_num
@@ -328,34 +328,34 @@ CONTAINS
 
     CALL remap_v_MPI
 
-    IF (front == MPI_PROC_NULL .AND. zbc_front == BC_OTHER) THEN
+    IF (proc_z_min == MPI_PROC_NULL .AND. zbc_min == BC_OTHER) THEN
       vx1(:, :, -2:0) = 0.0_num
       vy1(:, :, -2:0) = 0.0_num
       vz1(:, :, -2:0) = 0.0_num
     END IF
-    IF (back == MPI_PROC_NULL .AND. zbc_back == BC_OTHER) THEN
+    IF (proc_z_max == MPI_PROC_NULL .AND. zbc_max == BC_OTHER) THEN
       vx1(:, :, nz:nz+2) = 0.0_num
       vy1(:, :, nz:nz+2) = 0.0_num
       vz1(:, :, nz:nz+2) = 0.0_num
     END IF
 
-    IF (right == MPI_PROC_NULL .AND. xbc_right == BC_OTHER) THEN
+    IF (proc_x_max == MPI_PROC_NULL .AND. xbc_max == BC_OTHER) THEN
       vx1(nx:nx+2, :, :) = 0.0_num
       vy1(nx:nx+2, :, :) = 0.0_num
       vz1(nx:nx+2, :, :) = 0.0_num
     END IF
-    IF (left == MPI_PROC_NULL .AND. xbc_left == BC_OTHER) THEN
+    IF (proc_x_min == MPI_PROC_NULL .AND. xbc_min == BC_OTHER) THEN
       vx1(-2:0, :, :) = 0.0_num
       vy1(-2:0, :, :) = 0.0_num
       vz1(-2:0, :, :) = 0.0_num
     END IF
 
-    IF (up == MPI_PROC_NULL .AND. ybc_up == BC_OTHER) THEN
+    IF (proc_y_max == MPI_PROC_NULL .AND. ybc_max == BC_OTHER) THEN
       vx1(:, ny:ny+2, :) = 0.0_num
       vy1(:, ny:ny+2, :) = 0.0_num
       vz1(:, ny:ny+2, :) = 0.0_num
     END IF
-    IF (down == MPI_PROC_NULL .AND. ybc_down == BC_OTHER) THEN
+    IF (proc_y_min == MPI_PROC_NULL .AND. ybc_min == BC_OTHER) THEN
       vx1(:, -2:0, :) = 0.0_num
       vy1(:, -2:0, :) = 0.0_num
       vz1(:, -2:0, :) = 0.0_num
@@ -370,29 +370,29 @@ CONTAINS
 
     CALL density_MPI
 
-    IF (front == MPI_PROC_NULL .AND. zbc_front == BC_OTHER) THEN
+    IF (proc_z_min == MPI_PROC_NULL .AND. zbc_min == BC_OTHER) THEN
       rho(:, :, -1) = rho(:, :, 2)
       rho(:, :,  0) = rho(:, :, 1)
     END IF
-    IF (back == MPI_PROC_NULL .AND. zbc_back == BC_OTHER) THEN
+    IF (proc_z_max == MPI_PROC_NULL .AND. zbc_max == BC_OTHER) THEN
       rho(:, :, nz+1) = rho(:, :, nz  )
       rho(:, :, nz+2) = rho(:, :, nz-1)
     END IF
 
-    IF (right == MPI_PROC_NULL .AND. xbc_right == BC_OTHER) THEN
+    IF (proc_x_max == MPI_PROC_NULL .AND. xbc_max == BC_OTHER) THEN
       rho(nx+1, :, :) = rho(nx  , :, :)
       rho(nx+2, :, :) = rho(nx-1, :, :)
     END IF
-    IF (left == MPI_PROC_NULL .AND. xbc_left == BC_OTHER) THEN
+    IF (proc_x_min == MPI_PROC_NULL .AND. xbc_min == BC_OTHER) THEN
       rho( 0, :, :) = rho(1, :, :)
       rho(-1, :, :) = rho(2, :, :)
     END IF
 
-    IF (down == MPI_PROC_NULL .AND. ybc_down == BC_OTHER) THEN
+    IF (proc_y_min == MPI_PROC_NULL .AND. ybc_min == BC_OTHER) THEN
       rho(:,  0, :) = rho(:, 1, :)
       rho(:, -1, :) = rho(:, 2, :)
     END IF
-    IF (up == MPI_PROC_NULL .AND. ybc_up == BC_OTHER) THEN
+    IF (proc_y_max == MPI_PROC_NULL .AND. ybc_max == BC_OTHER) THEN
       rho(:, ny+1, :) = rho(:, ny  , :)
       rho(:, ny+2, :) = rho(:, ny-1, :)
     END IF

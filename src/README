@@ -32,4 +32,24 @@ boundary.f90 controls the boundary conditions for the code. Details on the bound
 diagnostics.f90
 
 diagnostics.f90 performs the output of data to the output dump files, and must be changed by the user if additional output data is required. Changing the output dumps is described in the LARE manual
------------------------------------------------------------------
+-----------------------------------------------------------------                          
+
+
+
+
+************************************************************************************
+CHANGELOG **************************************************************************
+
+New in v2.8
+-----------
+1. Fixed error in calculating temperature and specific internal energy density when using
+eos_number = EOS_ION
+2. Changed names of boundaries in control.f90. This means old control.f90 files will fail.
+This was needed to simplify maintenance of the code. Names are now
+  xbc_min = BC_PERIODIC
+  xbc_max = BC_PERIODIC
+  ybc_max = BC_OTHER
+  ybc_min = BC_OTHER
+  zbc_max = BC_OTHER
+  zbc_min = BC_OTHER
+Hopefully these names need no explaining.

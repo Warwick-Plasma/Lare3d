@@ -148,7 +148,6 @@ CONTAINS
 
     REAL(num) :: t, rho0, e0, dx, x
     REAL(num), DIMENSION(2) :: ta, fa, xi_a
-    REAL(num) :: ionise_pot_local
     INTEGER :: loop
 
     ! variable bof is b / f in the original version
@@ -158,7 +157,7 @@ CONTAINS
           rho0 = rho(ix, iy, iz)
           e0 = energy(ix, iy, iz)
           ta = (gamma - 1.0_num) &
-              * (/ MAX((e0 - ionise_pot_local) / 2.0_num, none_zero), e0 /)
+              * (/ MAX((e0 - ionise_pot) / 2.0_num, none_zero), e0 /)
 
           IF (ta(1) > ta(2)) THEN
             PRINT *, "Temperature bounds problem", ta
@@ -173,7 +172,7 @@ CONTAINS
             x = T  + dx
             xi_a(1) = get_neutral(x, rho0, yb(iy)) 
             fa(1) = x - (gamma - 1.0_num) * (e0 &
-                - (1.0_num - xi_a(1)) * ionise_pot_local) / (2.0_num - xi_a(1))
+                - (1.0_num - xi_a(1)) * ionise_pot) / (2.0_num - xi_a(1))
             IF (fa(1) <= 0.0_num) T = x
             IF (ABS(dx) < 1.e-8_num .OR. fa(1) == 0.0_num) EXIT
           END DO

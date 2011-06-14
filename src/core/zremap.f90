@@ -819,14 +819,14 @@ CONTAINS
         front, tag, dm(0:nx+1, 0:ny+1, nz+1), (nx+2)*(ny+2), mpireal, &
         back, tag, comm, status, errcode)
 
-    IF (back == MPI_PROC_NULL) &
+    IF (proc_z_max == MPI_PROC_NULL) &
         dm(0:nx+1, 0:ny+1, nz+1) = dm(0:nx+1, 0:ny+1, nz)
 
     CALL MPI_SENDRECV(dm(0:nx+1, 0:ny+1, nz-1), (nx+2)*(ny+2), mpireal, &
         back, tag, dm(0:nx+1, 0:ny+1, -1), (nx+2)*(ny+2), mpireal, &
         front, tag, comm, status, errcode)
 
-    IF (front == MPI_PROC_NULL) &
+    IF (proc_z_min == MPI_PROC_NULL) &
         dm(0:nx+1, 0:ny+1, -1) = dm(0:nx+1, 0:ny+1, 0)
 
   END SUBROUTINE dm_z_bcs

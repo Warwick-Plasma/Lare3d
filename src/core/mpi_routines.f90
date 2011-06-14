@@ -43,28 +43,28 @@ CONTAINS
     periods = .TRUE.
     reorder = .TRUE.
 
-    IF (xbc_left == BC_OTHER) periods(3) = .FALSE.
-    IF (ybc_up == BC_OTHER) periods(2) = .FALSE.
-    IF (zbc_front == BC_OTHER) periods(1) = .FALSE.
-    IF (xbc_left == BC_OPEN) periods(3) = .FALSE.
-    IF (ybc_up == BC_OPEN) periods(2) = .FALSE.
-    IF (zbc_front == BC_OPEN) periods(1) = .FALSE. 
+    IF (xbc_min == BC_OTHER) periods(3) = .FALSE.
+    IF (ybc_max == BC_OTHER) periods(2) = .FALSE.
+    IF (zbc_min == BC_OTHER) periods(1) = .FALSE.
+    IF (xbc_min == BC_OPEN) periods(3) = .FALSE.
+    IF (ybc_max == BC_OPEN) periods(2) = .FALSE.
+    IF (zbc_min == BC_OPEN) periods(1) = .FALSE. 
     
-    IF (xbc_right == BC_OTHER) periods(3) = .FALSE.
-    IF (ybc_down == BC_OTHER) periods(2) = .FALSE.
-    IF (zbc_back == BC_OTHER) periods(1) = .FALSE.
-    IF (xbc_right == BC_OPEN) periods(3) = .FALSE.
-    IF (ybc_down == BC_OPEN) periods(2) = .FALSE.
-    IF (zbc_back == BC_OPEN) periods(1) = .FALSE.
+    IF (xbc_max == BC_OTHER) periods(3) = .FALSE.
+    IF (ybc_min == BC_OTHER) periods(2) = .FALSE.
+    IF (zbc_max == BC_OTHER) periods(1) = .FALSE.
+    IF (xbc_max == BC_OPEN) periods(3) = .FALSE.
+    IF (ybc_min == BC_OPEN) periods(2) = .FALSE.
+    IF (zbc_max == BC_OPEN) periods(1) = .FALSE.
 
     CALL MPI_CART_CREATE(MPI_COMM_WORLD, ndims, dims, periods, &
         reorder, comm, errcode)
 
     CALL MPI_COMM_RANK(comm, rank, errcode)
     CALL MPI_CART_COORDS(comm, rank, 3, coordinates, errcode)
-    CALL MPI_CART_SHIFT(comm, 2, 1, left, right, errcode)
-    CALL MPI_CART_SHIFT(comm, 1, 1, down, up, errcode)
-    CALL MPI_CART_SHIFT(comm, 0, 1, front, back, errcode)
+    CALL MPI_CART_SHIFT(comm, 2, 1, proc_x_min, proc_x_max, errcode)
+    CALL MPI_CART_SHIFT(comm, 1, 1, proc_y_min, proc_y_max, errcode)
+    CALL MPI_CART_SHIFT(comm, 0, 1, proc_z_min, proc_z_max, errcode)
 
     ! Create the subarray for this problem: subtype decribes where this
     ! process's data fits into the global picture.
@@ -102,7 +102,7 @@ CONTAINS
     ALLOCATE(delta_ke(-1:nx+2, -1:ny+2, -1:nz+2))
     ALLOCATE(p_visc(-1:nx+2, -1:ny+2, -1:nz+2))
     ALLOCATE(eta(-1:nx+2, -1:ny+2, -1:nz+2))
-    IF (hall_mhd) ALLOCATE(lambda_i(-1:nx+2, -1:ny+2, -1:nz+2))
+    ALLOCATE(lambda_i(-1:nx+2, -1:ny+2, -1:nz+2))
     ! shocked and resistive need to be larger to allow offset = 4 in shock_test
     ALLOCATE(cv(-1:nx+2, -1:ny+2, -1:nz+2), cv1(-1:nx+2, -1:ny+2, -1:nz+2))
     ALLOCATE(xc(-1:nx+2), xb(-2:nx+2), dxb(-1:nx+2), dxc(-1:nx+2))
@@ -156,7 +156,7 @@ CONTAINS
     DEALLOCATE(xb_global, yb_global, zb_global)
     
     IF (ALLOCATED(xi_n)) DEALLOCATE(xi_n)  
-    IF (ALLOCATED(lambda_i)) DEALLOCATE(lambda_i)
+    DEALLOCATE(lambda_i)
     IF (ALLOCATED(eta_perp)) DEALLOCATE(eta_perp)
     IF (ALLOCATED(parallel_current)) DEALLOCATE(parallel_current)
     IF (ALLOCATED(perp_current)) DEALLOCATE(perp_current)    
