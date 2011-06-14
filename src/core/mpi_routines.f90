@@ -112,7 +112,10 @@ CONTAINS
     ALLOCATE(jx_r(0:nx+1, 0:ny+1, 0:nz+1))
     ALLOCATE(jy_r(0:nx+1, 0:ny+1, 0:nz+1))
     ALLOCATE(jz_r(0:nx+1, 0:ny+1, 0:nz+1))
-
+    ALLOCATE(xb_global(-2:nx_global+2))
+    ALLOCATE(yb_global(-2:ny_global+2))
+    ALLOCATE(zb_global(-2:nz_global+2))
+    
     IF (rank == 0) start_time = MPI_WTIME()
 
     p_visc = 0.0_num
@@ -150,8 +153,12 @@ CONTAINS
     DEALLOCATE(yc, yb, dyb, dyc)
     DEALLOCATE(grav)
     DEALLOCATE(jx_r, jy_r, jz_r)  
+    DEALLOCATE(xb_global, yb_global, zb_global)
     
-    IF (ALLOCATED(xi_n)) DEALLOCATE(xi_n)
+    IF (ALLOCATED(xi_n)) DEALLOCATE(xi_n) 
+    IF (ALLOCATED(eta_perp)) DEALLOCATE(eta_perp)
+    IF (ALLOCATED(parallel_current)) DEALLOCATE(parallel_current)
+    IF (ALLOCATED(perp_current)) DEALLOCATE(perp_current)    
 
   END SUBROUTINE mpi_close
 
