@@ -120,7 +120,7 @@ CONTAINS
   END SUBROUTINE perpendicular_resistivity
 
 
-
+  
   FUNCTION get_neutral(t_v, rho_v, height)
     
     REAL(num), INTENT(IN) :: t_v, rho_v, height
@@ -139,50 +139,51 @@ CONTAINS
         * T_bar / t_v)
     r = 0.5_num * (-1.0_num + SQRT(1.0_num + r_bar * rho_v * bof))
     get_neutral = r / (1.0_num + r)
-    
+
   END FUNCTION  get_neutral
-                           
-
-
+  
+  
+  
   SUBROUTINE neutral_fraction
-
-    REAL(num) :: t, rho0, e0, dx, x
+  
+    REAL(num) :: bof, r, T, rho0, e0, dx, x
     REAL(num), DIMENSION(2) :: ta, fa, xi_a
     INTEGER :: loop
-
-    ! variable bof is b / f in the original version
-    DO iz = -1, nz+2
-      DO iy = -1, ny+2
-        DO ix = -1, nx+2
+  
+    ! Variable bof is b / f in the original version
+    DO iz = -1, nz + 2
+      DO iy = -1, ny + 2
+        DO ix = -1, nx + 2
           rho0 = rho(ix, iy, iz)
           e0 = energy(ix, iy, iz)
           ta = (gamma - 1.0_num) &
               * (/ MAX((e0 - ionise_pot) / 2.0_num, none_zero), e0 /)
-
+    
           IF (ta(1) > ta(2)) THEN
-            PRINT *, "Temperature bounds problem", ta
+            PRINT * , "Temperature bounds problem", ta
             STOP
           END IF
-
+    
           dx = ta(2) - ta(1)
-          T = ta(1)
-
+          t = ta(1)
+    
           DO loop = 1, 100
             dx = dx / 2.0_num
-            x = T  + dx
-            xi_a(1) = get_neutral(x, rho0, yb(iy)) 
+            x = t  + dx
+            xi_a(1) = get_neutral(x, rho0, zb(iz))   
             fa(1) = x - (gamma - 1.0_num) * (e0 &
                 - (1.0_num - xi_a(1)) * ionise_pot) / (2.0_num - xi_a(1))
-            IF (fa(1) <= 0.0_num) T = x
+            IF (fa(1) <= 0.0_num) t = x
             IF (ABS(dx) < 1.e-8_num .OR. fa(1) == 0.0_num) EXIT
           END DO
-
-          xi_n(ix, iy, iz) = get_neutral(t, rho0, yb(iy)) 
+    
+          xi_n(ix, iy, iz) = get_neutral(x, rho0, zb(iz))   
         END DO
       END DO
     END DO
-
+  
   END SUBROUTINE neutral_fraction
+
 
 
 END MODULE neutral

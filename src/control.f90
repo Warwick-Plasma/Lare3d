@@ -13,22 +13,22 @@ CONTAINS
   SUBROUTINE user_normalisation
 
     ! Gamma is the ratio of specific heat capacities
-    gamma = 5.0_num / 3.0_num
+    gamma = 1.4_num
 
     ! Average mass of an ion in proton masses
     ! The code assumes a single ion species with this mass
-    mf = 1.0_num
+    mf = 1.2_num
 
     ! The equations describing the normalisation in LARE
     ! have three free parameters which must be specified by
     ! the end user. 
 
     ! Magnetic field normalisation in Tesla
-    B0 = 0.12_num
+    B0 = 0.03_num
     ! Length normalisation in m
-    L0 = 150.e3_num
+    L0 = 180.e3_num
     ! Density normalisation in kg / m^3
-    RHO0 = 2.7e-4_num
+    RHO0 = 1.67e-4_num
 
   END SUBROUTINE user_normalisation
 
@@ -43,7 +43,7 @@ CONTAINS
 
     ! Set the maximum number of iterations of the core solver before the code
     ! terminates. If nsteps < 0 then the code will run until t = t_end
-    nsteps = -1
+    nsteps = 1
 
     ! The maximum runtime of the code
     ! If SI_Input is true then this is in seconds
@@ -67,24 +67,24 @@ CONTAINS
 
     ! The length of the domain in the x direction
     ! If SI_Input is true then this is in metres
-    x_start = -75.0_num
-    x_end = 75.0_num
+    x_start = 0.0_num
+    x_end = 100.0_num
     ! Should the x grid be stretched or uniform
     x_stretch = .FALSE.
 
     ! The length of the domain in the y direction
     ! If SI_Input is true then this is in metres
-    y_start = -75.0_num
-    y_end = 75.0_num
+    y_start = 0.0_num
+    y_end = 100.0_num
     ! Should the y grid be stretched of uniform
     y_stretch = .FALSE.
 
     z_start = -20.0_num
-    z_end = 130.0_num
+    z_end = 80.0_num
     z_stretch = .FALSE.
 
     ! Turn on or off the resistive parts of the MHD equations
-    resistive_mhd = .TRUE.
+    resistive_mhd = .FALSE.
 
     ! The background resistivity expressed as the inverse Lundquist
     ! number, i.e. the same for normalised and SI input
@@ -166,7 +166,7 @@ CONTAINS
     ! EOS_PI - Simple ideal gas for partially ionised plasma
     ! EOS_ION - EOS_PI plus the ionisation potential 
     ! N.B. read the manual for notes on these choices
-    eos_number = EOS_IDEAL 
+    eos_number = EOS_IDEAL
     ! EOS_IDEAL also requires that you specific whether
     ! the gas is ionised or not. Some startified atmospheres
     ! only work for neutral hydrogen for example
@@ -214,10 +214,10 @@ CONTAINS
     ! If the element is false then the field isn't dumped
     ! N.B. if dump_mask(1:8) not true then the restart will not work
     dump_mask = .FALSE.
-    dump_mask(1:10) = .TRUE. 
+    dump_mask(1:9) = .TRUE. 
     IF (eos_number /= EOS_IDEAL)  dump_mask(14) = .TRUE. 
-    IF (resistive_mhd)  dump_mask(16) = .TRUE. 
     IF (cowling_resistivity)  dump_mask(15) = .TRUE. 
+    IF (resistive_mhd)  dump_mask(16) = .TRUE. 
 
   END SUBROUTINE set_output_dumps
 
