@@ -95,8 +95,8 @@ CONTAINS
             DO iyp = iy, iy + 1
               DO ixp = ix, ix + 1
                 t_v = (gamma - 1.0_num) &
-                    * (energy(ixp,iyp,izp) - (1.0_num - xi_n(ixp, iyp)) * ionise_pot) &
-                    / ((2.0_num - xi_n(ixp, iyp)))
+                    * (energy(ixp,iyp,izp) - (1.0_num - xi_n(ixp,iyp,izp)) * ionise_pot) &
+                    / ((2.0_num - xi_n(ixp,iyp,izp)))
                 t_v = t_v + T
               END DO
             END DO

@@ -30,7 +30,7 @@ PROGRAM lare3d
   CALL welcome_message     ! welcome.f90
 
   CALL setup_neutral ! neutral.f90
-  CALL normalise_neutral  ! setup.f90
+  CALL normalise_transport  ! setup.f90
 
   CALL set_boundary_conditions   ! boundary.f90
   CALL open_files                ! setup.f90

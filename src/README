@@ -44,6 +44,7 @@ New in v2.8
 -----------
 1. Fixed error in calculating temperature and specific internal energy density when using
 eos_number = EOS_ION
+
 2. Changed names of boundaries in control.f90. This means old control.f90 files will fail.
 This was needed to simplify maintenance of the code. Names are now
   xbc_min = BC_PERIODIC
@@ -53,3 +54,7 @@ This was needed to simplify maintenance of the code. Names are now
   zbc_max = BC_OTHER
   zbc_min = BC_OTHER
 Hopefully these names need no explaining.
+
+3. The neutral fraction based on modified Saha uses the local temperature, without a 
+dilution factor, below a height of 0. Therefore the photosphere must be defined at z=0 
+for this to work.

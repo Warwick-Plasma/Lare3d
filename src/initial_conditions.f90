@@ -33,10 +33,10 @@ CONTAINS
   !              the routine
   !
   ! You may also need the neutral fraction. This can be calculated by a function
-  ! call to  get_neutral(temperature, rho). This routine is in core/neutral.f90
+  ! call to  get_neutral(temperature, rho, z). This routine is in core/neutral.f90
   ! and requires the local temperature and mass density. For example to set
   ! xi_n to the neutral fraction use
-  ! xi_n = get_neutral(temperature, rho)
+  ! xi_n = get_neutral(temperature, rho, z)
   !---------------------------------------------------------------------------
   
   SUBROUTINE set_initial_conditions
@@ -114,7 +114,7 @@ CONTAINS
       END DO
       IF (eos_number /= EOS_IDEAL) THEN     !note this always assumes EOS_PI
           DO iz = 0, nz_global 
-             xi_v = get_neutral(t_ref(iz), rho_ref(iz)) 
+             xi_v = get_neutral(t_ref(iz), rho_ref(iz), zb(iz)) 
              r1 = mu_m(iz)
              mu_m(iz) = 1.0_num / (2.0_num - xi_v)  
              maxerr = MAX(maxerr, ABS(mu_m(iz) - r1))
@@ -143,7 +143,7 @@ CONTAINS
       DO iy = -1, ny + 2
         DO ix = -1, nx + 2                
          IF (eos_number /= EOS_IDEAL) THEN         
-            xi_v = get_neutral(energy(ix,iy,iz), rho(ix,iy,iz), yb(iy))
+            xi_v = get_neutral(energy(ix,iy,iz), rho(ix,iy,iz), zb(iz))
           ELSE  
             IF (neutral_gas) THEN
               xi_v = 1.0_num

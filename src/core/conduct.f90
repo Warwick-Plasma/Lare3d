@@ -264,7 +264,7 @@ CONTAINS
               residual = energy(ix,iy,iz) &
                     - (energy0(ix,iy,iz)  + a2) / (1.0_num + a1) 
               energy(ix,iy,iz) = MAX(energy(ix,iy,iz) - w * residual, 0.0_num) 
-              error = ABS(residual) / energy0(ix,iy)
+              error = ABS(residual) / energy0(ix,iy,iz)
               errmax = MAX(errmax, error)
 
             END DO 

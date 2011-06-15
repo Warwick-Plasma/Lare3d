@@ -37,7 +37,6 @@ CONTAINS
         flux_x(0:nx, 0:ny, 0:nz), flux_y(0:nx, 0:ny, 0:nz), &
         flux_z(0:nx, 0:ny, 0:nz), curlb(0:nx, 0:ny, 0:nz))
 
-    IF (include_neutrals) CALL neutral_fraction(eos_number)
     IF (resistive_mhd .OR. hall_mhd) THEN
       ! if subcycling isn't wanted set dt = dtr in set_dt, don't just
       ! set substeps to 1.
@@ -56,7 +55,7 @@ CONTAINS
 
       DO subcycle = 1, substeps
         CALL eta_calc
-        IF (eos_number /= EOS_IDEAL) CALL neutral_fraction(eos_number)
+        IF (eos_number /= EOS_IDEAL) CALL neutral_fraction
         IF (cowling_resistivity) CALL perpendicular_resistivity
         ! IF (hall_mhd) CALL hall_effects
         IF (resistive_mhd) CALL resistive_effects
