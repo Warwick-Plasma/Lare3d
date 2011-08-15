@@ -3,14 +3,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <fstream.h>
+#include <fstream>
 
 #include "Block.h"
 #include "BlockHandler.h"
-
-#ifdef PARALLEL
-//	#include <mpi.h>
-#endif
 
 #include <string>
 

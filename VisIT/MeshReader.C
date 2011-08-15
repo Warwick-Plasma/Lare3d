@@ -222,6 +222,7 @@ vtkDataSet* MeshReader::GetMesh(int domain)
 	return ugrid;
     }
 
+    return NULL;
 }
 //--------------------------------------------------------------------------------------------
 void* MeshReader::GetCartAxis0(int domain)

@@ -85,7 +85,7 @@ void Mesh_Var_Reader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     avtCentering cent = AVT_NODECENT;
 
-    bool DestroyReader;
+    bool DestroyReader = false;
     MeshReader *R=(MeshReader*)this->Handler->GetBlockReader(this->MeshBlock,DestroyReader);
     if (R)
       {
@@ -151,7 +151,7 @@ vtkDataArray* Mesh_Var_Reader::GetVar(int domain)
 vtkDataSet* Mesh_Var_Reader::GetMesh(int domain)
 {
 
-    bool DestroyReader;
+    bool DestroyReader = false;
     MeshReader *R=(MeshReader*)this->Handler->GetBlockReader(this->MeshBlock,DestroyReader);
     if (R)
       {
@@ -197,7 +197,7 @@ vtkDataSet* Mesh_Var_Reader::GetMesh(int domain)
 
       }
 
-    
+    return NULL;
 }
 //--------------------------------------------------------------------------------------------
 InternalMetaData* Mesh_Var_Reader::GetInternalMetaData()

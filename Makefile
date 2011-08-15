@@ -56,29 +56,27 @@ VPATH = $(SRCDIR):$(OBJDIR):$(SRCDIR)/core:$(SRCDIR)/io/
 $(FULLTARGET): $(OBJFILES)
 	$(FC) $(FFLAGS) $(MODULEFLAG) $(OBJDIR) -o $@ $(addprefix $(OBJDIR)/,$(OBJFILES))
 
-.PHONEY: clean
 clean:
 	@rm -rf *~ $(BINDIR) $(OBJDIR) *.pbs.* *.sh.* $(SRCDIR)/*~ $(SRCDIR)/core/*~ $(SRCDIR)/io/*~ *.log
 
-.PHONEY: tidy
 tidy:
 	@rm -rf $(OBJDIR) *.pbs.* *.sh.* $(SRCDIR)/*~ *.log
 
-.PHONEY: touch
 touch:
 	@touch src/* ; touch src/core/* 
 
-.PHONEY: datatidy
 datatidy:
 	@rm -rf Data/*
 
-.PHONEY: visit
 visit:
-	@cd VisIT;xml2makefile -clobber cfd.xml;make
+	@cd VisIT; ./build
 
-.PHONEY: visitclean
 visitclean:
-	@cd VisIT;make clean;rm -f .depend
+	@cd VisIT; make clean; \
+	  rm -rf .depend *.d *Info.C *Info.h CMake* cmake* Makefile
+
+.PHONY: clean tidy touch datatidy visit visitclean
+
 # All the dependencies
 shared_data.o:shared_data.F90
 mpi_routines.o:mpi_routines.f90 shared_data.o 

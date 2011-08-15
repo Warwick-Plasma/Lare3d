@@ -118,7 +118,7 @@ vtkDataArray* Stitched_Vector_Reader::GetVectorVar(int domain)
     debug1 << "Ndims OK at " << this->Dimensions << endl;
     vtkDataArray *Data=NULL;
 
-    bool DestroyReader;
+    bool DestroyReader = false;
     BlockReader *R=this->Handler->GetBlockReader(SubBlocks[0],DestroyReader);
     if (!R) return NULL;
 

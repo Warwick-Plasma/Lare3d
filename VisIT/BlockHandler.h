@@ -7,11 +7,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <fstream.h>
-
-#ifdef PARALLEL
-//	#include <mpi.h>
-#endif
+#include <fstream>
 
 #include <string>
 #include <vtkFloatArray.h>
