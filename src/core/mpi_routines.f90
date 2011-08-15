@@ -15,6 +15,9 @@ CONTAINS
     INTEGER :: ndims, dims(3)
     LOGICAL :: periods(3), reorder
     INTEGER :: starts(3), sizes(3), subsizes(3)
+    INTEGER :: nx0, ny0, nz0
+    INTEGER :: nxp, nyp, nzp
+    INTEGER :: cx, cy, cz
 
     CALL MPI_COMM_SIZE(MPI_COMM_WORLD, nproc, errcode)
 
@@ -36,9 +39,6 @@ CONTAINS
     nprocx = dims(3)
     nprocy = dims(2)
     nprocz = dims(1)
-    nx = nx_global / nprocx
-    ny = ny_global / nprocy
-    nz = nz_global / nprocz
 
     periods = .TRUE.
     reorder = .TRUE.
@@ -66,13 +66,59 @@ CONTAINS
     CALL MPI_CART_SHIFT(comm, 1, 1, proc_y_min, proc_y_max, errcode)
     CALL MPI_CART_SHIFT(comm, 0, 1, proc_z_min, proc_z_max, errcode)
 
+    cx = coordinates(3)
+    cy = coordinates(2)
+    cz = coordinates(1)
+
     ! Create the subarray for this problem: subtype decribes where this
     ! process's data fits into the global picture.
 
+    nx0 = nx_global / nprocx
+    ny0 = ny_global / nprocy
+    nz0 = nz_global / nprocz
+    nx = nx0
+    ny = ny0
+    nz = nz0
+
+    ! If the number of gridpoints cannot be exactly subdivided then fix
+    ! The first nxp processors have nx0 grid points
+    ! The remaining processors have nx0+1 grid points
+    IF (nx0 * nprocx .NE. nx_global) THEN
+      nxp = (nx0 + 1) * nprocx - nx_global
+      IF (cx .GE. nxp) nx = nx0 + 1
+    ELSE
+      nxp = nprocx
+    ENDIF
+    IF (ny0 * nprocy .NE. ny_global) THEN
+      nyp = (ny0 + 1) * nprocy - ny_global
+      IF (cy .GE. nyp) ny = ny0 + 1
+    ELSE
+      nyp = nprocy
+    ENDIF
+    IF (nz0 * nprocz .NE. nz_global) THEN
+      nzp = (nz0 + 1) * nprocz - nz_global
+      IF (cz .GE. nzp) nz = nz0 + 1
+    ELSE
+      nzp = nprocz
+    ENDIF
+
     ! set up the starting point for my subgrid (assumes arrays start at 0)
-    starts(1) = coordinates(3) * nx
-    starts(2) = coordinates(2) * ny
-    starts(3) = coordinates(1) * nz
+
+    IF (cx .LT. nxp) THEN
+      starts(1) = cx * nx0
+    ELSE
+      starts(1) = nxp * nx0 + (cx - nxp) * (nx0 + 1)
+    ENDIF
+    IF (cy .LT. nyp) THEN
+      starts(2) = cy * ny0
+    ELSE
+      starts(2) = nyp * ny0 + (cy - nyp) * (ny0 + 1)
+    ENDIF
+    IF (cz .LT. nzp) THEN
+      starts(3) = cz * nz0
+    ELSE
+      starts(3) = nzp * nz0 + (cz - nzp) * (nz0 + 1)
+    ENDIF
 
     ! the grid sizes
     subsizes = (/ nx+1, ny+1, nz+1 /)

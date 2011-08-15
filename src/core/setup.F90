@@ -60,7 +60,33 @@ CONTAINS
   SUBROUTINE grid ! stretched and staggered grid
 
     REAL(num) :: dx, dy, dz, xcstar, ycstar, zcstar
-    INTEGER :: ix, iy
+    INTEGER :: ix, iy, n0, n1
+    INTEGER :: nx0, ny0, nz0
+    INTEGER :: nxp, nyp, nzp
+    INTEGER :: cx, cy, cz
+
+    nx0 = nx_global / nprocx
+    ny0 = ny_global / nprocy
+    nz0 = nz_global / nprocz
+
+    ! If the number of gridpoints cannot be exactly subdivided then fix
+    ! The first nxp processors have nx0 grid points
+    ! The remaining processors have nx0+1 grid points
+    IF (nx0 * nprocx .NE. nx_global) THEN
+      nxp = (nx0 + 1) * nprocx - nx_global
+    ELSE
+      nxp = nprocx
+    ENDIF
+    IF (ny0 * nprocy .NE. ny_global) THEN
+      nyp = (ny0 + 1) * nprocy - ny_global
+    ELSE
+      nyp = nprocy
+    ENDIF
+    IF (nz0 * nprocz .NE. nz_global) THEN
+      nzp = (nz0 + 1) * nprocz - nz_global
+    ELSE
+      nzp = nprocz
+    ENDIF
 
     ALLOCATE(dxnew(-2:nx_global+2))
     ALLOCATE(dynew(-2:ny_global+2))
@@ -92,7 +118,17 @@ CONTAINS
         + (xb_global(nx_global+1) - xb_global(nx_global))
     xb_global(-1) = xb_global( 0) - (xb_global(1) - xb_global( 0))
     xb_global(-2) = xb_global(-1) - (xb_global(0) - xb_global(-1))
-    xb = xb_global(coordinates(3)*nx-2:coordinates(3)*nx+nx+2)
+
+    cx = coordinates(3)
+    IF (cx .LT. nxp) THEN
+      n0 = cx * nx0
+      n1 = (cx + 1) * nx0
+    ELSE
+      n0 = nxp * nx0 + (cx - nxp) * (nx0 + 1)
+      n1 = nxp * nx0 + (cx - nxp + 1) * (nx0 + 1)
+    ENDIF
+
+    xb = xb_global(n0-2:n1+2)
 
     DO ix = -1, nx+2
       ixm = ix - 1
@@ -104,10 +140,10 @@ CONTAINS
       dxc(ix) = xc(ixp) - xc(ix) ! distance between centres
     END DO
 
-    IF (coordinates(3) == nprocx - 1) THEN
+    IF (cx == nprocx - 1) THEN
       dxc(nx+2) = dxc(nx+1)
     ELSE
-      xcstar = 0.5_num * (xb(nx+2) + xb_global(coordinates(3)*nx+nx+3))
+      xcstar = 0.5_num * (xb(nx+2) + xb_global(n1+3))
       dxc(nx+2) = xcstar - xc(nx+2)
     END IF
 
@@ -133,7 +169,17 @@ CONTAINS
         + (yb_global(ny_global+1) - yb_global(ny_global))
     yb_global(-1) = yb_global( 0) - (yb_global(1) - yb_global( 0))
     yb_global(-2) = yb_global(-1) - (yb_global(0) - yb_global(-1))
-    yb = yb_global(coordinates(2)*ny-2:coordinates(2)*ny+ny+2)
+
+    cy = coordinates(2)
+    IF (cy .LT. nyp) THEN
+      n0 = cy * ny0
+      n1 = (cy + 1) * ny0
+    ELSE
+      n0 = nyp * ny0 + (cy - nyp) * (ny0 + 1)
+      n1 = nyp * ny0 + (cy - nyp + 1) * (ny0 + 1)
+    ENDIF
+
+    yb = yb_global(n0-2:n1+2)
 
     DO iy = -1, ny+2
       iym = iy - 1
@@ -145,10 +191,10 @@ CONTAINS
       dyc(iy) = yc(iyp) - yc(iy) ! distance between centres
     END DO
 
-    IF (coordinates(2) == nprocy - 1) THEN
+    IF (cy == nprocy - 1) THEN
       dyc(ny+2) = dyc(ny+1)
     ELSE
-      ycstar = 0.5_num * (yb(ny+2) + yb_global(coordinates(2)*ny+ny+3))
+      ycstar = 0.5_num * (yb(ny+2) + yb_global(n1+3))
       dyc(ny+2) = ycstar - yc(ny+2)
     END IF
 
@@ -175,7 +221,17 @@ CONTAINS
 
     zb_global(-1) = zb_global( 0) - (zb_global(1) - zb_global( 0))
     zb_global(-2) = zb_global(-1) - (zb_global(0) - zb_global(-1))
-    zb = zb_global(coordinates(1)*nz-2:coordinates(1)*nz+nz+2)
+
+    cz = coordinates(1)
+    IF (cz .LT. nzp) THEN
+      n0 = cz * nz0
+      n1 = (cz + 1) * nz0
+    ELSE
+      n0 = nzp * nz0 + (cz - nzp) * (nz0 + 1)
+      n1 = nzp * nz0 + (cz - nzp + 1) * (nz0 + 1)
+    ENDIF
+
+    zb = zb_global(n0-2:n1+2)
 
     DO iz = -1, nz+2
       izm = iz - 1
@@ -187,10 +243,10 @@ CONTAINS
       dzc(iz) = zc(izp) - zc(iz) ! distance between centres
     END DO
 
-    IF (coordinates(1) == nprocz - 1) THEN
+    IF (cz == nprocz - 1) THEN
       dzc(nz+2) = dzc(nz+1)
     ELSE
-      zcstar = 0.5_num * (zb(nz+2) + zb_global(coordinates(1)*nz+nz+3))
+      zcstar = 0.5_num * (zb(nz+2) + zb_global(n1+3))
       dzc(nz+2) = zcstar - zc(nz+2)
     END IF
 
