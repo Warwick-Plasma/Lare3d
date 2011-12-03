@@ -7,72 +7,62 @@ CONTAINS
 
   SUBROUTINE bfield_MPI
     
-    INTEGER :: x_extent, y_extent, z_extent
-    INTEGER :: xy_buf, xz_buf, yz_buf
-    
-    x_extent = nx + 5
-    y_extent = ny + 5
-    z_extent = nz + 5
-    xy_buf = x_extent * y_extent
-    xz_buf = x_extent * z_extent
-    yz_buf = y_extent * z_extent
-    
-    CALL MPI_SENDRECV(bx(:, :, 1:2), 2*xy_buf, mpireal, proc_z_min, tag, &
-        bx(:, :, nz+1:nz+2), 2*xy_buf, mpireal, proc_z_max, tag, comm, &
+    CALL MPI_SENDRECV(bx(:, :, 1:2), 2*(nx+5)*(ny+4), mpireal, proc_z_min, tag, &
+        bx(:, :, nz+1:nz+2), 2*(nx+5)*(ny+4), mpireal, proc_z_max, tag, comm, &
         status, errcode)
-    CALL MPI_SENDRECV(bx(:, :, nz-2:nz), 3*xy_buf, mpireal, proc_z_max, tag, &
-        bx(:, :, -2:0), 3*xy_buf, mpireal, proc_z_min, tag, comm, &
+    CALL MPI_SENDRECV(bx(:, :, nz-1:nz), 2*(nx+5)*(ny+4), mpireal, proc_z_max, tag, &
+        bx(:, :, -1:0), 2*(nx+5)*(ny+4), mpireal, proc_z_min, tag, comm, &
         status, errcode)
-    CALL MPI_SENDRECV(by(:, :, 1:2), 2*xy_buf, mpireal, proc_z_min, tag, &
-        by(:, :, nz+1:nz+2), 2*xy_buf, mpireal, proc_z_max, tag, comm, &
+    CALL MPI_SENDRECV(by(:, :, 1:2), 2*(nx+4)*(ny+5), mpireal, proc_z_min, tag, &
+        by(:, :, nz+1:nz+2), 2*(nx+4)*(ny+5), mpireal, proc_z_max, tag, comm, &
         status, errcode)
-    CALL MPI_SENDRECV(by(:, :, nz-2:nz), 3*xy_buf, mpireal, proc_z_max, tag, &
-        by(:, :, -2:0), 3*xy_buf, mpireal, proc_z_min, tag, comm, &
+    CALL MPI_SENDRECV(by(:, :, nz-1:nz), 2*(nx+4)*(ny+5), mpireal, proc_z_max, tag, &
+        by(:, :, -1:0), 2*(nx+4)*(ny+5), mpireal, proc_z_min, tag, comm, &
         status, errcode)
-    CALL MPI_SENDRECV(bz(:, :, 1:2), 2*xy_buf, mpireal, proc_z_min, tag, &
-        bz(:, :, nz+1:nz+2), 2*xy_buf, mpireal, proc_z_max, tag, comm, &
+    CALL MPI_SENDRECV(bz(:, :, 1:2), 2*(nx+4)*(ny+4), mpireal, proc_z_min, tag, &
+        bz(:, :, nz+1:nz+2), 2*(nx+4)*(ny+4), mpireal, proc_z_max, tag, comm, &
         status, errcode)
-    CALL MPI_SENDRECV(bz(:, :, nz-2:nz), 3*xy_buf, mpireal, proc_z_max, tag, &
-        bz(:, :, -2:0), 3*xy_buf, mpireal, proc_z_min, tag, comm, &
+    CALL MPI_SENDRECV(bz(:, :, nz-2:nz), 3*(nx+4)*(ny+4), mpireal, proc_z_max, tag, &
+        bz(:, :, -2:0), 3*(nx+4)*(ny+4), mpireal, proc_z_min, tag, comm, &
         status, errcode)
 
-    CALL MPI_SENDRECV(bx(1:2, :, :), 2*yz_buf, mpireal, proc_x_min, tag, &
-        bx(nx+1:nx+2, :, :), 2*yz_buf, mpireal, proc_x_max, tag, comm, &
+    CALL MPI_SENDRECV(bx(1:2, :, :), 2*(ny+4)*(nz+4), mpireal, proc_x_min, tag, &
+        bx(nx+1:nx+2, :, :), 2*(ny+4)*(nz+4), mpireal, proc_x_max, tag, comm, &
         status, errcode)
-    CALL MPI_SENDRECV(bx(nx-2:nx, :, :), 3*yz_buf, mpireal, proc_x_max, tag, &
-        bx(-2:0, :, :), 3*yz_buf, mpireal, proc_x_min, tag, comm, &
+    CALL MPI_SENDRECV(bx(nx-2:nx, :, :), 3*(ny+4)*(nz+4), mpireal, proc_x_max, tag, &
+        bx(-2:0, :, :), 3*(ny+4)*(nz+4), mpireal, proc_x_min, tag, comm, &
         status, errcode)
-    CALL MPI_SENDRECV(by(1:2, :, :), 2*yz_buf, mpireal, proc_x_min, tag, &
-        by(nx+1:nx+2, :, :), 2*yz_buf, mpireal, proc_x_max, tag, comm, &
+    CALL MPI_SENDRECV(by(1:2, :, :), 2*(ny+5)*(nz+4), mpireal, proc_x_min, tag, &
+        by(nx+1:nx+2, :, :), 2*(ny+5)*(nz+4), mpireal, proc_x_max, tag, comm, &
         status, errcode)
-    CALL MPI_SENDRECV(by(nx-2:nx, :, :), 3*yz_buf, mpireal, proc_x_max, tag, &
-        by(-2:0, :, :), 3*yz_buf, mpireal, proc_x_min, tag, comm, &
+    CALL MPI_SENDRECV(by(nx-1:nx, :, :), 2*(ny+5)*(nz+4), mpireal, proc_x_max, tag, &
+        by(-1:0, :, :), 2*(ny+5)*(nz+4), mpireal, proc_x_min, tag, comm, &
         status, errcode)
-    CALL MPI_SENDRECV(bz(1:2, :, :), 2*yz_buf, mpireal, proc_x_min, tag, &
-        bz(nx+1:nx+2, :, :), 2*yz_buf, mpireal, proc_x_max, tag, comm, &
+    CALL MPI_SENDRECV(bz(1:2, :, :), 2*(ny+4)*(nz+5), mpireal, proc_x_min, tag, &
+        bz(nx+1:nx+2, :, :), 2*(ny+4)*(nz+5), mpireal, proc_x_max, tag, comm, &
         status, errcode)
-    CALL MPI_SENDRECV(bz(nx-2:nx, :, :), 3*yz_buf, mpireal, proc_x_max, tag, &
-        bz(-2:0, :, :), 3*yz_buf, mpireal, proc_x_min, tag, comm, &
+    CALL MPI_SENDRECV(bz(nx-1:nx, :, :), 2*(ny+4)*(nz+5), mpireal, proc_x_max, tag, &
+        bz(-1:0, :, :), 2*(ny+4)*(nz+5), mpireal, proc_x_min, tag, comm, &
         status, errcode)
-
-    CALL MPI_SENDRECV(bx(:, ny-2:ny, :), 3*xz_buf, mpireal, proc_y_max, tag, &
-        bx(:, -2:0, :), 3*xz_buf, mpireal, proc_y_min, tag, comm, &
+     
+    CALL MPI_SENDRECV(bx(:, ny-1:ny, :), 2*(nx+5)*(nz+4), mpireal, proc_y_max, tag, &
+        bx(:, -1:0, :), 2*(nx+5)*(nz+4), mpireal, proc_y_min, tag, comm, &
         status, errcode)
-    CALL MPI_SENDRECV(bx(:, 1:2, :), 2*xz_buf, mpireal, proc_y_min, tag, &
-        bx(:, ny+1:ny+2, :), 2*xz_buf, mpireal, proc_y_max, tag, comm, &
+    CALL MPI_SENDRECV(bx(:, 1:2, :), 2*(nx+5)*(nz+4), mpireal, proc_y_min, tag, &
+        bx(:, ny+1:ny+2, :), 2*(nx+5)*(nz+4), mpireal, proc_y_max, tag, comm, &
         status, errcode)
-    CALL MPI_SENDRECV(by(:, ny-2:ny, :), 3*xz_buf, mpireal, proc_y_max, tag, &
-        by(:, -2:0, :), 3*xz_buf, mpireal, proc_y_min, tag, comm, &
+    CALL MPI_SENDRECV(by(:, ny-2:ny, :), 3*(nx+4)*(nz+4), mpireal, proc_y_max, tag, &
+        by(:, -2:0, :), 3*(nx+4)*(nz+4), mpireal, proc_y_min, tag, comm, &
         status, errcode)
-    CALL MPI_SENDRECV(by(:, 1:2, :), 2*xz_buf, mpireal, proc_y_min, tag, &
-        by(:, ny+1:ny+2, :), 2*xz_buf, mpireal, proc_y_max, tag, comm, &
+    CALL MPI_SENDRECV(by(:, 1:2, :), 2*(nx+4)*(nz+4), mpireal, proc_y_min, tag, &
+        by(:, ny+1:ny+2, :), 2*(nx+4)*(nz+4), mpireal, proc_y_max, tag, comm, &
         status, errcode)
-    CALL MPI_SENDRECV(bz(:, ny-2:ny, :), 3*xz_buf, mpireal, proc_y_max, tag, &
-        bz(:, -2:0, :), 3*xz_buf, mpireal, proc_y_min, tag, comm, &
+    CALL MPI_SENDRECV(bz(:, ny-1:ny, :), 2*(nx+4)*(nz+5), mpireal, proc_y_max, tag, &
+        bz(:, -1:0, :), 2*(nx+4)*(nz+5), mpireal, proc_y_min, tag, comm, &
         status, errcode)
-    CALL MPI_SENDRECV(bz(:, 1:2, :), 2*xz_buf, mpireal, proc_y_min, tag, &
-        bz(:, ny+1:ny+2, :), 2*xz_buf, mpireal, proc_y_max, tag, comm, &
-        status, errcode)
+    CALL MPI_SENDRECV(bz(:, 1:2, :), 2*(nx+4)*(nz+5), mpireal, proc_y_min, tag, &
+        bz(:, ny+1:ny+2, :), 2*(nx+4)*(nz+5), mpireal, proc_y_max, tag, comm, &
+        status, errcode)      
 
   END SUBROUTINE bfield_MPI
 
