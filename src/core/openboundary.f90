@@ -4,7 +4,7 @@ MODULE openboundary
 
   IMPLICIT NONE
 
-  REAL(num) :: direction, pfar, rhofar, uxfar, uyfar, uzfar
+  REAL(num) :: direction, pfar, efar, rhofar, uxfar, uyfar, uzfar
   REAL(num) :: bxfar, byfar, bzfar, pbc, vnorm, fraction
 
   REAL(num), DIMENSION(0:1) :: vxbc, vybc, vzbc
@@ -33,9 +33,9 @@ CONTAINS
           vxbc(1) = vx(nx, iy, iz)
           vybc(1) = vy(nx, iy, iz)
           vzbc(1) = vz(nx, iy, iz)
-          bxbc(1) = bx(nx+1, iy, iz)
-          bybc(1) = by(nx+1, iy, iz)
-          bzbc(1) = bz(nx+1, iy, iz)
+          bxbc(1) = bx(nx, iy, iz)
+          bybc(1) = by(nx, iy, iz)
+          bzbc(1) = bz(nx, iy, iz)
           rbc(1) = rho(nx, iy, iz)
           ebc(1) = energy(nx, iy, iz)
 
@@ -45,6 +45,7 @@ CONTAINS
           pfar = (gamma - 1.0_num) * energy(nx+2, iy, iz) * rho(nx+2, iy, iz)
 
           rhofar = rho(nx+2, iy, iz)
+          efar = energy(nx+2, iy, iz)
           uxfar = vx(nx+2, iy, iz)
           uyfar = vy(nx+2, iy, iz)
           uzfar = vz(nx+2, iy, iz)
@@ -81,9 +82,9 @@ CONTAINS
           vxbc(1) = -vx(0, iy, iz)
           vybc(1) = vy(0, iy, iz)
           vzbc(1) = vz(0, iy, iz)
-          bxbc(1) = -bx(-1, iy, iz)
-          bybc(1) = by(0, iy, iz)
-          bzbc(1) = bz(0, iy, iz)
+          bxbc(1) = -bx(0, iy, iz)
+          bybc(1) = by(1, iy, iz)
+          bzbc(1) = bz(1, iy, iz)
           rbc(1) = rho(1, iy, iz)
           ebc(1) = energy(1, iy, iz)
 
@@ -92,6 +93,7 @@ CONTAINS
           pfar = (gamma - 1.0_num) * energy(-1, iy, iz) * rho(-1, iy, iz)
 
           rhofar = rho(-1, iy, iz)
+          efar = energy(-1, iy, iz)
           uxfar = -vx(-2, iy, iz)
           uyfar = vy(-2, iy, iz)
           uzfar = vz(-2, iy, iz)
@@ -127,9 +129,9 @@ CONTAINS
           vxbc(1) = vy(ix, ny, iz)
           vybc(1) = vx(ix, ny, iz)
           vzbc(1) = vz(ix, ny, iz)
-          bxbc(1) = by(ix, ny+1, iz)
-          bybc(1) = bx(ix, ny+1, iz)
-          bzbc(1) = bz(ix, ny+1, iz)
+          bxbc(1) = by(ix, ny, iz)
+          bybc(1) = bx(ix, ny, iz)
+          bzbc(1) = bz(ix, ny, iz)
           rbc(1) = rho(ix, ny, iz)
           ebc(1) = energy(ix, ny, iz)
 
@@ -138,6 +140,7 @@ CONTAINS
           pfar = (gamma - 1.0_num) * energy(ix, ny+2, iz) * rho(ix, ny+2, iz)
 
           rhofar = rho(ix, ny+2, iz)
+          efar = energy(ix, ny+2, iz)
           uxfar = vy(ix, ny+2, iz)
           uyfar = vx(ix, ny+2, iz)
           uzfar = vz(ix, ny+2, iz)
@@ -173,9 +176,9 @@ CONTAINS
           vxbc(1) = -vy(ix, 0, iz)
           vybc(1) = vx(ix, 0, iz)
           vzbc(1) = vz(ix, 0, iz)
-          bxbc(1) = -by(ix, -1, iz)
-          bybc(1) = bx(ix, 0, iz)
-          bzbc(1) = bz(ix, 0, iz)
+          bxbc(1) = -by(ix, 0, iz)
+          bybc(1) = bx(ix, 1, iz)
+          bzbc(1) = bz(ix, 1, iz)
           rbc(1) = rho(ix, 1, iz)
           ebc(1) = energy(ix, 1, iz)
 
@@ -184,6 +187,7 @@ CONTAINS
           pfar = (gamma - 1.0_num) * energy(ix, -1, iz) * rho(ix, -1, iz)
 
           rhofar = rho(ix, -1, iz)
+          efar = energy(ix, -1, iz)
           uxfar = -vy(ix, -2, iz)
           uyfar = vx(ix, -2, iz)
           uzfar = vz(ix, -2, iz)
@@ -219,9 +223,9 @@ CONTAINS
           vxbc(1) = vz(ix, iy, nz)
           vybc(1) = vy(ix, iy, nz)
           vzbc(1) = vx(ix, iy, nz)
-          bxbc(1) = bz(ix, iy, nz+1)
-          bybc(1) = by(ix, iy, nz+1)
-          bzbc(1) = bx(ix, iy, nz+1)
+          bxbc(1) = bz(ix, iy, nz)
+          bybc(1) = by(ix, iy, nz)
+          bzbc(1) = bx(ix, iy, nz)
           rbc(1) = rho(ix, iy, nz)
           ebc(1) = energy(ix, iy, nz)
 
@@ -230,6 +234,7 @@ CONTAINS
           pfar = (gamma - 1.0_num) * energy(ix, iy, nz+2) * rho(ix, iy, nz+2)
 
           rhofar = rho(ix, iy, nz+2)
+          efar = energy(ix, iy, nz+2)
           uxfar = vz(ix, iy, nz+2)
           uyfar = vy(ix, iy, nz+2)
           uzfar = vx(ix, iy, nz+2)
@@ -265,9 +270,9 @@ CONTAINS
           vxbc(1) = -vz(ix, iy, 0)
           vybc(1) = vy(ix, iy, 0)
           vzbc(1) = vx(ix, iy, 0)
-          bxbc(1) = -bz(ix, iy, -1)
-          bybc(1) = by(ix, iy, 0)
-          bzbc(1) = bx(ix, iy, 0)
+          bxbc(1) = -bz(ix, iy, 0)
+          bybc(1) = by(ix, iy, 1)
+          bzbc(1) = bx(ix, iy, 1)
           rbc(1) = rho(ix, iy, 1)
           rbc(0) = rho(ix, iy, 0)
           ebc(1) = energy(ix, iy, 1)
@@ -277,6 +282,7 @@ CONTAINS
           pfar = (gamma - 1.0_num) * energy(ix, iy, -1) * rho(ix, iy, -1)
 
           rhofar = rho(ix, iy, -1)
+          efar = energy(ix, iy, -1)
           uxfar = -vz(ix, iy, -2)
           uyfar = vy(ix, iy, -2)
           uzfar = vx(ix, iy, -2)
@@ -315,6 +321,7 @@ CONTAINS
     REAL(num) :: c0, ct, cf
     REAL(num) :: pg, rhog, cffar, c0far, ctfar
     REAL(num) :: pmagg
+    REAL(num) :: var_min, var_max   
     REAL(num), DIMENSION(3) :: vtest, pstar, vstar, rhostar, pmagstar, bystar, bzstar
     INTEGER :: i
   
@@ -367,6 +374,51 @@ CONTAINS
     vybc(0) = vybc(1)
     vzbc(0) = vzbc(1)  
   
+    var_min = min(efar, ebc(1))
+    var_max = max(efar, ebc(1)) 
+    ebc(0) = min(ebc(0), var_max)
+    ebc(0) = max(ebc(0), var_min)       
+    
+    var_min = min(rhofar, rbc(1))
+    var_max = max(rhofar, rbc(1)) 
+    rbc(0) = min(rbc(0), var_max)
+    rbc(0) = max(rbc(0), var_min)       
+
+    var_min = min(rhofar, rbc(1))
+    var_max = max(rhofar, rbc(1)) 
+    rbc(0) = min(rbc(0), var_max)
+    rbc(0) = max(rbc(0), var_min)       
+
+    var_min = min(bxfar, bxbc(1))
+    var_max = max(bxfar, bxbc(1)) 
+    bxbc(0) = min(bxbc(0), var_max)
+    bxbc(0) = max(bxbc(0), var_min)       
+
+    var_min = min(byfar, bybc(1))
+    var_max = max(byfar, bybc(1)) 
+    bybc(0) = min(bybc(0), var_max)
+    bybc(0) = max(bybc(0), var_min)       
+
+    var_min = min(bzfar, bzbc(1))
+    var_max = max(bzfar, bzbc(1)) 
+    bzbc(0) = min(bzbc(0), var_max)
+    bzbc(0) = max(bzbc(0), var_min)       
+
+    var_min = min(uxfar, vxbc(1))
+    var_max = max(uxfar, vxbc(1)) 
+    vxbc(0) = min(vxbc(0), var_max)
+    vxbc(0) = max(vxbc(0), var_min)
+    
+    var_min = min(uyfar, vybc(1))
+    var_max = max(uyfar, vybc(1)) 
+    vybc(0) = min(vybc(0), var_max)
+    vybc(0) = max(vybc(0), var_min)
+    
+    var_min = min(uzfar, vzbc(1))
+    var_max = max(uzfar, vzbc(1)) 
+    vzbc(0) = min(vzbc(0), var_max)
+    vzbc(0) = max(vzbc(0), var_min)                 
+    
   END SUBROUTINE open_bcs_1
   
   
@@ -377,7 +429,8 @@ CONTAINS
     REAL(num) :: lambdayfar, lambdazfar
     REAL(num) :: c0, cx
     REAL(num) :: pg, rhog, c0far, cxfar
-    REAL(num) :: pmagg, lambdag, beta
+    REAL(num) :: pmagg, lambdag, beta  
+    REAL(num) :: var_min, var_max   
     REAL(num), DIMENSION(5) :: vtest, pstar, uxstar, rhostar, pmagstar
     REAL(num), DIMENSION(5) :: uystar, lambdaystar, lambdazstar, uzstar
     INTEGER :: i
@@ -480,7 +533,51 @@ CONTAINS
               + (lambdazstar(3) - lambdazstar(4)) / (rhofar * cxfar))   
     ENDIF   
   
-  
+    var_min = min(efar, ebc(1))
+    var_max = max(efar, ebc(1)) 
+    ebc(0) = min(ebc(0), var_max)
+    ebc(0) = max(ebc(0), var_min)       
+    
+    var_min = min(rhofar, rbc(1))
+    var_max = max(rhofar, rbc(1)) 
+    rbc(0) = min(rbc(0), var_max)
+    rbc(0) = max(rbc(0), var_min)       
+
+    var_min = min(rhofar, rbc(1))
+    var_max = max(rhofar, rbc(1)) 
+    rbc(0) = min(rbc(0), var_max)
+    rbc(0) = max(rbc(0), var_min)       
+
+    var_min = min(bxfar, bxbc(1))
+    var_max = max(bxfar, bxbc(1)) 
+    bxbc(0) = min(bxbc(0), var_max)
+    bxbc(0) = max(bxbc(0), var_min)       
+
+    var_min = min(byfar, bybc(1))
+    var_max = max(byfar, bybc(1)) 
+    bybc(0) = min(bybc(0), var_max)
+    bybc(0) = max(bybc(0), var_min)       
+
+    var_min = min(bzfar, bzbc(1))
+    var_max = max(bzfar, bzbc(1)) 
+    bzbc(0) = min(bzbc(0), var_max)
+    bzbc(0) = max(bzbc(0), var_min)       
+
+    var_min = min(uxfar, vxbc(1))
+    var_max = max(uxfar, vxbc(1)) 
+    vxbc(0) = min(vxbc(0), var_max)
+    vxbc(0) = max(vxbc(0), var_min)
+    
+    var_min = min(uyfar, vybc(1))
+    var_max = max(uyfar, vybc(1)) 
+    vybc(0) = min(vybc(0), var_max)
+    vybc(0) = max(vybc(0), var_min)
+    
+    var_min = min(uzfar, vzbc(1))
+    var_max = max(uzfar, vzbc(1)) 
+    vzbc(0) = min(vzbc(0), var_max)
+    vzbc(0) = max(vzbc(0), var_min)                 
+      
   END SUBROUTINE open_bcs_2
   
   
@@ -501,7 +598,8 @@ CONTAINS
     REAL(num) :: c0, cx, ct, cf, cs
     REAL(num) :: lambdafar, byfar2
     REAL(num) :: c0far, cxfar, ctfar, cffar, csfar
-    REAL(num) :: pg, rhog, uxg, uyg, uzg, lambdag, byg, bxg, bzg
+    REAL(num) :: pg, rhog, uxg, uyg, uzg, lambdag, byg, bxg, bzg   
+    REAL(num) :: var_min, var_max       
     REAL(num), DIMENSION(7) :: pstar, uxstar, uystar, uzstar, rhostar
     REAL(num), DIMENSION(7) :: lambdastar, pmagstar, bzstar
 
@@ -605,6 +703,51 @@ CONTAINS
     vxbc(0) = uxg
     vybc(0) = uyg * COS(phi) - uzg * SIN(phi)
     vzbc(0) = uyg * SIN(phi) + uzg * COS(phi)
+
+    var_min = min(efar, ebc(1))
+    var_max = max(efar, ebc(1)) 
+    ebc(0) = min(ebc(0), var_max)
+    ebc(0) = max(ebc(0), var_min)       
+    
+    var_min = min(rhofar, rbc(1))
+    var_max = max(rhofar, rbc(1)) 
+    rbc(0) = min(rbc(0), var_max)
+    rbc(0) = max(rbc(0), var_min)       
+
+    var_min = min(rhofar, rbc(1))
+    var_max = max(rhofar, rbc(1)) 
+    rbc(0) = min(rbc(0), var_max)
+    rbc(0) = max(rbc(0), var_min)       
+
+    var_min = min(bxfar, bxbc(1))
+    var_max = max(bxfar, bxbc(1)) 
+    bxbc(0) = min(bxbc(0), var_max)
+    bxbc(0) = max(bxbc(0), var_min)       
+
+    var_min = min(byfar, bybc(1))
+    var_max = max(byfar, bybc(1)) 
+    bybc(0) = min(bybc(0), var_max)
+    bybc(0) = max(bybc(0), var_min)       
+
+    var_min = min(bzfar, bzbc(1))
+    var_max = max(bzfar, bzbc(1)) 
+    bzbc(0) = min(bzbc(0), var_max)
+    bzbc(0) = max(bzbc(0), var_min)       
+
+    var_min = min(uxfar, vxbc(1))
+    var_max = max(uxfar, vxbc(1)) 
+    vxbc(0) = min(vxbc(0), var_max)
+    vxbc(0) = max(vxbc(0), var_min)
+    
+    var_min = min(uyfar, vybc(1))
+    var_max = max(uyfar, vybc(1)) 
+    vybc(0) = min(vybc(0), var_max)
+    vybc(0) = max(vybc(0), var_min)
+    
+    var_min = min(uzfar, vzbc(1))
+    var_max = max(uzfar, vzbc(1)) 
+    vzbc(0) = min(vzbc(0), var_max)
+    vzbc(0) = max(vzbc(0), var_min)                 
 
   END SUBROUTINE open_bcs_3
 
