@@ -114,10 +114,8 @@ MODULE shared_data
   REAL(num) :: B0, L0, rho0
   ! mass fraction - mass of ions in units of proton mass
   REAL(num) :: mf  
-  !convertion factor to get normalised temperature from normalised energy  
-  REAL(num) :: e2t
   !convertion factor to get temperature in MK from normalised energy  
-  REAL(num) :: e2tmk
+  REAL(num) :: t2tmk
   ! normalisation used for radiative losses
   REAL(num) :: lr_star
   ! normalisation used for coronal heating
