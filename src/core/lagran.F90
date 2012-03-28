@@ -37,16 +37,11 @@ CONTAINS
         flux_x(0:nx, 0:ny, 0:nz), flux_y(0:nx, 0:ny, 0:nz), &
         flux_z(0:nx, 0:ny, 0:nz), curlb(0:nx, 0:ny, 0:nz))
 
-    IF (resistive_mhd .OR. hall_mhd) THEN
+    IF (resistive_mhd) THEN
       ! if subcycling isn't wanted set dt = dtr in set_dt, don't just
       ! set substeps to 1.
-      IF (resistive_mhd) THEN
-        dt_sub = dtr
-      ELSE
-        dt_sub = dth
-      END IF
+      dt_sub = dtr
 
-      IF (resistive_mhd .AND. hall_mhd) dt_sub = MIN(dtr, dth)
       substeps = INT(dt / dt_sub) + 1
 
       IF (substeps > peak_substeps) peak_substeps = substeps
