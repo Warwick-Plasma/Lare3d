@@ -115,7 +115,9 @@ CONTAINS
 
         END DO
       END DO
-    END DO
+    END DO      
+    
+    eta_perp = MIN(eta_perp, 100.0_num)
 
   END SUBROUTINE perpendicular_resistivity
 
