@@ -46,14 +46,12 @@ CONTAINS
     nsteps = 1
 
     ! The maximum runtime of the code
-    ! If SI_Input is true then this is in seconds
     t_end = 10.0_num
 
     ! Shock viscosities as detailed in manual - they are dimensionless
     visc1 = 0.1_num
     visc2 = 0.5_num
-    ! Real viscosity expressed as the inverse Reynolds number, i.e. the
-    ! same for normalised and SI input
+    ! Real viscosity expressed as the inverse Reynolds number
     visc3 = 0.0_num
 
     ! Set these constants to manually
@@ -66,17 +64,13 @@ CONTAINS
     nprocz = 0
 
     ! The length of the domain in the x direction
-    ! If SI_Input is true then this is in metres
     x_start = 0.0_num
     x_end = 100.0_num
     ! Should the x grid be stretched or uniform
     x_stretch = .FALSE.
 
-    ! The length of the domain in the y direction
-    ! If SI_Input is true then this is in metres
     y_start = 0.0_num
     y_end = 100.0_num
-    ! Should the y grid be stretched of uniform
     y_stretch = .FALSE.
 
     z_start = -20.0_num
@@ -87,42 +81,28 @@ CONTAINS
     resistive_mhd = .FALSE.
 
     ! The background resistivity expressed as the inverse Lundquist
-    ! number, i.e. the same for normalised and SI input
+    ! number
     eta_background = 0.0_num
 
     ! The critical current for triggering anomalous resistivity
     ! and the resistivity when above the critical current
-    ! The resistivity is expressed as the inverse Lundquist number, i.e. the
-    ! same for normalised and SI input, bit the j_max must be in SI
-    ! if using SI units
+    ! The resistivity is expressed as the inverse Lundquist number
     j_max = 0.0_num
     eta0 = 0.0_num
 
-    ! Turn on or off the hall_mhd term in the MHD equations
-    ! Well actually this does nothing as it isn't fully
-    ! included yet! Sorry!
-    hall_mhd = .FALSE.
-
-    ! Set the ion skin depth. If SI_Input is true then
-    ! This is in metres. Note that this should be fixed to
-    ! (the speed of light) / (ion plasma frequency) with the
-    ! plasma frequncy fixed by the chosen normalisation of
-    ! density (through the normalising mass density). Here
-    ! it is treated as a free pararmeter so be careful!
-    lambda0 = 0.0_num
-
     ! Turn on or off the Braginskii thermal conduction term in
     ! the MHD equations   
-    ! WARNING: this is not robust. It is known to have problems 
-    ! with steep temperature gradients and very hot regions with
-    ! large thermal conductivity. For many problems it is however
-    ! fine.     
     conduction = .FALSE. 
     ! Apply a flux limiter to stop heat flows exceeding free streaming limit
     ! this is an experimental feature
     heat_flux_limiter = .FALSE.
     ! Fraction of free streaming heat flux used in limiter
     flux_limiter = 0.01_num
+    
+    ! Use radiation as specified in SUBROUTINE rad_losses in src/core/conduct.f90   
+    radiation = .FALSE.
+    ! Use coronal heating as specified in SUBROUTINE heating in src/core/conduct.f90
+    coronal_heating = .FALSE.       
     
     ! Remap kinetic energy correction. LARE does not
     ! perfectly conserve kinetic energy during the remap step

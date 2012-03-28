@@ -99,7 +99,7 @@ MODULE shared_data
   REAL(num) :: dt, dt2, dtr, dth, t_end, time
   REAL(num) :: length_x, length_y, length_z, visc1, visc2, visc3
   REAL(num) :: x_start, x_end, y_start, y_end, z_start, z_end
-  REAL(num) :: gamma, eta0, j_max, dt_snapshots, lambda0, eta_background
+  REAL(num) :: gamma, eta0, j_max, dt_snapshots, eta_background
   REAL(num) :: total_visc_heating = 0.0_num, total_ohmic_heating = 0.0_num
 
   INTEGER :: xbc_max, ybc_max, xbc_min, ybc_min, zbc_min, zbc_max
@@ -107,7 +107,7 @@ MODULE shared_data
   INTEGER :: restart_snapshot
   INTEGER :: peak_substeps = 0
   LOGICAL :: x_stretch, y_stretch, z_stretch, rke
-  LOGICAL :: resistive_mhd, any_open, hall_mhd
+  LOGICAL :: resistive_mhd, any_open
   LOGICAL :: restart
 
   ! normalising constants                 
@@ -124,7 +124,7 @@ MODULE shared_data
   REAL(num) :: h_star
   
   ! Heat conduction
-  LOGICAL :: conduction
+  LOGICAL :: conduction, radiation, coronal_heating
   LOGICAL :: heat_flux_limiter
   REAL(num) :: kappa_0, flux_limiter, temperature_100mk  
 
