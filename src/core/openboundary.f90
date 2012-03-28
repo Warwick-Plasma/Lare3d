@@ -27,8 +27,8 @@ CONTAINS
 
     ! proc_x_max boundary
     IF (xbc_max == BC_OPEN .AND. proc_x_max == MPI_PROC_NULL) THEN
-      DO iz = -1, nz+1
-        DO iy = -1, ny+1
+      DO iz = 1, nz
+        DO iy = 1, ny
           ! variables carried out of domain by Riemann invariants
           vxbc(1) = vx(nx, iy, iz)
           vybc(1) = vy(nx, iy, iz)
@@ -77,8 +77,8 @@ CONTAINS
 
     ! proc_x_min bounday
     IF (xbc_min == BC_OPEN .AND. proc_x_min == MPI_PROC_NULL) THEN
-      DO iz = -1, nz+1
-        DO iy = -1, ny+1
+      DO iz = 1, nz
+        DO iy = 1, ny
           vxbc(1) = -vx(0, iy, iz)
           vybc(1) = vy(0, iy, iz)
           vzbc(1) = vz(0, iy, iz)
@@ -124,8 +124,8 @@ CONTAINS
 
     ! top boundary
     IF (ybc_max == BC_OPEN .AND. proc_y_max == MPI_PROC_NULL) THEN
-      DO iz = -1, nz+1
-        DO ix = -1, nx+1
+      DO iz = 1, nz
+        DO ix = 1, nx
           vxbc(1) = vy(ix, ny, iz)
           vybc(1) = vx(ix, ny, iz)
           vzbc(1) = vz(ix, ny, iz)
@@ -171,8 +171,8 @@ CONTAINS
 
     ! bottom boundary
     IF (ybc_min == BC_OPEN .AND. proc_y_min == MPI_PROC_NULL) THEN
-      DO iz = -1, nz+1
-        DO ix = -1, nx+1
+      DO iz = 1, nz
+        DO ix = 1, nx
           vxbc(1) = -vy(ix, 0, iz)
           vybc(1) = vx(ix, 0, iz)
           vzbc(1) = vz(ix, 0, iz)
@@ -218,8 +218,8 @@ CONTAINS
 
     ! proc_z_max boundary
     IF (zbc_max == BC_OPEN .AND. proc_z_max == MPI_PROC_NULL) THEN
-      DO iy = -1, ny+1
-        DO ix = -1, nx+1
+      DO iy = 1, ny
+        DO ix = 1, nx
           vxbc(1) = vz(ix, iy, nz)
           vybc(1) = vy(ix, iy, nz)
           vzbc(1) = vx(ix, iy, nz)
@@ -265,8 +265,8 @@ CONTAINS
 
     ! proc_z_min boundary
     IF (zbc_min == BC_OPEN .AND. proc_z_min == MPI_PROC_NULL) THEN
-      DO iy = -1, ny+1
-        DO ix = -1, nx+1
+      DO iy = 1, ny
+        DO ix = 1, nx
           vxbc(1) = -vz(ix, iy, 0)
           vybc(1) = vy(ix, iy, 0)
           vzbc(1) = vx(ix, iy, 0)
