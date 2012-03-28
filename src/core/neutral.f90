@@ -130,8 +130,10 @@ CONTAINS
     t_rad = tr
     dilution = 0.5_num
     IF (height <= 0.0_num) THEN
-      t_rad = t_v
-      dilution = 1.0_num  
+      get_neutral = 1.0_num
+      RETURN
+!      t_rad = t_v
+!      dilution = 1.0_num  
     END IF
       
     bof = 1.0_num / (dilution * f_bar * t_rad * SQRT(t_v)) &
