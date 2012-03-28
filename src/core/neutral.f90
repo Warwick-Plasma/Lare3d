@@ -146,8 +146,8 @@ CONTAINS
   
   SUBROUTINE neutral_fraction
   
-    REAL(num) :: bof, r, T, rho0, e0, dx, x
-    REAL(num), DIMENSION(2) :: ta, fa, xi_a
+    REAL(num) :: bof, r, T, rho0, e0, dx, x, fa, xi_a
+    REAL(num), DIMENSION(2) :: ta
     INTEGER :: loop
   
     ! Variable bof is b / f in the original version
@@ -170,11 +170,11 @@ CONTAINS
           DO loop = 1, 100
             dx = dx / 2.0_num
             x = t  + dx
-            xi_a(1) = get_neutral(x, rho0, zb(iz))   
-            fa(1) = x - (gamma - 1.0_num) * (e0 &
-                - (1.0_num - xi_a(1)) * ionise_pot) / (2.0_num - xi_a(1))
-            IF (fa(1) <= 0.0_num) t = x
-            IF (ABS(dx) < 1.e-8_num .OR. fa(1) == 0.0_num) EXIT
+            xi_a = get_neutral(x, rho0, zb(iz))   
+            fa = x - (gamma - 1.0_num) * (e0 &
+                - (1.0_num - xi_a) * ionise_pot) / (2.0_num - xi_a)
+            IF (fa <= 0.0_num) t = x
+            IF (ABS(dx) < 1.e-8_num .OR. fa == 0.0_num) EXIT
           END DO
     
           xi_n(ix, iy, iz) = get_neutral(x, rho0, zb(iz))   
