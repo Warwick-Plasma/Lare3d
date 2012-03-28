@@ -391,7 +391,7 @@ CONTAINS
       IF (proc_y_max == MPI_PROC_NULL) THEN  
          store_state = radiation    
          radiation = .TRUE.
-         CALL rad_losses(rho(1,1,nz), temperature(1,1,nz), xi_n(1,1,nz), zc(iz), rad, alf) 
+         CALL rad_losses(rho(1,1,nz), temperature(1,1,nz), xi_n(1,1,nz), zc(nz), rad, alf) 
          radiation = store_state
          a1 = rad / rho(1,1,nz)**2 
       END IF               
