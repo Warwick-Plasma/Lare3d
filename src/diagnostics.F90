@@ -278,11 +278,10 @@ CONTAINS
     REAL(num) :: cons, dt1, dt2, dt3, dt4, dt5, dt6, dt7, dt_local, dxlocal
     REAL(num) :: vxbp, vxbm, vybp, vybm, dvx, dvy, avxp, avxm, avyp, avym  
     REAL(num) :: vzbp, vzbm, dvz, avzp, avzm  
-    REAL(num) :: dtr_local, dth_local, cs, volume, ax, ay, az
+    REAL(num) :: dtr_local, cs, volume, ax, ay, az
 
     dt_local = largest_number
     dtr_local = largest_number
-    dth_local = largest_number
     cons = gamma * (gamma - 1.0_num)
 
     DO iz = -1, nz+2
@@ -342,13 +341,8 @@ CONTAINS
             dt3 = 0.2_num * dxlocal / MAX(eta(ix, iy, iz), none_zero)
           END IF
 
-          ! Hall MHD CFL limit
-          dt4 = 0.75_num * rho(ix, iy, iz) * MIN(dxb(ix), dyb(iy), dzb(iz))**2 &
-              / MAX(lambda_i(ix, iy, iz) * SQRT(w1), none_zero)
-
           ! adjust to accomodate resistive effects
           dtr_local = MIN(dtr_local, dt3)
-          dth_local = MIN(dth_local, dt4)
 
         END DO
       END DO
@@ -356,10 +350,8 @@ CONTAINS
 
     CALL MPI_ALLREDUCE(dt_local, dt, 1, mpireal, MPI_MIN, comm, errcode)
     CALL MPI_ALLREDUCE(dtr_local, dtr, 1, mpireal, MPI_MIN, comm, errcode)
-    CALL MPI_ALLREDUCE(dth_local, dth, 1, mpireal, MPI_MIN, comm, errcode)
 
     dtr = dt_multiplier * dtr
-    dth = dt_multiplier * dth
     dt = dt_multiplier * dt
 
     time = time + dt

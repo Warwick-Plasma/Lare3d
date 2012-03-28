@@ -43,7 +43,7 @@ MODULE constants
   INTEGER, PARAMETER :: BC_PERIODIC = 1, BC_OTHER = 2
   INTEGER, PARAMETER :: BC_OPEN = 3
 
-  INTEGER, PARAMETER :: version = 2, revision = 91
+  INTEGER, PARAMETER :: version = 2, revision = 10
 
   ! IC codes
   ! This is a bitmask, remember that
@@ -81,7 +81,7 @@ MODULE shared_data
   REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: jx_r, jy_r, jz_r
 
   REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: delta_ke, p_visc
-  REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: eta, lambda_i
+  REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: eta
   REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: cv, cv1
 
   REAL(num), DIMENSION(:), ALLOCATABLE :: xc, xb
