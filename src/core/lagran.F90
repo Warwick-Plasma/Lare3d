@@ -59,7 +59,7 @@ CONTAINS
       dt = actual_dt
     END IF
 
-    IF (conduction) CALL conduct_heat 
+    IF (conduction .OR. coronal_heating .OR. radiation) CALL conduct_heat 
 
     DO iz = 0, nz+1
       izm = iz - 1
