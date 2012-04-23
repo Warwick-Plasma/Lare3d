@@ -153,7 +153,6 @@ CONTAINS
             END DO
           END DO
         END DO  
-        IF (eos_number == EOS_IDEAL .AND. neutral_gas) data = data * 2.0_num
         CALL cfd_write_3d_cartesian_variable_parallel("Temperature", "Fluid", &
             dims, stagger, "Grid", "Grid", data, subtype)
       END IF
