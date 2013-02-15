@@ -310,9 +310,9 @@ CONTAINS
     END IF
 
     IF (proc_y_max == MPI_PROC_NULL .AND. ybc_max == BC_OTHER) THEN
-      vx(:, ny+1, :) = 0.0_num
-      vy(:, ny+1, :) = 0.0_num
-      vz(:, ny+1, :) = 0.0_num
+      vx(:, ny+2, :) = 0.0_num
+      vy(:, ny+2, :) = 0.0_num
+      vz(:, ny+2, :) = 0.0_num
     END IF
     IF (proc_y_min == MPI_PROC_NULL .AND. ybc_min == BC_OTHER) THEN
       vx(:, -2:0, :) = 0.0_num
