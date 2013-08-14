@@ -627,8 +627,6 @@ CONTAINS
     REAL(num) :: vxb, vxbm, vyb, vybm, vzb, vzbm
     REAL(num) :: dvxdx, dvydy, dvzdz, dvxy, dvxz, dvyz
 
-    RETURN
-
     DO iz = 0, nz+1
       izm = iz - 1
       izp = iz + 1
