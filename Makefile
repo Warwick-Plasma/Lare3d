@@ -1,106 +1,240 @@
-# Set the compiler flags
-#FFLAGS = -fast#-fast #-arch pn4 -tpp7 -tune pn4 -ax
-#FFLAGS = -r8 -fast -fastsse -O3 -Mipa=fast -Minline -Munroll	#PGI optimised
-#FFLAGS = -Mbounds -g 				#PGI Debug
-#FFLAGS = -O3 -fast                            	#Intel
-#FFLAGS = -fpe0 -nothreads -traceback -fltconsistency -CB -g  #Intel Debug
- 
+# Specify a particular compiler with "make COMPILER=pgi", etc.
+# Specify debugging flags with "make MODE=debug"
+
+
+# Compiler specific flags
+
+# Use intel compatible flags by default
 FFLAGS = -O3
+#FFLAGS = -O3 -heap-arrays 64 -ipo -xHost # Optimised (B)
+#FFLAGS = -O3 -heap-arrays 64 -ipo -xAVX  # Optimised (W)
+#FFLAGS = -O0 -fpe0 -nothreads -traceback -fltconsistency \
+#         -C -g -heap-arrays 64 -warn -save-temps -fpic -Wl,-no_pie # Debug
+MODULEFLAG = -module $(OBJDIR)
+
+ifeq ($(strip $(MODE)),debug)
+  # Autodetect OSX
+  SYSTEM := $(shell uname -s)
+  FFLAGS = -O0 -fpe0 -nothreads -traceback -fltconsistency \
+           -C -g -heap-arrays 64 -warn -fpic
+  ifeq ($(strip $(SYSTEM)),Darwin)
+    FFLAGS += -Wl,-no_pie
+  endif
+endif
+
+MPIF90 ?= mpif90
+D = -D
+
+# PGI
+# ===
+ifeq ($(strip $(COMPILER)),pgi)
+  FFLAGS = -r8 -fast -fastsse -O3 -Mipa=fast,inline -Minfo # Optimised
+  ifeq ($(strip $(MODE)),debug)
+    FFLAGS = -Mbounds -g                                     # Debug
+  endif
+  MODULEFLAG = -module $(OBJDIR)
+endif
+
+# Intel
+# =====
+ifeq ($(strip $(COMPILER)),intel)
+  FFLAGS = -O3
+  #FFLAGS = -O3 -heap-arrays 64 -ipo -xHost # Optimised (B)
+  #FFLAGS = -O3 -heap-arrays 64 -ipo -xAVX  # Optimised (W)
+  ifeq ($(strip $(MODE)),debug)
+    FFLAGS = -O0 -fpe0 -nothreads -traceback -fltconsistency \
+             -C -g -heap-arrays 64 -warn -fpic
+    ifeq ($(strip $(SYSTEM)),Darwin)
+      FFLAGS += -Wl,-no_pie
+    endif
+  endif
+  MODULEFLAG = -module $(OBJDIR)
+endif
+
+# gfortran
+# ========
+ifeq ($(strip $(COMPILER)),gfortran)
+  FFLAGS = -O3
+  ifeq ($(strip $(MODE)),debug)
+    FFLAGS = -O0 -g -Wall -Wextra -pedantic -fbounds-check \
+             -ffpe-trap=invalid,zero,overflow -Wno-unused-parameter \
+             -ffpe-trap=underflow,denormal
+
+    GNUVER := $(shell gfortran -dumpversion | head -1 \
+        | sed 's/[^0-9\.]*\([0-9\.]\+\).*/\1/')
+    GNUMAJOR := $(shell echo $(GNUVER) | cut -f1 -d\.)
+    GNUMINOR := $(shell echo $(GNUVER) | cut -f2 -d\.)
+
+    # gfortran-4.3
+    GNUGE43 := $(shell expr $(GNUMAJOR) \>= 4 \& $(GNUMINOR) \>= 3)
+    ifeq "$(GNUGE43)" "1"
+      FFLAGS += -fbacktrace -fdump-core
+
+      # gfortran-4.6
+      GNUGE46 := $(shell expr $(GNUMINOR) \>= 6)
+      ifeq "$(GNUGE46)" "1"
+        FFLAGS += -Wno-unused-dummy-argument
+
+        # gfortran-4.8
+        GNUGE48 := $(shell expr $(GNUMINOR) \>= 8)
+        ifeq "$(GNUGE48)" "1"
+          FFLAGS += -Wno-target-lifetime
+        endif
+      endif
+    endif
+  endif
+  MODULEFLAG = -I/usr/include -I$(OBJDIR) -J$(OBJDIR)
+endif
+
+# g95
+# ========
+ifeq ($(strip $(COMPILER)),g95)
+  FFLAGS = -O3
+  ifeq ($(strip $(MODE)),debug)
+    FFLAGS = -O0 -g                                        # Debug
+  endif
+  MODULEFLAG = -fmod=$(OBJDIR)
+endif
+
+# IBM Bluegene
+# ============
+ifeq ($(strip $(COMPILER)),ibm)
+  FFLAGS = -O5 -qhot -qipa # Optimised
+  ifeq ($(strip $(MODE)),debug)
+    FFLAGS = -O0 -C -g -qfullpath -qinfo #-qkeepparm -qflttrap \
+          -qnosmp -qxflag=dvz -Q! -qnounwind -qnounroll # Debug
+    #FFLAGS = -O0 -qarch=qp -qtune=qp
+    #FFLAGS = -qthreaded -qsmp=noauto -qsmp=omp # Hybrid stuff
+  endif
+  MODULEFLAG = -I$(OBJDIR) -qmoddir=$(OBJDIR)
+  MPIF90 = mpixlf90_r
+
+  # IBM compiler needs a -WF to recognise preprocessor directives
+  D = -WF,-D
+endif
+
+# HECToR
+# ========
+ifeq ($(strip $(COMPILER)),hector)
+  FFLAGS = -O3
+  ifeq ($(strip $(MODE)),debug)
+    FFLAGS = -O0 -g -ea -ec -eC -eD -eI -en -hfp_trap -Ktrap=fp -m0 -M1438,7413
+  endif
+  MODULEFLAG = -em -I/usr/include -I$(OBJDIR) -J$(OBJDIR)
+  MPIF90 = ftn
+endif
 
 # Set some of the build parameters
 TARGET = lare3d
 
-#Uncomment the following line to use Qmono viscosity
-#QMONO = -DQMONO
+# Set pre-processor defines
+DEFINES := $(DEF)
 
-#Uncomment the following line to run in single precision
-#QSINGLE = -DSINGLE
+# The following are a list of pre-processor defines which can be added to
+# the above line modifying the code behaviour at compile time.
 
-#Uncomment the following line to use fourth order RK scheme for resistive update
-#QFOURTHORDER = -DFOURTHTORDER
+# Uncomment the following line to use Qmono viscosity
+#DEFINES += $(D)QMONO
+
+# Uncomment the following line to run in single precision
+#DEFINES += $(D)SINGLE
+
+# Uncomment the following line to use first order scheme for resistive update
+#DEFINES += $(D)FOURTHORDER
 
 
 # --------------------------------------------------
 # Shouldn't need to touch below here
 # --------------------------------------------------
 
+SDFDIR = SDF/FORTRAN/src
 SRCDIR = src
 OBJDIR = obj
 BINDIR = bin
-MODULEFLAG = -module
-OPFLAGS = $(QMONO)  $(QSINGLE) $(QFIRSTORDER)
-FC = mpif90 $(OPFLAGS)
-PREPROFLAGS = $(NONMPIIO)
+FC = $(MPIF90)
+PREPROFLAGS = $(DEFINES)
 
-OBJFILES = shared_data.o mpi_routines.o openboundary.o mpiboundary.o boundary.o normalise.o conduct.o diagnostics.o setup.o lagran.o  \
- remap.o xremap.o yremap.o zremap.o initial_conditions.o\
- output_cartesian.o iocontrol.o output.o iocommon.o input.o inputfunctions.o\
- input_cartesian.o neutral.o control.o\
- welcome.o lare3d.o
+SRCFILES = boundary.f90 conduct.f90 control.f90 diagnostics.F90 \
+  initial_conditions.f90 input.f90 input_cartesian.f90 inputfunctions.f90 \
+  iocommon.f90 iocontrol.f90 lagran.F90 lare3d.f90 mpi_routines.f90 \
+  mpiboundary.f90 neutral.f90 normalise.f90 openboundary.f90 output.f90 \
+  output_cartesian.f90 remap.f90 setup.F90 shared_data.F90 welcome.f90 \
+  xremap.f90 yremap.f90 zremap.f90
+
+OBJFILES := $(SRCFILES:.f90=.o)
+OBJFILES := $(OBJFILES:.F90=.o)
+
 FULLTARGET = $(BINDIR)/$(TARGET)
 
 #vpath %.f90 $(SRCDIR)
 #vpath %.o $(OBJDIR)
-VPATH = $(SRCDIR):$(OBJDIR):$(SRCDIR)/core:$(SRCDIR)/io/
+VPATH = $(SRCDIR):$(SRCDIR)/core:$(SRCDIR)/io:$(SDFDIR):$(OBJDIR)
+
 
 # Rule to build the fortran files
 
 %.o: %.f90
-	@mkdir -p $(BINDIR) $(OBJDIR) 
-	$(FC) -c $(FFLAGS)  $(MODULEFLAG) $(OBJDIR) -o $(OBJDIR)/$@ $<
+	$(FC) -c $(FFLAGS) $(MODULEFLAG) -o $(OBJDIR)/$@ $<
 
 %.o: %.F90
-	@mkdir -p $(BINDIR) $(OBJDIR) 
-	$(FC) -c $(FFLAGS)  $(MODULEFLAG) $(OBJDIR) -o $(OBJDIR)/$@ $(PREPROFLAGS) $<
+	$(FC) -c $(FFLAGS) $(MODULEFLAG) -o $(OBJDIR)/$@ $(PREPROFLAGS) $<
 
 $(FULLTARGET): $(OBJFILES)
-	$(FC) $(FFLAGS) $(MODULEFLAG) $(OBJDIR) -o $@ $(addprefix $(OBJDIR)/,$(OBJFILES))
+	@mkdir -p $(BINDIR)
+	$(FC) $(FFLAGS) $(MODULEFLAG) -o $@ $(addprefix $(OBJDIR)/,$(OBJFILES))
 
 clean:
-	@rm -rf *~ $(BINDIR) $(OBJDIR) *.pbs.* *.sh.* $(SRCDIR)/*~ $(SRCDIR)/core/*~ $(SRCDIR)/io/*~ *.log
+	@rm -rf $(BINDIR) $(OBJDIR)
 
 tidy:
-	@rm -rf $(OBJDIR) *.pbs.* *.sh.* $(SRCDIR)/*~ *.log
-
-touch:
-	@touch src/* ; touch src/core/* 
+	@rm -rf $(OBJDIR) *~ *.pbs.* *.sh.* $(SRCDIR)/*~ *.log
 
 datatidy:
 	@rm -rf Data/*
 
 visit:
-	@cd VisIT; ./build
+	@cd SDF/VisIt; ./build
 
 visitclean:
-	@cd VisIT; make clean; \
+	@cd SDF/VisIt; make clean; ./build -c; \
 	  rm -rf .depend *.d *Info.C *Info.h CMake* cmake* Makefile
 
-.PHONY: clean tidy touch datatidy visit visitclean
+$(OBJFILES): | $(OBJDIR)
+
+$(OBJDIR):
+	@mkdir -p $(OBJDIR)
+
+.PHONY: clean tidy visit visitclean datatidy FORCE
 
 # All the dependencies
-shared_data.o:shared_data.F90
-mpi_routines.o:mpi_routines.f90 shared_data.o 
-normalise.o:normalise.f90 shared_data.o
-setup.o:setup.F90 shared_data.o normalise.o iocommon.o iocontrol.o input.o input_cartesian.o
+
+boundary.o: boundary.f90 mpiboundary.o shared_data.o
+conduct.o: conduct.f90 boundary.o shared_data.o
+control.o: control.f90 normalise.o shared_data.o
+diagnostics.o: diagnostics.F90 boundary.o iocontrol.o output.o \
+  output_cartesian.o shared_data.o
+initial_conditions.o: initial_conditions.f90 neutral.o shared_data.o
+input.o: input.f90 inputfunctions.o iocommon.o shared_data.o
+input_cartesian.o: input_cartesian.f90 inputfunctions.o iocommon.o shared_data.o
+inputfunctions.o: inputfunctions.f90 iocommon.o shared_data.o
+iocommon.o: iocommon.f90 shared_data.o
+iocontrol.o: iocontrol.f90 input.o iocommon.o output.o shared_data.o
+lagran.o: lagran.F90 boundary.o conduct.o diagnostics.o neutral.o shared_data.o
+lare3d.o: lare3d.f90 boundary.o control.o diagnostics.o initial_conditions.o \
+  lagran.o mpi_routines.o neutral.o normalise.o openboundary.o remap.o setup.o \
+  shared_data.o welcome.o
+mpi_routines.o: mpi_routines.f90 shared_data.o
 mpiboundary.o: mpiboundary.f90 shared_data.o
+neutral.o: neutral.f90 boundary.o shared_data.o
+normalise.o: normalise.f90 shared_data.o
 openboundary.o: openboundary.f90 shared_data.o
-boundary.o:boundary.f90 shared_data.o mpiboundary.o 
-xremap.o:xremap.f90 shared_data.o boundary.o
-yremap.o:yremap.f90 shared_data.o boundary.o
-zremap.o:zremap.f90 shared_data.o boundary.o
-diagnostics.o:diagnostics.F90 shared_data.o boundary.o normalise.o output_cartesian.o output.o iocontrol.o 
-iocommon.o:iocommon.f90 shared_data.o
-output.o:output.f90 shared_data.o iocommon.o
-output_cartesian.o: output_cartesian.f90 shared_data.o iocommon.o output.o
-iocontrol.o: iocontrol.f90 shared_data.o iocommon.o output.o input.o
-input.o: input.f90 shared_data.o iocommon.o inputfunctions.o
-inputfunctions.o: inputfunctions.f90 shared_data.o iocommon.o  
-input_cartesian.o: input_cartesian.f90 iocommon.o inputfunctions.o
-conduct.o:conduct.f90 shared_data.o boundary.o
-lagran.o:lagran.F90 shared_data.o boundary.o diagnostics.o neutral.o conduct.o
-remap.o:remap.f90 shared_data.o xremap.o yremap.o zremap.o
-initial_conditions.o:initial_conditions.f90 shared_data.o normalise.o neutral.o
-neutral.o: neutral.f90 shared_data.o boundary.o normalise.o
-control.o: control.f90 shared_data.o normalise.o
+output.o: output.f90 iocommon.o shared_data.o
+output_cartesian.o: output_cartesian.f90 iocommon.o output.o shared_data.o
+remap.o: remap.f90 shared_data.o xremap.o yremap.o zremap.o
+setup.o: setup.F90 input.o input_cartesian.o iocommon.o iocontrol.o \
+  shared_data.o
+shared_data.o: shared_data.F90
 welcome.o: welcome.f90 shared_data.o
-lare3d.o:lare3d.f90 shared_data.o setup.o boundary.o diagnostics.o lagran.o remap.o mpi_routines.o welcome.o initial_conditions.o openboundary.o control.o  
+xremap.o: xremap.f90 boundary.o
+yremap.o: yremap.f90 boundary.o
+zremap.o: zremap.f90 boundary.o
