@@ -1,7 +1,4 @@
-*.obj
-*.o
-*.d
-*.tmproj
-Data
+*.[od]
 bin
 obj
+Data/
