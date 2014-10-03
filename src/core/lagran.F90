@@ -110,7 +110,7 @@ CONTAINS
         DO ix = 0, nx+1
           dv = cv1(ix, iy, iz) / cv(ix, iy, iz) - 1.0_num
           ! predictor energy
-#ifdef Q_MONO
+#ifdef QMONO
             ! add shock viscosity
             pressure(ix, iy, iz) = pressure(ix, iy, iz) + p_visc(ix, iy, iz)
 #endif
@@ -120,7 +120,7 @@ CONTAINS
           ! now define the predictor step pressures 
           pressure(ix,iy,iz) = (e1 - (1.0_num - xi_n(ix,iy,iz)) * ionise_pot) &
                   * (gamma - 1.0_num) * rho(ix,iy,iz) * cv(ix,iy,iz) / cv1(ix,iy,iz)
-#ifdef Q_MONO
+#ifdef QMONO
           ! add shock viscosity
           pressure(ix, iy, iz) = pressure(ix, iy, iz) + p_visc(ix, iy, iz)
 #endif
@@ -362,7 +362,7 @@ CONTAINS
           total_visc_heating = total_visc_heating &
                 + dt * visc_heat(ix, iy, iz) * cv(ix, iy, iz) 
                 
-#ifdef Q_MONO
+#ifdef QMONO
           total_visc_heating = total_visc_heating &
               - p_visc(ix, iy, iz) * dv * cv(ix, iy, iz)
 #endif
@@ -577,7 +577,7 @@ CONTAINS
           qyz(ix, iy, iz) = 0.0_num
           qzz(ix, iy, iz) = 0.0_num
 
-#ifndef Q_MONO
+#ifndef QMONO
             qxy(ix,iy,iz) = sxy * (L2 * rho(ix,iy,iz)  &
                  * (visc1 * cf + L2 * visc2 * ABS(sxy)))
             qxz(ix,iy,iz) = sxz * (L2 * rho(ix,iy,iz)  &
@@ -773,7 +773,7 @@ CONTAINS
 
      REAL(num) :: half_dt, dt6, area
      REAL(num) :: jx1, jx2, jy1, jy2, jz1, jz2
-#ifdef Q_FOURTHORDER
+#ifdef FOURTHORDER
      REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: k1x, k2x, k3x, k4x
      REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: k1y, k2y, k3y, k4y
      REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: k1z, k2z, k3z, k4z
@@ -797,7 +797,7 @@ CONTAINS
      CALL rkstep  
 
 !default is first order in time   
-#ifndef Q_FOURTHORDER  
+#ifndef FOURTHORDER  
      DO iz = 1, nz  
        izm = iz - 1
        DO iy = 1, ny
@@ -1159,7 +1159,7 @@ CONTAINS
      END DO
 
 
-#ifdef Q_FOURTHORDER
+#ifdef FOURTHORDER
      DEALLOCATE(k1x, k2x, k3x, k4x, k1y, k2y, k3y, k4y, k1z, k2z, k3z, k4z)
      DEALLOCATE(c1, c2, c3, c4)
 #endif

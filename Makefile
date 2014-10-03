@@ -11,13 +11,13 @@ FFLAGS = -O3
 TARGET = lare3d
 
 #Uncomment the following line to use Qmono viscosity
-#QMONO = -DQ_MONO
+#QMONO = -DQMONO
 
 #Uncomment the following line to run in single precision
-#QSINGLE = -DQ_SINGLE
+#QSINGLE = -DSINGLE
 
 #Uncomment the following line to use fourth order RK scheme for resistive update
-#QFOURTHORDER = -DQ_FOURTHTORDER
+#QFOURTHORDER = -DFOURTHTORDER
 
 
 # --------------------------------------------------

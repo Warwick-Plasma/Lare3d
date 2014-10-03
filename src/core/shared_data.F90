@@ -6,7 +6,7 @@ MODULE constants
 
   IMPLICIT NONE
 
-#ifdef Q_SINGLE
+#ifdef SINGLE
   INTEGER, PARAMETER :: num = KIND(1.0) 
 #else
   INTEGER, PARAMETER :: num = KIND(1.D0) 
@@ -63,7 +63,7 @@ MODULE shared_data
   IMPLICIT NONE
   INCLUDE 'mpif.h'
 
-#ifdef Q_SINGLE
+#ifdef SINGLE
   INTEGER :: mpireal = MPI_REAL
 #else
   INTEGER :: mpireal = MPI_DOUBLE_PRECISION
