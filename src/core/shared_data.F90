@@ -154,6 +154,11 @@ MODULE shared_data
   INTEGER :: nprocz, proc_z_min, proc_z_max
   INTEGER :: rank, errcode, comm, tag, nproc
   INTEGER :: status(MPI_STATUS_SIZE)
+  INTEGER :: cell_subarray, cellng_subarray, cell_distribution
+  INTEGER :: node_subarray, nodeng_subarray, node_distribution
+  INTEGER :: bx_subarray, bx_distribution
+  INTEGER :: by_subarray, by_distribution
+  INTEGER :: bz_subarray, bz_distribution
   INTEGER :: cell_xface, node_xface, node_xface1
   INTEGER :: cell_yface, node_yface, node_yface1
   INTEGER :: cell_zface, node_zface, node_zface1
