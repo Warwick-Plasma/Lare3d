@@ -148,6 +148,9 @@ DEFINES := $(DEF)
 # Uncomment to turn off all I/O. Useful for benchmarking.
 #DEFINES += $(D)NO_IO
 
+# Uncomment to enable the MPI error handler which is useful for debugging
+#DEFINES += $(D)MPI_DEBUG
+
 
 # --------------------------------------------------
 # Shouldn't need to touch below here
@@ -170,7 +173,7 @@ PREPROFLAGS = $(DEFINES) $(D)_COMMIT='"$(COMMIT)"' $(D)_DATE=$(DATE) \
   $(D)_MACHINE='"$(MACHINE)"'
 
 SRCFILES = boundary.f90 conduct.f90 control.f90 diagnostics.F90 \
-  initial_conditions.f90 lagran.F90 lare3d.f90 mpi_routines.f90 \
+  initial_conditions.f90 lagran.F90 lare3d.f90 mpi_routines.F90 \
   mpiboundary.f90 neutral.f90 normalise.f90 openboundary.f90 remap.f90 sdf.f90 \
   sdf_common.f90 sdf_control.f90 sdf_input.f90 sdf_input_cartesian.f90 \
   sdf_input_cartesian_r4.f90 sdf_input_cartesian_r8.f90 \
@@ -246,7 +249,7 @@ lagran.o: lagran.F90 boundary.o conduct.o neutral.o shared_data.o
 lare3d.o: lare3d.f90 boundary.o control.o diagnostics.o initial_conditions.o \
   lagran.o mpi_routines.o neutral.o normalise.o openboundary.o remap.o setup.o \
   shared_data.o welcome.o
-mpi_routines.o: mpi_routines.f90 shared_data.o
+mpi_routines.o: mpi_routines.F90 shared_data.o
 mpiboundary.o: mpiboundary.f90 shared_data.o
 neutral.o: neutral.f90 boundary.o shared_data.o
 normalise.o: normalise.f90 shared_data.o
