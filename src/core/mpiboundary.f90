@@ -6,7 +6,7 @@ MODULE mpiboundary
 CONTAINS
 
   SUBROUTINE bfield_MPI
-    
+
     CALL MPI_SENDRECV(bx(:, :, 1:2), 2*(nx+5)*(ny+4), mpireal, proc_z_min, tag, &
         bx(:, :, nz+1:nz+2), 2*(nx+5)*(ny+4), mpireal, proc_z_max, tag, comm, &
         status, errcode)
@@ -44,7 +44,7 @@ CONTAINS
     CALL MPI_SENDRECV(bz(nx-1:nx, :, :), 2*(ny+4)*(nz+5), mpireal, proc_x_max, tag, &
         bz(-1:0, :, :), 2*(ny+4)*(nz+5), mpireal, proc_x_min, tag, comm, &
         status, errcode)
-     
+
     CALL MPI_SENDRECV(bx(:, ny-1:ny, :), 2*(nx+5)*(nz+4), mpireal, proc_y_max, tag, &
         bx(:, -1:0, :), 2*(nx+5)*(nz+4), mpireal, proc_y_min, tag, comm, &
         status, errcode)
@@ -62,7 +62,7 @@ CONTAINS
         status, errcode)
     CALL MPI_SENDRECV(bz(:, 1:2, :), 2*(nx+4)*(nz+5), mpireal, proc_y_min, tag, &
         bz(:, ny+1:ny+2, :), 2*(nx+4)*(nz+5), mpireal, proc_y_max, tag, comm, &
-        status, errcode)      
+        status, errcode)
 
   END SUBROUTINE bfield_MPI
 

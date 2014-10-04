@@ -339,7 +339,7 @@ CONTAINS
 
           vad_p = (SIGN(1.0_num, v_advect) + 1.0_num) * 0.5_num
           vad_m = (SIGN(1.0_num, -v_advect) + 1.0_num) * 0.5_num
-                
+
           w7 = ABS(v_advect) * dt / (db * vad_p + dbxp * vad_m)
           w9 = (2.0_num - w7) * ABS(w1) / dxc(ix) &
               + (1.0_num + w7) * ABS(w2 * vad_p + w3 * vad_m) &
@@ -398,10 +398,10 @@ CONTAINS
           ! vad_p and vad_m are logical switches which determine v_advect>=0
           ! and v_advect<0 respectively. It's written this way to allow vector
           ! optimization. See example in **SECTION 2**
-     
+
           vad_p = (SIGN(1.0_num, v_advect) + 1.0_num) * 0.5_num
-          vad_m = (SIGN(1.0_num, -v_advect) + 1.0_num) * 0.5_num 
-                                                                
+          vad_m = (SIGN(1.0_num, -v_advect) + 1.0_num) * 0.5_num
+
           w7 = ABS(v_advect) * dt / (db * vad_p + dbxp * vad_m)
           w9 = (2.0_num - w7) * ABS(w1) / dxc(ix) &
               + (1.0_num + w7) * ABS(w2 * vad_p + w3 * vad_m) &
@@ -453,10 +453,10 @@ CONTAINS
           ! vad_p and vad_m are logical switches which determine v_advect>=0
           ! and v_advect<0 respectively. It's written this way to allow vector
           ! optimization
-  
+
           vad_p = (SIGN(1.0_num, v_advect) + 1.0_num) * 0.5_num
           vad_m = (SIGN(1.0_num, -v_advect) + 1.0_num) * 0.5_num
-          
+
           w5 = ABS(v_advect) * dt &
               / (dxb1(ix, iy, iz) * vad_p + dxb1(ixp, iy, iz) * vad_m)
 
@@ -510,7 +510,7 @@ CONTAINS
 
           vad_p = (SIGN(1.0_num, v_advect) + 1.0_num) * 0.5_num
           vad_m = (SIGN(1.0_num, -v_advect) + 1.0_num) * 0.5_num
-                          
+
           w5 = ABS(v_advect) * dt &
               / (dxb1(ix, iy, iz) * vad_p + dxb1(ixp, iy, iz) * vad_m)
 
@@ -566,7 +566,7 @@ CONTAINS
 
           vad_p = (SIGN(1.0_num, v_advect) + 1.0_num) * 0.5_num
           vad_m = (SIGN(1.0_num, -v_advect) + 1.0_num) * 0.5_num
-          
+
           w5 = ABS(v_advect) * dt &
               / (dxb1(ix, iy, iz) * vad_p + dxb1(ixp, iy, iz) * vad_m)
 
@@ -657,7 +657,7 @@ CONTAINS
 
           vad_p = (SIGN(1.0_num, v_advect) + 1.0_num) * 0.5_num
           vad_m = (SIGN(1.0_num, -v_advect) + 1.0_num) * 0.5_num
-                        
+
           w5 = ABS(v_advect) * dt &
               / (dxb1(ix, iy, iz) * vad_p + dxb1(ixp, iy, iz) * vad_m)
 
@@ -748,7 +748,7 @@ CONTAINS
 
           vad_p = (SIGN(1.0_num, v_advect) + 1.0_num) * 0.5_num
           vad_m = (SIGN(1.0_num, -v_advect) + 1.0_num) * 0.5_num
-                    
+
           w5 = ABS(v_advect) * dt &
               / (dxb1(ix, iy, iz) * vad_p + dxb1(ixp, iy, iz) * vad_m)
 

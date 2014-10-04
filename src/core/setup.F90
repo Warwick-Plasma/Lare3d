@@ -472,7 +472,7 @@ CONTAINS
       CALL cfd_get_next_block_info_all(name, class, type)
       IF (rank == 0) PRINT *, ix, name, class, type
 
-      IF (type == TYPE_SNAPSHOT) THEN 
+      IF (type == TYPE_SNAPSHOT) THEN
         CALL cfd_get_snapshot(time_d, snap)
         time = time_d
       END IF

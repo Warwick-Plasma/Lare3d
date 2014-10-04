@@ -16,7 +16,7 @@
 {
     //This is a caching reader, so ignore CacheOnly
     //Note that despite this, it only caches the metadata, not the primary data
-    
+
     //Can't guarantee that we'll be in the right place, so go there
     file->seekg(this->Owner->Offset,ios::beg);
     file->read((char*)&this->MeshType,sizeof(int));
@@ -27,7 +27,7 @@
     {
 	this->Dims=(int*)malloc(sizeof(int)*this->Dimensions);
 	file->read((char*)this->Dims,sizeof(int)*this->Dimensions);
-	
+
 	this->Extents=malloc(this->SizeOfFloat*this->Dimensions);
 	file->read((char*)this->Extents,this->SizeOfFloat*this->Dimensions);
     }
@@ -65,7 +65,7 @@ void MeshReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     if (this->MeshType == MESH_CARTESIAN && this->Dimensions ==1)
 
       {
-	
+
 	//1D Cartesian meshes are meaningless (almost). They are replaced by avtCurve objects in VisIT
 	//This means that there is no mesh metadata
 	return;
@@ -85,7 +85,7 @@ void MeshReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 	avtMeshMetaData * mmd = new avtMeshMetaData(Composite,1,0,0,0,spatdim,topdim,mt);
 	//cout << "Composite name is " << Composite << endl;
 	//cout << "Name length reserved" << endl;
-	
+
 	//	std::string s=Composite;
 	//	mmd->name.assign(s);
 
@@ -102,12 +102,12 @@ void MeshReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 	      {
 		memset(VarComposite,0,3*MaxStringLen+1);
 		GetCompositeName(axes_labels+i*2,Composite,VarComposite);
-		
+
 		avtCentering cent = AVT_NODECENT;
-	    
+
 		smd = new avtScalarMetaData(VarComposite,Composite,cent);
 		md->Add(smd);
-	    
+
 	      }
 	    free(VarComposite);
 	    }
@@ -146,7 +146,7 @@ vtkDataSet* MeshReader::GetMesh(int domain)
 	    {
 	      coords[i]->SetComponent(0, 0, 0.);
 	    }
-	  
+
 	}
 	//cout << "Setting up grid" << endl;
 	vtkRectilinearGrid * rgrid = vtkRectilinearGrid::New();
@@ -173,7 +173,7 @@ vtkDataSet* MeshReader::GetMesh(int domain)
 	//Visit uses a slightly mad way of representing points, so buffer them in
 	//100000 particles shouldn't tax any system too much = (100000*8~=800K RAM)
         //You may want to increase this number by a factor of 10-50 for parallel file systems
-	//This routine really needs fixing anyway, since it probably (CHECK THIS) requires 
+	//This routine really needs fixing anyway, since it probably (CHECK THIS) requires
 	//twice as much RAM as is strictly should due to the presence of the points and the
 	//Unstructured grid objects at the same time
 	long long npart_section=100000;
@@ -250,7 +250,7 @@ vtkDataArray * MeshReader::GetVarByName(int domain,const char*varname)
     {
 	memset(VarComposite,0,3*MaxStringLen+1);
 	GetCompositeName(axes_labels+i*2,Composite,VarComposite);
-	
+
 	if (strcmp(varname,VarComposite) ==0)
 	{
 	    file->seekg(this->Owner->Offset + this->Owner->Block_MD_Length+this->nPart*this->SizeOfFloat*i,ios::beg);
@@ -260,11 +260,11 @@ vtkDataArray * MeshReader::GetVarByName(int domain,const char*varname)
 	    Data->SetNumberOfTuples(this->nPart);
 	    void* DataVoid=Data->GetVoidPointer(0);
 	    file->read((char*)DataVoid,this->nPart*this->SizeOfFloat);
-	    break;   
+	    break;
 	}
 
     }
-    free(VarComposite);   
+    free(VarComposite);
     free(Composite);
     return Data;
 }

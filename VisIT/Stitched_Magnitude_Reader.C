@@ -13,7 +13,7 @@
 {
     //This is always a caching reader, so ignore CacheOnly
     //Note that despite this, it only caches the metadata, not the primary data
-    
+
     //Can't guarantee that we'll be in the right place, so go there
     file->seekg(this->Owner->Offset,ios::beg);
 
@@ -80,13 +80,13 @@ vtkDataArray* Stitched_Magnitude_Reader::GetVar(int domain)
 	memset(Class,0,MaxStringLen+1);
 	file->read(Name,this->MaxStringLen);
 	file->read(Class,this->MaxStringLen);
-	
+
 	GetCompositeName(Name,Class,Composite);
 
 	debug1 << "Searching for block " << Composite << endl;
-	
+
 	SubBlocks[i]=Handler->GetBlockByComposite(Composite);
-	
+
 	if (SubBlocks[i])
 	{
 	    if (SubBlocks[i]->Type != TYPE_MESH_VARIABLE)
@@ -182,21 +182,21 @@ vtkDataArray* Stitched_Magnitude_Reader::GetVar(int domain)
     if (this->SizeOfFloat == 4)
 	for (int iLoop=0;iLoop <this->n_Elements;++iLoop)
 	{
-	    float *pointfloat=(float*)pointdata;	
+	    float *pointfloat=(float*)pointdata;
 	    *pointfloat=pow(*pointfloat,0.5);
 	    pointdata=(void*)(((char*)pointdata)+this->SizeOfFloat);
 	}
     else
 	for (int iLoop=0;iLoop <this->n_Elements;++iLoop)
 	{
-	    double *pointdouble=(double*)pointdata;	
+	    double *pointdouble=(double*)pointdata;
 	    *pointdouble=pow(*pointdouble,0.5);
 	    pointdata=(void*)(((char*)pointdata)+this->SizeOfFloat);
 	}
 
 
     free(v);
-    
+
     return Data;
 }
 //--------------------------------------------------------------------------------------------

@@ -23,7 +23,7 @@ CONTAINS
   ! The syntax for this function (which is in core/neutral.f90) is
   !
   ! CALL get_energy(density, temperature, equation_of_state, &
-  !     output_energy) 
+  !     output_energy)
   !
   ! REAL(num) :: density - The density at point (ix, iy) on the grid
   ! REAL(num) :: temperature - The temperature at point (ix, iy) on the grid
@@ -38,7 +38,7 @@ CONTAINS
   ! xi_n to the neutral fraction use
   ! xi_n = get_neutral(temperature, rho, z)
   !---------------------------------------------------------------------------
-  
+
   SUBROUTINE set_initial_conditions
 
     INTEGER :: loop
@@ -51,32 +51,32 @@ CONTAINS
     REAL(num), DIMENSION(:), ALLOCATABLE :: zc_global, dzb_global, dzc_global
     REAL(num), DIMENSION(:), ALLOCATABLE :: grav_ref, temp_ref, rho_ref
     REAL(num), DIMENSION(:), ALLOCATABLE :: beta_ref, mag_ref, mu_m
-    
+
     ALLOCATE(zc_global(-1:nz_global+1))
     ALLOCATE(dzb_global(-1:nz_global+1), dzc_global(-1:nz_global))
     ALLOCATE(grav_ref(-1:nz_global+2), temp_ref(-1:nz_global+2))
     ALLOCATE(rho_ref(-1:nz_global+2), mag_ref(-1:nz_global+2))
     ALLOCATE(beta_ref(-1:nz_global+2), mu_m(-1:nz_global+2))
-    
+
     vx = 0.0_num
     vy = 0.0_num
     vz = 0.0_num
     bx = 0.0_num
     by = 0.0_num
     bz = 0.0_num
-    
+
     !fill in zc_global with the positions central to the zb_global points
     DO iz = -1, nz_global+1
        zc_global(iz) = 0.5_num * (zb_global(iz-1) + zb_global(iz))
     END DO
-    
+
     !fill in dzb_global and dzc_global
     DO iz = -1, nz_global
        dzb_global(iz) = zb_global(iz) - zb_global(iz-1)
        dzc_global(iz) = zc_global(iz+1) - zc_global(iz)
     END DO
-    
-    !fill in the reference gravity array - lowering grav to zero at the top 
+
+    !fill in the reference gravity array - lowering grav to zero at the top
     !of the corona smoothly from a1 to grav=0 at a2 and above
     grav_ref = 11.78_num
     a1 = zb_global(nz_global) - 20.0_num
@@ -89,10 +89,10 @@ CONTAINS
        IF (zb_global(iz) > a2) THEN
           grav_ref(iz) = 0.0_num
        END IF
-    END DO    
+    END DO
     grav_ref(-1) = grav_ref(0)
     grav_ref(nz_global+1:nz_global+2) = grav_ref(nz_global)
-    
+
     !beta profile from Archontis 2009 but in 2D
     !similar to that of Nozawa 1991
     !NB : The variable beta used here is actually 1/beta
@@ -104,7 +104,7 @@ CONTAINS
               (0.5_num * (1.0_num - TANH((zc_global(iz) - yfsu) / wfsu)))
       END IF
     END DO
-    
+
     !calculate the density profile, starting from the refence density at the
     !photosphere and calculating up and down from there including beta
     rho_ref = 1.0_num
@@ -116,7 +116,7 @@ CONTAINS
        DO iz = -1, nz_global+1
           IF (zc_global(iz) < 0.0_num) THEN
              temp_ref(iz) = Tph - a * (gamma - 1.0_num) &
-                  * zc_global(iz) * grav_ref(iz) * mu_m(iz) / gamma 
+                  * zc_global(iz) * grav_ref(iz) * mu_m(iz) / gamma
           END IF
           IF (zc_global(iz) >= 0.0_num) THEN
              temp_ref(iz) = Tph + (Tcor - Tph) * 0.5_num &
@@ -124,9 +124,9 @@ CONTAINS
           END IF
        END DO
        temp_ref(nz_global+1:nz_global+2) = temp_ref(nz_global)
-       
+
        DO iz = nz_global,0,-1
-          IF (zc_global(iz) < 0.0_num) THEN  
+          IF (zc_global(iz) < 0.0_num) THEN
              dg = 1.0_num / (dzb_global(iz) + dzb_global(iz-1))
              rho_ref(iz-1) = rho_ref(iz) * (temp_ref(iz)*(1.0_num+beta_ref(iz)) &
                   /dzc_global(iz-1)/mu_m(iz)+grav_ref(iz-1)*dzb_global(iz)*dg)
@@ -153,16 +153,16 @@ CONTAINS
           END DO
        END IF
        IF (maxerr < 1.e-16_num) EXIT
-    END DO 
-    
+    END DO
+
     rho_ref(nz_global+1:nz_global+2) = rho_ref(nz_global)
-                                  
+
     !magnetic flux sheet profile from Archontis2009
     !similar structure to the 2D version used in Nozawa1991 and Isobe2006
     DO iz= -1,nz_global+2,1
        mag_ref(iz) = SQRT(2.0_num * beta_ref(iz) * temp_ref(iz) * rho_ref(iz) / mu_m(iz))
     END DO
-    
+
     !fill in all the final arrays from the ref arrays
     grav(:) = grav_ref(coordinates(1)*nz-1:coordinates(1)*nz+nz+2)
     DO ix = -1, nx+2
@@ -173,43 +173,43 @@ CONTAINS
     END DO
     END DO
     DO ix = -1,nx+2
-       DO iy = -1,ny+2 
+       DO iy = -1,ny+2
          DO iz = -1, nz+2
-           IF (eos_number /= EOS_IDEAL) THEN         
+           IF (eos_number /= EOS_IDEAL) THEN
              xi_v = get_neutral(energy(ix,iy,iz), rho(ix,iy,iz), zb(iz))
-           ELSE  
+           ELSE
              IF (neutral_gas) THEN
                xi_v = 1.0_num
              ELSE
                xi_v = 0.0_num
              END IF
-           END IF   
+           END IF
            energy(ix,iy,iz) = (energy(ix,iy,iz) * (2.0_num - xi_v) &
                + (1.0_num - xi_v) * ionise_pot * (gamma - 1.0_num)) &
                / (gamma - 1.0_num)
          END DO
        END DO
     END DO
-    
+
     amp = 0.01_num
     wptb = 20.0_num
-    
+
     DO iz = 1, nz
       IF ((zc_global(iz) .GT. -10.0_num) .AND. (zc_global(iz) .LT. -1.0_num)) THEN
         DO iy = 1, ny
           DO ix = 1,nx
-            vz(ix,iy,iz) = (amp / 4.0_num) * COS(2.0_num*pi*xb(ix)/wptb) & 
+            vz(ix,iy,iz) = (amp / 4.0_num) * COS(2.0_num*pi*xb(ix)/wptb) &
               * COS(2.0_num*pi*yb(iy)/wptb)  &
               * (TANH((zb(iz)-yfsl)/0.5_num)-TANH((zb(iz)-yfsu)/0.5_num))
-          END DO 
+          END DO
         END DO
       END IF
-    END DO  
-    
-    
+    END DO
+
+
     DEALLOCATE(zc_global, dzb_global, dzc_global, mu_m)
     DEALLOCATE(grav_ref, temp_ref, rho_ref, beta_ref, mag_ref)
-    
+
 
   END SUBROUTINE set_initial_conditions
 

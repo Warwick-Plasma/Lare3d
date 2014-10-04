@@ -63,7 +63,7 @@ void PopulateDatabaseMetaData(avtDatabaseMetaData *md);
  Block* GetBlockByComposite(const char* Name);
  BlockReader* GetReaderFromBlock(Block *Block,bool &DestroyReader);
 
- BlockHandler() {this->HeadBlock=NULL;} 
+ BlockHandler() {this->HeadBlock=NULL;}
  ~BlockHandler() {this->ClearBlockChain();}
 };
 

@@ -15,12 +15,12 @@
 {
     //This is always a caching reader, so ignore CacheOnly
     //Note that despite this, it only caches the metadata, not the primary data
-    
+
     //Can't guarantee that we'll be in the right place, so go there
     file->seekg(this->Owner->Offset,ios::beg);
     file->read((char*)&this->VarType,sizeof(int));
     file->read((char*)&this->Dimensions,sizeof(int));
-    file->read((char*)&this->SizeOfFloat,sizeof(int));    
+    file->read((char*)&this->SizeOfFloat,sizeof(int));
 
     this->MeshName=(char*)malloc(this->MaxStringLen+1);
     this->MeshClass=(char*)malloc(this->MaxStringLen+1);
@@ -33,11 +33,11 @@
 	this->Dims=(int*)malloc(sizeof(int)*this->Dimensions);
 	file->read((char*)this->Dims,sizeof(int)*this->Dimensions);
 
-	//It should be possible to do something about the grid stagger using 
+	//It should be possible to do something about the grid stagger using
         //the VisIT Centreing commands, but I don't know how for the moment
         this->Stagger=malloc(this->SizeOfFloat*this->Dimensions);
 	file->read((char*)this->Stagger,this->SizeOfFloat*this->Dimensions);
-	
+
 	file->read((char*)this->Extents,this->SizeOfFloat*2);
 
 	file->read(this->MeshName,this->MaxStringLen);
@@ -166,7 +166,7 @@ vtkDataSet* Mesh_Var_Reader::GetMesh(int domain)
 	else Data=vtkDoubleArray::New();
 	Data->SetNumberOfComponents(3);
 	Data->SetNumberOfTuples(this->Dims[0]);
-	
+
 	vtkPolyData *pd  = vtkPolyData::New();
 	vtkPoints   *pts = vtkPoints::New();
 	pd->SetPoints(pts);
@@ -189,7 +189,7 @@ vtkDataSet* Mesh_Var_Reader::GetMesh(int domain)
 	    line->InsertCellPoint(i-1);
 	    line->InsertCellPoint(i);
 	  }
-	
+
 	pts->Delete();
 	line->Delete();
 

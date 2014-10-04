@@ -20,7 +20,7 @@ class Mesh_Var_Reader : public BlockReader
     char *MeshName;
     char *MeshClass;
     Block *MeshBlock;
-    
+
  public:
  virtual vtkDataArray * GetVectorVar(int domain){return NULL;}
  virtual vtkDataArray * GetVar(int domain);

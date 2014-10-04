@@ -54,12 +54,12 @@ bool BlockHandler::Open(const char* filename)
     {
 	debug1 << "Invalid file (File is empty)" << endl;
     }
-    
+
     debug1 << "Block contains " << this->nBlocks << " blocks "<< endl;
     debug1 << "Now building block chains" << endl;
 
     ClearBlockChain();
-    
+
 
     long long offset=this->Header_Offset;
     for (int i=0;i<this->nBlocks;++i)
@@ -116,7 +116,7 @@ Block* BlockHandler::AddBlockToChain(long long offset)
     serial_in.read(B->Name,this->MaxStringLen);
     serial_in.read(B->Class,this->MaxStringLen);
 
-    
+
 
     serial_in.read((char*)&B->Type,sizeof(int));
     serial_in.read((char*)&B->Block_MD_Length,sizeof(long long));
@@ -234,7 +234,7 @@ void BlockHandler::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 	    debug1 << "There was no Block reader for block " << B->Name << " of type " << B->Type;
 	    debug1 << " while attempting to populate metadata" << endl;
 	}
-    
+
 	B=(Block*)B->Next;
     }
 }

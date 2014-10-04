@@ -156,7 +156,7 @@ PRO GetMesh,file_header,block_header,output_struct,offset,onlymd=onlymd,md=md,by
            END
         ENDIF
         IF (mesh_header.prec EQ 8) THEN BEGIN
-           datastruct=CREATE_STRUCT(names[0],dblarr(mesh_header.npts[0]))	
+           datastruct=CREATE_STRUCT(names[0],dblarr(mesh_header.npts[0]))
            FOR iDim=1,mesh_header.nd-1 DO BEGIN
               datastruct=CREATE_STRUCT(datastruct,names[iDim],dblarr(mesh_header.npts[iDim]))
            END
@@ -187,7 +187,7 @@ PRO GetMesh,file_header,block_header,output_struct,offset,onlymd=onlymd,md=md,by
   IF(mdonly_f NE 1 AND N_ELEMENTS(d) NE 0) THEN BEGIN
      output_struct=CREATE_STRUCT(output_struct,STRTRIM(STRING(block_header.Name),2),d)
   ENDIF
-END 
+END
 
 ;--------------------------------------------------------------------------
 PRO GetMeshVar,file_header,block_header,output_struct,offset,md=md,onlymd=onlymd
@@ -228,7 +228,7 @@ PRO GetMeshVar,file_header,block_header,output_struct,offset,md=md,onlymd=onlymd
   IF(mdonly_f NE 1 AND N_ELEMENTS(d) NE 0) THEN BEGIN
      output_struct=CREATE_STRUCT(output_struct,d)
   ENDIF
-END 
+END
 
 ;--------------------------------------------------------------------------
 PRO GetSnapshot,file_header,block_header,output_struct,offset,md=md,onlymd=onlymd

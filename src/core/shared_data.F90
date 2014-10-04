@@ -7,9 +7,9 @@ MODULE constants
   IMPLICIT NONE
 
 #ifdef SINGLE
-  INTEGER, PARAMETER :: num = KIND(1.0) 
+  INTEGER, PARAMETER :: num = KIND(1.0)
 #else
-  INTEGER, PARAMETER :: num = KIND(1.D0) 
+  INTEGER, PARAMETER :: num = KIND(1.D0)
 #endif
   INTEGER, PARAMETER :: dbl = KIND(1.D0)
 
@@ -18,27 +18,27 @@ MODULE constants
   ! These are the real SI physical constants
   ! Permiability of free space
   REAL(num), PARAMETER :: mu0_si =  4.0e-7_num * pi
-  
+
   ! Boltzmann's Constant
   REAL(num), PARAMETER :: kb_si = 1.3806504e-23_num
-  
+
   ! Mass of hydrogen ion
   REAL(num), PARAMETER :: mh_si = 1.67262158e-27_num
-  
+
   ! Mass of electron
   REAL(num), PARAMETER :: me_si = 9.10938188e-31_num
-  
+
   ! Planck's constant
   REAL(num), PARAMETER :: hp_si = 6.626068e-34_num
-  
+
   ! Ionisation potential of hydrogen in J
   REAL(num), PARAMETER :: ionise_pot_si = 2.17870364e-18_num
-  
+
 
   REAL(num), PARAMETER :: dt_multiplier = 0.9_num
 
-  REAL(num), PARAMETER :: none_zero = TINY(1.0_num) 
-  REAL(num), PARAMETER :: largest_number = HUGE(1.0_num)  
+  REAL(num), PARAMETER :: none_zero = TINY(1.0_num)
+  REAL(num), PARAMETER :: largest_number = HUGE(1.0_num)
   REAL(num), PARAMETER :: third = 1.0_num / 3.0_num, sixth = 1.0_num / 6.0_num
   INTEGER, PARAMETER :: BC_PERIODIC = 1, BC_OTHER = 2
   INTEGER, PARAMETER :: BC_OPEN = 3
@@ -67,7 +67,7 @@ MODULE shared_data
   INTEGER :: mpireal = MPI_REAL
 #else
   INTEGER :: mpireal = MPI_DOUBLE_PRECISION
-#endif  
+#endif
 
   INTEGER :: nx_global, ny_global, nz_global
   ! NB: as there are now 2 ghost celss so indexing will fail if (nx, ny, nz)<2
@@ -110,21 +110,21 @@ MODULE shared_data
   LOGICAL :: resistive_mhd, any_open
   LOGICAL :: restart
 
-  ! normalising constants                 
+  ! normalising constants
   REAL(num) :: B0, L0, rho0
   ! mass fraction - mass of ions in units of proton mass
-  REAL(num) :: mf  
-  !convertion factor to get temperature in MK from normalised energy  
+  REAL(num) :: mf
+  !convertion factor to get temperature in MK from normalised energy
   REAL(num) :: t2tmk
   ! normalisation used for radiative losses
   REAL(num) :: lr_star
   ! normalisation used for coronal heating
   REAL(num) :: h_star
-  
+
   ! Heat conduction
   LOGICAL :: conduction, radiation, coronal_heating
   LOGICAL :: heat_flux_limiter
-  REAL(num) :: kappa_0, flux_limiter, temperature_100mk  
+  REAL(num) :: kappa_0, flux_limiter, temperature_100mk
 
   ! Equation of state
   INTEGER :: eos_number = EOS_IDEAL

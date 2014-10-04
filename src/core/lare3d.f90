@@ -12,7 +12,7 @@ PROGRAM lare3d
   USE welcome
   USE normalise
   USE neutral
-  USE control 
+  USE control
 
   IMPLICIT NONE
 
@@ -34,16 +34,16 @@ PROGRAM lare3d
 
   CALL set_boundary_conditions   ! boundary.f90
   CALL open_files                ! setup.f90
-  CALL grid                      ! setup.f90 
-  
+  CALL grid                      ! setup.f90
+
   IF (IAND(initial, IC_RESTART) .NE. 0) THEN
     CALL set_initial_conditions  ! initial_conditions.f90
     CALL restart_data            ! setup.f90
     restart = .TRUE.
   END IF
 
-  ! Initial conditions, parameters etc. 
-  IF (IAND(initial, IC_NEW) .NE. 0) THEN    
+  ! Initial conditions, parameters etc.
+  IF (IAND(initial, IC_NEW) .NE. 0) THEN
     CALL set_initial_conditions  ! initial_conditions.f90
   END IF
 
@@ -51,7 +51,7 @@ PROGRAM lare3d
   CALL boundary_conditions       ! boundary.f90
   CALL eta_calc                  ! lagran.f90
 
-  IF (eos_number /= EOS_IDEAL) CALL neutral_fraction ! neutral.f90 
+  IF (eos_number /= EOS_IDEAL) CALL neutral_fraction ! neutral.f90
   IF (eos_number == EOS_IDEAL .AND. neutral_gas) xi_n = 1.0_num
   IF (cowling_resistivity) CALL perpendicular_resistivity ! neutral.f90
 
@@ -63,14 +63,14 @@ PROGRAM lare3d
     IF ((i >= nsteps .AND. nsteps >= 0) .OR. (time >= t_end)) EXIT
     i = i + 1
     CALL eta_calc                    ! lagran.f90
-    CALL set_dt                      ! diagnostics.f90  
-    IF (eos_number /= EOS_IDEAL) CALL neutral_fraction ! neutral.f90    
+    CALL set_dt                      ! diagnostics.f90
+    IF (eos_number /= EOS_IDEAL) CALL neutral_fraction ! neutral.f90
     CALL lagrangian_step             ! lagran.f90
     CALL eulerian_remap(i)           ! remap.f90
     IF (rke) CALL energy_correction  ! diagnostics.f90
     IF (any_open) THEN
       CALL open_bcs                  ! openboundary.f90
-    END IF                 
+    END IF
     CALL output_routines(i)          ! diagnostics.f90
   END DO
 

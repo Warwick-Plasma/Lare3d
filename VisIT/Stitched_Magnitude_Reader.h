@@ -15,7 +15,7 @@ class Stitched_Magnitude_Reader : public BlockReader
     char *MeshName;
     char *MeshClass;
     Block **SubBlocks;
-    
+
  public:
  virtual vtkDataArray * GetVar(int domain);
  virtual vtkDataArray * GetVectorVar(int domain){return NULL;}

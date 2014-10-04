@@ -70,7 +70,7 @@ class avtCFDFileFormat : public avtSTMDFileFormat
     // information to information about block connectivity.
     //
     // virtual void      *GetAuxiliaryData(const char *var, int domain,
-    //                                     const char *type, void *args, 
+    //                                     const char *type, void *args,
     //                                     DestructorFunction &);
     //
 
@@ -85,7 +85,7 @@ class avtCFDFileFormat : public avtSTMDFileFormat
     //
 
     virtual const char    *GetType(void)   { return "CFD"; };
-    virtual void           FreeUpResources(void); 
+    virtual void           FreeUpResources(void);
 
     virtual vtkDataSet    *GetMesh(int, const char *);
     virtual vtkDataArray  *GetVar(int, const char *);

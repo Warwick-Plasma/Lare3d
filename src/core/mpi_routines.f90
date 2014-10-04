@@ -48,8 +48,8 @@ CONTAINS
     IF (zbc_min == BC_OTHER) periods(1) = .FALSE.
     IF (xbc_min == BC_OPEN) periods(3) = .FALSE.
     IF (ybc_max == BC_OPEN) periods(2) = .FALSE.
-    IF (zbc_min == BC_OPEN) periods(1) = .FALSE. 
-    
+    IF (zbc_min == BC_OPEN) periods(1) = .FALSE.
+
     IF (xbc_max == BC_OTHER) periods(3) = .FALSE.
     IF (ybc_min == BC_OTHER) periods(2) = .FALSE.
     IF (zbc_max == BC_OTHER) periods(1) = .FALSE.
@@ -160,7 +160,7 @@ CONTAINS
     ALLOCATE(xb_global(-2:nx_global+2))
     ALLOCATE(yb_global(-2:ny_global+2))
     ALLOCATE(zb_global(-2:nz_global+2))
-    
+
     IF (rank == 0) start_time = MPI_WTIME()
 
     p_visc = 0.0_num
@@ -197,14 +197,14 @@ CONTAINS
     DEALLOCATE(xc, xb, dxb, dxc)
     DEALLOCATE(yc, yb, dyb, dyc)
     DEALLOCATE(grav)
-    DEALLOCATE(jx_r, jy_r, jz_r)  
+    DEALLOCATE(jx_r, jy_r, jz_r)
     DEALLOCATE(xb_global, yb_global, zb_global)
-    
-    IF (ALLOCATED(xi_n)) DEALLOCATE(xi_n)  
+
+    IF (ALLOCATED(xi_n)) DEALLOCATE(xi_n)
     IF (ALLOCATED(delta_ke)) DEALLOCATE(delta_ke)
     IF (ALLOCATED(eta_perp)) DEALLOCATE(eta_perp)
     IF (ALLOCATED(parallel_current)) DEALLOCATE(parallel_current)
-    IF (ALLOCATED(perp_current)) DEALLOCATE(perp_current)    
+    IF (ALLOCATED(perp_current)) DEALLOCATE(perp_current)
 
   END SUBROUTINE mpi_close
 

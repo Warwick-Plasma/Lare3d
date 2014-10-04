@@ -16,14 +16,14 @@
   #define MESH_PARTICLE 1
 
   #define PARTICLE_CARTESIAN 0
-  #define PARTICLE_POLAR 1 
+  #define PARTICLE_POLAR 1
   #define PARTICLE_CYLINDRICAL 2
 
   #define VAR_CARTESIAN  0
   #define VAR_PARTICLE 1
 
   #define DIMENSION_IRRELEVANT 0
-  #define DIMENSION_1D 1 
+  #define DIMENSION_1D 1
   #define DIMENSION_2D 2
   #define DIMENSION_3D 3
 

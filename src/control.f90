@@ -21,7 +21,7 @@ CONTAINS
 
     ! The equations describing the normalisation in LARE
     ! have three free parameters which must be specified by
-    ! the end user. 
+    ! the end user.
 
     ! Magnetic field normalisation in Tesla
     B0 = 0.03_num
@@ -91,19 +91,19 @@ CONTAINS
     eta0 = 0.0_num
 
     ! Turn on or off the Braginskii thermal conduction term in
-    ! the MHD equations   
-    conduction = .FALSE. 
+    ! the MHD equations
+    conduction = .FALSE.
     ! Apply a flux limiter to stop heat flows exceeding free streaming limit
     ! this is an experimental feature
     heat_flux_limiter = .FALSE.
     ! Fraction of free streaming heat flux used in limiter
     flux_limiter = 0.01_num
-    
-    ! Use radiation as specified in SUBROUTINE rad_losses in src/core/conduct.f90   
+
+    ! Use radiation as specified in SUBROUTINE rad_losses in src/core/conduct.f90
     radiation = .FALSE.
     ! Use coronal heating as specified in SUBROUTINE heating in src/core/conduct.f90
-    coronal_heating = .FALSE.       
-    
+    coronal_heating = .FALSE.
+
     ! Remap kinetic energy correction. LARE does not
     ! perfectly conserve kinetic energy during the remap step
     ! This missing energy can be added back into the simulation
@@ -120,7 +120,7 @@ CONTAINS
     restart_snapshot = 1
 
     ! If cowling_resistivity is true then the code calculates and
-    ! applies the Cowling Resistivity to the MHD equations     
+    ! applies the Cowling Resistivity to the MHD equations
     ! only possible if not EOS_IDEAL
     cowling_resistivity = .FALSE.
 
@@ -144,7 +144,7 @@ CONTAINS
     ! Set the equation of state. Valid choices are
     ! EOS_IDEAL - Simple ideal gas for perfectly ionised plasma
     ! EOS_PI - Simple ideal gas for partially ionised plasma
-    ! EOS_ION - EOS_PI plus the ionisation potential 
+    ! EOS_ION - EOS_PI plus the ionisation potential
     ! N.B. read the manual for notes on these choices
     eos_number = EOS_IDEAL
     ! EOS_IDEAL also requires that you specific whether
@@ -194,10 +194,10 @@ CONTAINS
     ! If the element is false then the field isn't dumped
     ! N.B. if dump_mask(1:8) not true then the restart will not work
     dump_mask = .FALSE.
-    dump_mask(1:9) = .TRUE. 
-    IF (eos_number /= EOS_IDEAL)  dump_mask(14) = .TRUE. 
-    IF (cowling_resistivity)  dump_mask(15) = .TRUE. 
-    IF (resistive_mhd)  dump_mask(16) = .TRUE. 
+    dump_mask(1:9) = .TRUE.
+    IF (eos_number /= EOS_IDEAL)  dump_mask(14) = .TRUE.
+    IF (cowling_resistivity)  dump_mask(15) = .TRUE.
+    IF (resistive_mhd)  dump_mask(16) = .TRUE.
 
   END SUBROUTINE set_output_dumps
 

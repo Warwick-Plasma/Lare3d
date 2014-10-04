@@ -561,7 +561,7 @@ CONTAINS
 
           ! vad_p and vad_m are logical switches which determine v_advect>=0
           ! and v_advect<0 respectively. It's written this way to allow vector
-          ! optimization 
+          ! optimization
 
           vad_p = (SIGN(1.0_num, v_advect) + 1.0_num) * 0.5_num
           vad_m = (SIGN(1.0_num, -v_advect) + 1.0_num) * 0.5_num

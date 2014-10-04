@@ -32,7 +32,7 @@ boundary.f90 controls the boundary conditions for the code. Details on the bound
 diagnostics.f90
 
 diagnostics.f90 performs the output of data to the output dump files, and must be changed by the user if additional output data is required. Changing the output dumps is described in the LARE manual
------------------------------------------------------------------                          
+-----------------------------------------------------------------
 
 
 
@@ -55,6 +55,6 @@ This was needed to simplify maintenance of the code. Names are now
   zbc_min = BC_OTHER
 Hopefully these names need no explaining.
 
-3. The neutral fraction based on modified Saha uses the local temperature, without a 
-dilution factor, below a height of 0. Therefore the photosphere must be defined at z=0 
+3. The neutral fraction based on modified Saha uses the local temperature, without a
+dilution factor, below a height of 0. Therefore the photosphere must be defined at z=0
 for this to work.

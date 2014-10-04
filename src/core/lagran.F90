@@ -59,7 +59,7 @@ CONTAINS
       dt = actual_dt
     END IF
 
-    IF (conduction .OR. coronal_heating .OR. radiation) CALL conduct_heat 
+    IF (conduction .OR. coronal_heating .OR. radiation) CALL conduct_heat
 
     DO iz = 0, nz+1
       izm = iz - 1
@@ -115,9 +115,9 @@ CONTAINS
             pressure(ix, iy, iz) = pressure(ix, iy, iz) + p_visc(ix, iy, iz)
 #endif
           e1 = energy(ix, iy, iz) - pressure(ix, iy, iz) * dv / rho(ix, iy, iz)
-          e1 = e1  + visc_heat(ix, iy, iz) * dt2 / rho(ix, iy, iz) 
+          e1 = e1  + visc_heat(ix, iy, iz) * dt2 / rho(ix, iy, iz)
 
-          ! now define the predictor step pressures 
+          ! now define the predictor step pressures
           pressure(ix,iy,iz) = (e1 - (1.0_num - xi_n(ix,iy,iz)) * ionise_pot) &
                   * (gamma - 1.0_num) * rho(ix,iy,iz) * cv(ix,iy,iz) / cv1(ix,iy,iz)
 #ifdef QMONO
@@ -160,19 +160,19 @@ CONTAINS
           w2 = (qxx(ixp, iy, iz) + qxx(ixp, iyp, iz) &
               + qxx(ixp, iy, izp) + qxx(ixp, iyp, izp)) * 0.25_num
           fx = fx + (w2 - w1) / dxc(ix)
-  
+
           w1 = (qyy(ix, iy, iz) + qyy(ixp, iy, iz) &
               + qyy(ix, iy, izp) + qyy(ixp, iy, izp)) * 0.25_num
           w2 = (qyy(ix, iyp, iz) + qyy(ixp, iyp, iz) &
               + qyy(ix, iyp, izp) + qyy(ixp, iyp, izp)) * 0.25_num
           fy = fy + (w2 - w1) / dyc(iy)
-  
+
           w1 = (qzz(ix, iy, iz) + qzz(ixp, iy, iz) &
               + qzz(ix, iyp, iz) + qzz(ixp, iyp, iz)) * 0.25_num
           w2 = (qzz(ix, iy, izp) + qzz(ixp, iy, izp) &
               + qzz(ix, iyp, izp) + qzz(ixp, iyp, izp)) * 0.25_num
           fz = fz + (w2 - w1) / dzc(iz)
-  
+
           ! add shear viscosity forces
           ! fx
           w1 = (qxy(ix, iy, iz) + qxy(ixp, iy, iz) &
@@ -180,33 +180,33 @@ CONTAINS
           w2 = (qxy(ix, iyp, iz) + qxy(ixp, iyp, iz) &
               + qxy(ix, iyp, izp) + qxy(ixp, iyp, izp)) * 0.25_num
           fx = fx + (w2 - w1) / dyc(iy)
-  
+
           w1 = (qxz(ix, iy, iz) + qxz(ixp, iy, iz) &
               + qxz(ix, iyp, iz) + qxz(ixp, iyp, iz)) * 0.25_num
           w2 = (qxz(ix, iy, izp) + qxz(ixp, iy, izp) &
               + qxz(ix, iyp, izp) + qxz(ixp, iyp, izp)) * 0.25_num
           fx = fx + (w2 - w1) / dzc(iz)
-  
+
           ! fy
           w1 = (qxy(ix, iy, iz) + qxy(ix, iyp, iz) &
               + qxy(ix, iy, izp) + qxy(ix, iyp, izp)) * 0.25_num
           w2 = (qxy(ixp, iy, iz) + qxy(ixp, iyp, iz) &
               + qxy(ixp, iy, izp) + qxy(ixp, iyp, izp)) * 0.25_num
           fy = fy + (w2 - w1) / dxc(ix)
-  
+
           w1 = (qyz(ix, iy, iz) + qyz(ixp, iy, iz) &
               + qyz(ix, iyp, iz) + qyz(ixp, iyp, iz)) * 0.25_num
           w2 = (qyz(ix, iy, izp) + qyz(ixp, iy, izp) &
               + qyz(ix, iyp, izp) + qyz(ixp, iyp, izp)) * 0.25_num
           fy = fy + (w2 - w1) / dzc(iz)
- 
+
           ! fz
           w1 = (qxz(ix, iy, iz) + qxz(ix, iyp, iz) &
               + qxz(ix, iy, izp) + qxz(ix, iyp, izp)) * 0.25_num
           w2 = (qxz(ixp, iy, iz) + qxz(ixp, iyp, iz) &
               + qxz(ixp, iy, izp) + qxz(ixp, iyp, izp)) * 0.25_num
           fz = fz + (w2 - w1) / dxc(ix)
- 
+
           w1 = (qyz(ix, iy, iz) + qyz(ixp, iy, iz) &
               + qyz(ix, iy, izp) + qyz(ixp, iy, izp)) * 0.25_num
           w2 = (qyz(ix, iyp, iz) + qyz(ixp, iyp, iz) &
@@ -360,8 +360,8 @@ CONTAINS
           rho(ix, iy, iz) = rho(ix, iy, iz) / (1.0_num + dv)
 
           total_visc_heating = total_visc_heating &
-                + dt * visc_heat(ix, iy, iz) * cv(ix, iy, iz) 
-                
+                + dt * visc_heat(ix, iy, iz) * cv(ix, iy, iz)
+
 #ifdef QMONO
           total_visc_heating = total_visc_heating &
               - p_visc(ix, iy, iz) * dv * cv(ix, iy, iz)
@@ -518,7 +518,7 @@ CONTAINS
           s = (dvxdx * fx**2 + dvydy * fy**2 + dvzdz * fz**2 + dvxy * fx * fy &
               + dvxz * fx * fz + dvyz * fy * fz) / MAX(w1, none_zero)
 
-!	     These flags are used to replace the rather clearer code in 
+!	     These flags are used to replace the rather clearer code in
 !	     **SECTION 1**. They are used instead to facilitate vector
 !	     optimization
              flag1=MAX(SIGN(1.0_num,dyb(iy)*ABS(fx)-dxb(ix)*ABS(fy)),0.0_num)
@@ -559,12 +559,12 @@ CONTAINS
 			!This code is equivalent to IF (s > 0 .OR. dv > 0) L=0.0
   			  sg0 = MAX(SIGN(1.0_num,s),0.0_num)
    			  dvg0 = MAX(SIGN(1.0_num,dv),0.0_num)
-          L = L * (1.0_num - dvg0) * (1.0_num -sg0) 
+          L = L * (1.0_num - dvg0) * (1.0_num -sg0)
 
           w1 = (bx1(ix, iy, iz)**2 + by1(ix, iy, iz)**2 + bz1(ix, iy, iz)**2) &
                 / rho(ix, iy, iz)
 
-          cs = SQRT(gamma*(gamma - 1.0_num) * energy(ix,iy,iz))    
+          cs = SQRT(gamma*(gamma - 1.0_num) * energy(ix,iy,iz))
           cf = SQRT(cs**2 + w1)
 
           p_visc(ix, iy, iz) = visc1 * ABS(s) * L*cf * rho(ix, iy, iz) &
@@ -591,16 +591,16 @@ CONTAINS
             qzz(ix,iy,iz) = szz * (L2 * rho(ix,iy,iz)  &
                  * (visc1 * cf + L2 * visc2 * ABS(szz)))
 #endif
-          qxy(ix,iy,iz) = qxy(ix,iy,iz) + 2.0_num * sxy  * rho(ix,iy,iz) * visc3 
-          qxz(ix,iy,iz) = qxz(ix,iy,iz) + 2.0_num * sxz  * rho(ix,iy,iz) * visc3 
-          qyz(ix,iy,iz) = qyz(ix,iy,iz) + 2.0_num * syz  * rho(ix,iy,iz) * visc3 
-          qxx(ix,iy,iz) = qxx(ix,iy,iz) + 2.0_num * sxx  * rho(ix,iy,iz) * visc3 
+          qxy(ix,iy,iz) = qxy(ix,iy,iz) + 2.0_num * sxy  * rho(ix,iy,iz) * visc3
+          qxz(ix,iy,iz) = qxz(ix,iy,iz) + 2.0_num * sxz  * rho(ix,iy,iz) * visc3
+          qyz(ix,iy,iz) = qyz(ix,iy,iz) + 2.0_num * syz  * rho(ix,iy,iz) * visc3
+          qxx(ix,iy,iz) = qxx(ix,iy,iz) + 2.0_num * sxx  * rho(ix,iy,iz) * visc3
           qyy(ix,iy,iz) = qyy(ix,iy,iz) + 2.0_num * syy  * rho(ix,iy,iz) * visc3
-          qzz(ix,iy,iz) = qzz(ix,iy,iz) + 2.0_num * SZZ  * rho(ix,iy,iz) * visc3 
+          qzz(ix,iy,iz) = qzz(ix,iy,iz) + 2.0_num * SZZ  * rho(ix,iy,iz) * visc3
 
           visc_heat(ix,iy,iz) = qxy(ix,iy,iz)*dvxy + qxz(ix,iy,iz)*dvxz &
                + qyz(ix,iy,iz)*dvyz + qxx(ix,iy,iz)*dvxdx   &
-               + qyy(ix,iy,iz)*dvydy + qzz(ix,iy,iz)*dvzdz 
+               + qyy(ix,iy,iz)*dvydy + qzz(ix,iy,iz)*dvzdz
 
           w4 = bx1(ix, iy, iz) * dvxdx &
               + by1(ix, iy, iz) * dvxdy + bz1(ix, iy, iz) * dvxdz
@@ -720,48 +720,48 @@ CONTAINS
           iyp = iy + 1
           DO ix = -1, nx+1
             ixp = ix + 1
-  
+
             ! jx at E3(i, j)
             jx = (bz(ix, iyp, iz) - bz(ix, iy, iz)) / dyc(iy) &
                 - (by(ix, iy, izp) - by(ix, iy, iz)) / dzc(iz)
-  
+
             ! jx at E3(i+1, j)
             jxxp = (bz(ixp, iyp, iz) - bz(ixp, iy, iz)) / dyc(iy) &
                 - (by(ixp, iy, izp) - by(ixp, iy, iz)) / dzc(iz)
-  
+
             ! jy at E2(i, j)
             jy = (bx(ix, iy, izp) - bx(ix, iy, iz)) / dzc(iz) &
                 - (bz(ixp, iy, iz) - bz(ix, iy, iz)) / dxc(ix)
-  
+
             ! jy at E2(i, j+1)
             jyyp = (bx(ix, iyp, izp) - bx(ix, iyp, iz)) / dzc(iz) &
                 - (bz(ixp, iyp, iz) - bz(ix, iyp, iz)) / dxc(ix)
-  
+
             ! jz at E1(i, j)
             jz = (by(ixp, iy, iz) - by(ix, iy, iz)) / dxc(ix) &
                 - (bx(ix, iyp, iz) - bx(ix, iy, iz)) / dyc(iy)
-  
+
             ! jz at E1(i, j)
             jzzp = (by(ixp, iy, izp) - by(ix, iy, izp)) / dxc(ix) &
                 - (bx(ix, iyp, izp) - bx(ix, iy, izp)) / dyc(iy)
-  
+
             ! current at V
             w4 = (jx + jxxp) * 0.5_num
             w5 = (jy + jyyp) * 0.5_num
             w6 = (jz + jzzp) * 0.5_num
             modj = SQRT(w4**2 + w5**2 + w6**2)
-  
+
             IF (modj >= j_max) THEN
               eta(ix, iy, iz) = eta_background + eta0
             ELSE
-              eta(ix, iy, iz) = eta_background 
+              eta(ix, iy, iz) = eta_background
             END IF
           END DO
         END DO
       END DO
     ELSE
-        eta = 0.0_num   
-    END IF 
+        eta = 0.0_num
+    END IF
 
   END SUBROUTINE eta_calc
 
@@ -794,11 +794,11 @@ CONTAINS
      bz1 = bz(0:nx+1, 0:ny+1, 0:nz+1)
 
      ! step 1
-     CALL rkstep  
+     CALL rkstep
 
-!default is first order in time   
-#ifndef FOURTHORDER  
-     DO iz = 1, nz  
+!default is first order in time
+#ifndef FOURTHORDER
+     DO iz = 1, nz
        izm = iz - 1
        DO iy = 1, ny
          iym = iy - 1
@@ -811,8 +811,8 @@ CONTAINS
          END DO
        END DO
      END DO
-     
-     DO iz = 1, nz 
+
+     DO iz = 1, nz
        izm = iz - 1
        DO iy = 0, ny
          iym = iy - 1
@@ -825,13 +825,13 @@ CONTAINS
          END DO
        END DO
      END DO
-     
+
      DO iz = 0, nz
        izm = iz - 1
        DO iy = 1, ny
          iym = iy - 1
          DO ix = 1, nx
-           ixm = ix - 1  
+           ixm = ix - 1
            area = dxb(ix) * dyb(iy)
            bz(ix, iy, iz) = bz1(ix, iy, iz) &
             + (flux_y(ix,iy,iz) - flux_y(ixm,iy,iz) + flux_y(ix,iym,iz) - flux_y(ixm,iym,iz)) * dt / area &
@@ -855,8 +855,8 @@ CONTAINS
                * dt / (8.0_num * rho(ix, iy, iz))
          END DO
        END DO
-     END DO    
-     
+     END DO
+
      CALL energy_bcs
 
      DO iz = 0, nz
@@ -879,9 +879,9 @@ CONTAINS
          END DO
        END DO
      END DO
-     
-!if complier flag set then use 4th order Runge-Kutta     
-#else    
+
+!if complier flag set then use 4th order Runge-Kutta
+#else
      half_dt = dt * 0.5_num
      dt6 = dt * sixth
 
@@ -890,7 +890,7 @@ CONTAINS
      k1z = flux_z
      c1 = curlb
      ! step 2
-     DO iz = 1, nz  
+     DO iz = 1, nz
        izm = iz - 1
        DO iy = 1, ny
          iym = iy - 1
@@ -904,7 +904,7 @@ CONTAINS
        END DO
      END DO
 
-     DO iz = 1, nz 
+     DO iz = 1, nz
        izm = iz - 1
        DO iy = 0, ny
          iym = iy - 1
@@ -923,7 +923,7 @@ CONTAINS
        DO iy = 1, ny
          iym = iy - 1
          DO ix = 1, nx
-           ixm = ix - 1  
+           ixm = ix - 1
            area = dxb(ix) * dyb(iy)
            bz(ix, iy, iz) = bz1(ix, iy, iz) &
                + (k1y(ix,iy,iz) - k1y(ixm,iy,iz) + k1y(ix,iym,iz) - k1y(ixm,iym,iz)) * half_dt / area &
@@ -940,7 +940,7 @@ CONTAINS
      c2 = curlb
 
      ! step 3
-     DO iz = 1, nz  
+     DO iz = 1, nz
        izm = iz - 1
        DO iy = 1, ny
          iym = iy - 1
@@ -954,7 +954,7 @@ CONTAINS
        END DO
      END DO
 
-     DO iz = 1, nz 
+     DO iz = 1, nz
        izm = iz - 1
        DO iy = 0, ny
          iym = iy - 1
@@ -973,7 +973,7 @@ CONTAINS
        DO iy = 1, ny
          iym = iy - 1
          DO ix = 1, nx
-           ixm = ix - 1  
+           ixm = ix - 1
            area = dxb(ix) * dyb(iy)
            bz(ix, iy, iz) = bz1(ix, iy, iz) &
                + (k2y(ix,iy,iz) - k2y(ixm,iy,iz) + k2y(ix,iym,iz) - k2y(ixm,iym,iz)) * half_dt / area &
@@ -991,7 +991,7 @@ CONTAINS
      c3 = curlb
 
      ! step 4
-     DO iz = 1, nz  
+     DO iz = 1, nz
        izm = iz - 1
        DO iy = 1, ny
          iym = iy - 1
@@ -1005,7 +1005,7 @@ CONTAINS
        END DO
      END DO
 
-     DO iz = 1, nz 
+     DO iz = 1, nz
        izm = iz - 1
        DO iy = 0, ny
          iym = iy - 1
@@ -1024,7 +1024,7 @@ CONTAINS
        DO iy = 1, ny
          iym = iy - 1
          DO ix = 1, nx
-           ixm = ix - 1  
+           ixm = ix - 1
            area = dxb(ix) * dyb(iy)
            bz(ix, iy, iz) = bz1(ix, iy, iz) &
                + (k3y(ix,iy,iz) - k3y(ixm,iy,iz) + k3y(ix,iym,iz) - k3y(ixm,iym,iz)) * dt / area &
@@ -1038,7 +1038,7 @@ CONTAINS
      k4x = flux_x
      k4y = flux_y
      k4z = flux_z
-     c4 = curlb        
+     c4 = curlb
 
      ! full update
      k3x = k1x + 2.0_num * k2x + 2.0_num * k3x + k4x
@@ -1046,7 +1046,7 @@ CONTAINS
      k3z = k1z + 2.0_num * k2z + 2.0_num * k3z + k4z
      c1 = c1 + 2.0_num * c2 + 2.0_num * c3 + c4
 
-     DO iz = 1, nz  
+     DO iz = 1, nz
        izm = iz - 1
        DO iy = 1, ny
          iym = iy - 1
@@ -1060,7 +1060,7 @@ CONTAINS
        END DO
      END DO
 
-     DO iz = 1, nz 
+     DO iz = 1, nz
        izm = iz - 1
        DO iy = 0, ny
          iym = iy - 1
@@ -1079,7 +1079,7 @@ CONTAINS
        DO iy = 1, ny
          iym = iy - 1
          DO ix = 1, nx
-           ixm = ix - 1  
+           ixm = ix - 1
            area = dxb(ix) * dyb(iy)
            bz(ix, iy, iz) = bz1(ix, iy, iz) &
                + (k3y(ix,iy,iz) - k3y(ixm,iy,iz) + k3y(ix,iym,iz) - k3y(ixm,iym,iz)) * dt6 / area &
@@ -1203,7 +1203,7 @@ CONTAINS
 
              jx = (jx1 + jx2) * 0.5_num
              jy = (jy1 + jy2) * 0.5_num
-             jz = (jz1 + jz2) * 0.5_num 
+             jz = (jz1 + jz2) * 0.5_num
 
              flux_x(ix, iy, iz) = -jx * eta(ix,iy,iz) * dxc(ix) * 0.5_num
              flux_y(ix, iy, iz) = -jy * eta(ix,iy,iz) * dyc(iy) * 0.5_num
@@ -1215,12 +1215,12 @@ CONTAINS
        END DO
      ELSE
        ! Use partially ionised flux calculation
-       DO iz = 0, nz 
+       DO iz = 0, nz
          izp = iz + 1
          DO iy = 0, ny
            iyp = iy + 1
            DO ix = 0, nx
-             ixp = ix + 1 
+             ixp = ix + 1
 
              jx1 = (bz(ix, iyp, iz) - bz(ix, iy, iz)) / dyc(iy) &
                  - (by(ix, iy, izp) - by(ix, iy, iz)) / dzc(iz)

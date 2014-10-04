@@ -15,7 +15,7 @@ class MeshReader : public BlockReader
 
     int *Dims;
     void *Extents;
-    
+
  public:
  virtual vtkDataArray * GetVectorVar(int domain){return NULL;}
  virtual vtkDataArray * GetVar(int domain){return NULL;}

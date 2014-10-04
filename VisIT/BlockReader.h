@@ -60,13 +60,13 @@ virtual vtkDataSet * GetMeshByName(int domain,const char* meshname) {return NULL
 
 virtual void FreeUpResources(){;}
 virtual bool Cache(){return false;}
-virtual void ConvertToFull(){;} 
+virtual void ConvertToFull(){;}
 
 virtual InternalMetaData* GetInternalMetaData() {return NULL;}
 virtual void DestroyInternalMetaData(InternalMetaData *MD) {;}
 
 virtual ~BlockReader(){;}
- BlockReader(BlockHandler *Handler,ifstream *file,Block *Owner,int MaxStringLength,bool CacheOnly); 
+ BlockReader(BlockHandler *Handler,ifstream *file,Block *Owner,int MaxStringLength,bool CacheOnly);
 };
 
 
