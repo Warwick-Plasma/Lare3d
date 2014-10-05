@@ -14,6 +14,9 @@ MODULE constants
 #endif
   INTEGER, PARAMETER :: dbl = KIND(1.D0)
 
+  ! Code dimensions
+  INTEGER, PARAMETER :: c_ndims = 3
+
   REAL(num), PARAMETER :: pi = 3.141592653589793238462643383279503_num
 
   ! These are the real SI physical constants
@@ -141,7 +144,7 @@ MODULE shared_data
   REAL(num) :: eta_bar
 
   ! MPI data
-  INTEGER :: coordinates(3)
+  INTEGER :: coordinates(c_ndims)
   INTEGER :: nprocx, proc_x_min, proc_x_max
   INTEGER :: nprocy, proc_y_min, proc_y_max
   INTEGER :: nprocz, proc_z_min, proc_z_max

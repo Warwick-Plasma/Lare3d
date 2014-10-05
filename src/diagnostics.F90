@@ -32,8 +32,8 @@ CONTAINS
     INTEGER, SAVE :: index = 1, step = 1
     REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: array
     LOGICAL :: print_arrays, last_call
-    REAL(num), DIMENSION(3) :: stagger = 0.0_num
-    INTEGER, DIMENSION(3) :: dims
+    REAL(num), DIMENSION(c_ndims) :: stagger = 0.0_num
+    INTEGER, DIMENSION(c_ndims) :: dims
 
     ! This output routine uses the same structure as needed for MPI output.
     ! This is more complicated than need for the serial code
