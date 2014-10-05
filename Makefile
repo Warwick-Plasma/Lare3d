@@ -142,6 +142,12 @@ DEFINES := $(DEF)
 # Uncomment the following line to use first order scheme for resistive update
 #DEFINES += $(D)FOURTHORDER
 
+# Uncomment to add the 'nfs' file prefix required by some filesystems
+#DEFINES += $(D)FILEPREFIX
+
+# Uncomment to turn off all I/O. Useful for benchmarking.
+#DEFINES += $(D)NO_IO
+
 
 # --------------------------------------------------
 # Shouldn't need to touch below here
@@ -167,8 +173,21 @@ SRCFILES = boundary.f90 conduct.f90 control.f90 diagnostics.F90 \
   initial_conditions.f90 input.f90 input_cartesian.f90 inputfunctions.f90 \
   iocommon.f90 iocontrol.f90 lagran.F90 lare3d.f90 mpi_routines.f90 \
   mpiboundary.f90 neutral.f90 normalise.f90 openboundary.f90 output.f90 \
-  output_cartesian.f90 remap.f90 sdf_job_info.f90 setup.F90 shared_data.F90 \
-  version_data.F90 welcome.f90 xremap.f90 yremap.f90 zremap.f90
+  remap.f90 sdf.f90 sdf_common.f90 sdf_control.f90 sdf_input.f90 \
+  sdf_input_cartesian.f90 sdf_input_cartesian_r4.f90 \
+  sdf_input_cartesian_r8.f90 sdf_input_cartesian_ru.f90 sdf_input_point.f90 \
+  sdf_input_point_r4.f90 sdf_input_point_r8.f90 sdf_input_point_ru.f90 \
+  sdf_input_r4.f90 sdf_input_r8.f90 sdf_input_ru.f90 sdf_input_station.f90 \
+  sdf_input_station_r4.f90 sdf_input_station_r8.f90 sdf_input_station_ru.f90 \
+  sdf_input_util.f90 sdf_job_info.f90 sdf_output.f90 sdf_output_cartesian.f90 \
+  sdf_output_cartesian_r4.f90 sdf_output_cartesian_r8.f90 \
+  sdf_output_cartesian_ru.f90 sdf_output_point.f90 sdf_output_point_r4.f90 \
+  sdf_output_point_r8.f90 sdf_output_point_ru.f90 sdf_output_r4.f90 \
+  sdf_output_r8.f90 sdf_output_ru.f90 sdf_output_source.f90 \
+  sdf_output_station.f90 sdf_output_station_r4.f90 sdf_output_station_r8.f90 \
+  sdf_output_station_ru.f90 sdf_output_util.f90 sdf_source_info_dummy.f90 \
+  setup.F90 shared_data.F90 version_data.F90 welcome.f90 xremap.f90 yremap.f90 \
+  zremap.f90
 
 OBJFILES := $(SRCFILES:.f90=.o)
 OBJFILES := $(OBJFILES:.F90=.o)
@@ -221,8 +240,8 @@ $(OBJDIR):
 boundary.o: boundary.f90 mpiboundary.o shared_data.o
 conduct.o: conduct.f90 boundary.o shared_data.o
 control.o: control.f90 normalise.o shared_data.o
-diagnostics.o: diagnostics.F90 boundary.o conduct.o iocontrol.o output.o \
-  output_cartesian.o shared_data.o version_data.o
+diagnostics.o: diagnostics.F90 boundary.o conduct.o sdf.o shared_data.o \
+  version_data.o
 initial_conditions.o: initial_conditions.f90 neutral.o shared_data.o
 input.o: input.f90 inputfunctions.o iocommon.o shared_data.o
 input_cartesian.o: input_cartesian.f90 inputfunctions.o iocommon.o shared_data.o
@@ -239,12 +258,63 @@ neutral.o: neutral.f90 boundary.o shared_data.o
 normalise.o: normalise.f90 shared_data.o
 openboundary.o: openboundary.f90 shared_data.o
 output.o: output.f90 iocommon.o shared_data.o
-output_cartesian.o: output_cartesian.f90 iocommon.o output.o shared_data.o
 remap.o: remap.f90 shared_data.o xremap.o yremap.o zremap.o
+sdf.o: sdf.f90 sdf_control.o sdf_input.o sdf_input_cartesian.o \
+  sdf_input_point.o sdf_input_station.o sdf_input_util.o sdf_output.o \
+  sdf_output_cartesian.o sdf_output_point.o sdf_output_source.o \
+  sdf_output_station.o
+sdf_common.o: sdf_common.f90 sdf_job_info.o
+sdf_control.o: sdf_control.f90 sdf_output_util.o
+sdf_input.o: sdf_input.f90 sdf_input_r4.o sdf_input_r8.o
+sdf_input_cartesian.o: sdf_input_cartesian.f90 sdf_input_cartesian_r4.o \
+  sdf_input_cartesian_r8.o
+sdf_input_cartesian_r4.o: sdf_input_cartesian_r4.f90 sdf_input_cartesian_ru.o
+sdf_input_cartesian_r8.o: sdf_input_cartesian_r8.f90 sdf_input_cartesian_ru.o
+sdf_input_cartesian_ru.o: sdf_input_cartesian_ru.f90 sdf_input_ru.o
+sdf_input_point.o: sdf_input_point.f90 sdf_input_point_r4.o sdf_input_point_r8.o
+sdf_input_point_r4.o: sdf_input_point_r4.f90 sdf_common.o sdf_input_point_ru.o
+sdf_input_point_r8.o: sdf_input_point_r8.f90 sdf_common.o sdf_input_point_ru.o
+sdf_input_point_ru.o: sdf_input_point_ru.f90 sdf_common.o sdf_input_ru.o
+sdf_input_r4.o: sdf_input_r4.f90 sdf_input_ru.o
+sdf_input_r8.o: sdf_input_r8.f90 sdf_input_ru.o
+sdf_input_ru.o: sdf_input_ru.f90 sdf_common.o
+sdf_input_station.o: sdf_input_station.f90 sdf_input_station_r4.o \
+  sdf_input_station_r8.o sdf_input_station_ru.o
+sdf_input_station_r4.o: sdf_input_station_r4.f90 sdf_input_station_ru.o
+sdf_input_station_r8.o: sdf_input_station_r8.f90 sdf_input_station_ru.o
+sdf_input_station_ru.o: sdf_input_station_ru.f90 sdf_input_ru.o
+sdf_input_util.o: sdf_input_util.f90 sdf_input.o sdf_input_cartesian.o \
+  sdf_input_point.o sdf_input_station.o sdf_output_station_ru.o
 sdf_job_info.o: sdf_job_info.f90
+sdf_output.o: sdf_output.f90 sdf_output_r4.o sdf_output_r8.o sdf_output_ru.o
+sdf_output_cartesian.o: sdf_output_cartesian.f90 sdf_output_cartesian_r4.o \
+  sdf_output_cartesian_r8.o
+sdf_output_cartesian_r4.o: sdf_output_cartesian_r4.f90 sdf_output_cartesian_ru.o
+sdf_output_cartesian_r8.o: sdf_output_cartesian_r8.f90 sdf_output_cartesian_ru.o
+sdf_output_cartesian_ru.o: sdf_output_cartesian_ru.f90 sdf_output_ru.o
+sdf_output_point.o: sdf_output_point.f90 sdf_output_point_r4.o \
+  sdf_output_point_r8.o
+sdf_output_point_r4.o: sdf_output_point_r4.f90 sdf_common.o \
+  sdf_output_point_ru.o
+sdf_output_point_r8.o: sdf_output_point_r8.f90 sdf_common.o \
+  sdf_output_point_ru.o
+sdf_output_point_ru.o: sdf_output_point_ru.f90 sdf_common.o sdf_output_ru.o
+sdf_output_r4.o: sdf_output_r4.f90 sdf_output_ru.o
+sdf_output_r8.o: sdf_output_r8.f90 sdf_output_ru.o
+sdf_output_ru.o: sdf_output_ru.f90 sdf_common.o
+sdf_output_source.o: sdf_output_source.f90 sdf_common.o sdf_output.o \
+  sdf_source_info_dummy.o
+sdf_output_station.o: sdf_output_station.f90 sdf_output_station_r4.o \
+  sdf_output_station_r8.o
+sdf_output_station_r4.o: sdf_output_station_r4.f90 sdf_output_station_ru.o
+sdf_output_station_r8.o: sdf_output_station_r8.f90 sdf_output_station_ru.o
+sdf_output_station_ru.o: sdf_output_station_ru.f90 sdf_output_ru.o
+sdf_output_util.o: sdf_output_util.f90 sdf_output_cartesian_ru.o \
+  sdf_output_point_ru.o
+sdf_source_info_dummy.o: sdf_source_info_dummy.f90
 setup.o: setup.F90 input.o input_cartesian.o iocommon.o iocontrol.o \
   sdf_job_info.o shared_data.o
-shared_data.o: shared_data.F90 sdf_job_info.o
+shared_data.o: shared_data.F90 sdf.o sdf_job_info.o
 version_data.o: version_data.F90 COMMIT
 welcome.o: welcome.f90 shared_data.o version_data.o
 xremap.o: xremap.f90 boundary.o
