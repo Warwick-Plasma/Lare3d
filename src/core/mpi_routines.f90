@@ -310,6 +310,8 @@ CONTAINS
     p_visc = 0.0_num
     eta = 0.0_num
 
+    CALL mpi_create_types
+
   END SUBROUTINE mpi_initialise
 
 
@@ -335,6 +337,8 @@ CONTAINS
 
     CALL MPI_BARRIER(comm, errcode)
 
+    CALL mpi_destroy_types
+
     DEALLOCATE(rho, energy)
     DEALLOCATE(vx, vy, vz)
     DEALLOCATE(vx1, vy1, vz1)
@@ -359,5 +363,331 @@ CONTAINS
     IF (ALLOCATED(perp_current)) DEALLOCATE(perp_current)
 
   END SUBROUTINE mpi_close
+
+
+
+  SUBROUTINE mpi_create_types
+
+    INTEGER :: sizes(c_ndims), subsizes(c_ndims), starts(c_ndims)
+    INTEGER :: local_dims(c_ndims)
+    INTEGER :: idir, vdir, mpitype
+    INTEGER, PARAMETER :: ng = 2 ! Number of ghost cells
+
+    local_dims = (/ nx, ny, nz /)
+
+    ! MPI types for cell-centred variables
+
+    ! Cell-centred array dimensions
+    sizes = local_dims + 2 * ng
+
+    ! ng cells, 1d slice of cell-centred variable
+
+    idir = 1
+    subsizes = sizes
+    subsizes(idir) = ng
+    starts = 0
+
+    mpitype = MPI_DATATYPE_NULL
+    CALL MPI_TYPE_CREATE_SUBARRAY(c_ndims, sizes, subsizes, starts, &
+        MPI_ORDER_FORTRAN, mpireal, mpitype, errcode)
+    CALL MPI_TYPE_COMMIT(mpitype, errcode)
+
+    cell_xface = mpitype
+
+    idir = 2
+    subsizes = sizes
+    subsizes(idir) = ng
+
+    mpitype = MPI_DATATYPE_NULL
+    CALL MPI_TYPE_CREATE_SUBARRAY(c_ndims, sizes, subsizes, starts, &
+        MPI_ORDER_FORTRAN, mpireal, mpitype, errcode)
+    CALL MPI_TYPE_COMMIT(mpitype, errcode)
+
+    cell_yface = mpitype
+
+    idir = 3
+    subsizes = sizes
+    subsizes(idir) = ng
+
+    mpitype = MPI_DATATYPE_NULL
+    CALL MPI_TYPE_CREATE_SUBARRAY(c_ndims, sizes, subsizes, starts, &
+        MPI_ORDER_FORTRAN, mpireal, mpitype, errcode)
+    CALL MPI_TYPE_COMMIT(mpitype, errcode)
+
+    cell_zface = mpitype
+
+    ! MPI types for node-centred variables
+
+    ! Node-centred array dimensions
+    sizes = local_dims + 2 * ng + 1
+
+    ! ng cells, 1d slice of node-centred variable
+
+    idir = 1
+    subsizes = sizes
+    subsizes(idir) = ng
+    starts = 0
+
+    mpitype = MPI_DATATYPE_NULL
+    CALL MPI_TYPE_CREATE_SUBARRAY(c_ndims, sizes, subsizes, starts, &
+        MPI_ORDER_FORTRAN, mpireal, mpitype, errcode)
+    CALL MPI_TYPE_COMMIT(mpitype, errcode)
+
+    node_xface = mpitype
+
+    idir = 2
+    subsizes = sizes
+    subsizes(idir) = ng
+
+    mpitype = MPI_DATATYPE_NULL
+    CALL MPI_TYPE_CREATE_SUBARRAY(c_ndims, sizes, subsizes, starts, &
+        MPI_ORDER_FORTRAN, mpireal, mpitype, errcode)
+    CALL MPI_TYPE_COMMIT(mpitype, errcode)
+
+    node_yface = mpitype
+
+    idir = 3
+    subsizes = sizes
+    subsizes(idir) = ng
+
+    mpitype = MPI_DATATYPE_NULL
+    CALL MPI_TYPE_CREATE_SUBARRAY(c_ndims, sizes, subsizes, starts, &
+        MPI_ORDER_FORTRAN, mpireal, mpitype, errcode)
+    CALL MPI_TYPE_COMMIT(mpitype, errcode)
+
+    node_zface = mpitype
+
+    ! ng+1 cells, 1d slice of node-centred variable
+
+    idir = 1
+    subsizes = sizes
+    subsizes(idir) = ng + 1
+
+    mpitype = MPI_DATATYPE_NULL
+    CALL MPI_TYPE_CREATE_SUBARRAY(c_ndims, sizes, subsizes, starts, &
+        MPI_ORDER_FORTRAN, mpireal, mpitype, errcode)
+    CALL MPI_TYPE_COMMIT(mpitype, errcode)
+
+    node_xface1 = mpitype
+
+    idir = 2
+    subsizes = sizes
+    subsizes(idir) = ng + 1
+
+    mpitype = MPI_DATATYPE_NULL
+    CALL MPI_TYPE_CREATE_SUBARRAY(c_ndims, sizes, subsizes, starts, &
+        MPI_ORDER_FORTRAN, mpireal, mpitype, errcode)
+    CALL MPI_TYPE_COMMIT(mpitype, errcode)
+
+    node_yface1 = mpitype
+
+    idir = 3
+    subsizes = sizes
+    subsizes(idir) = ng + 1
+
+    mpitype = MPI_DATATYPE_NULL
+    CALL MPI_TYPE_CREATE_SUBARRAY(c_ndims, sizes, subsizes, starts, &
+        MPI_ORDER_FORTRAN, mpireal, mpitype, errcode)
+    CALL MPI_TYPE_COMMIT(mpitype, errcode)
+
+    node_zface1 = mpitype
+
+    ! MPI types for Bx-sized variables
+    vdir = 1
+
+    ! Bx-sized array dimensions
+    sizes = local_dims + 2 * ng
+    sizes(vdir) = sizes(vdir) + 1
+
+    ! ng cells, 1d slice of Bx-sized variable
+
+    idir = 1
+    subsizes = sizes
+    subsizes(idir) = ng
+    starts = 0
+
+    mpitype = MPI_DATATYPE_NULL
+    CALL MPI_TYPE_CREATE_SUBARRAY(c_ndims, sizes, subsizes, starts, &
+        MPI_ORDER_FORTRAN, mpireal, mpitype, errcode)
+    CALL MPI_TYPE_COMMIT(mpitype, errcode)
+
+    bx_xface = mpitype
+
+    idir = 2
+    subsizes = sizes
+    subsizes(idir) = ng
+
+    mpitype = MPI_DATATYPE_NULL
+    CALL MPI_TYPE_CREATE_SUBARRAY(c_ndims, sizes, subsizes, starts, &
+        MPI_ORDER_FORTRAN, mpireal, mpitype, errcode)
+    CALL MPI_TYPE_COMMIT(mpitype, errcode)
+
+    bx_yface = mpitype
+
+    idir = 3
+    subsizes = sizes
+    subsizes(idir) = ng
+
+    mpitype = MPI_DATATYPE_NULL
+    CALL MPI_TYPE_CREATE_SUBARRAY(c_ndims, sizes, subsizes, starts, &
+        MPI_ORDER_FORTRAN, mpireal, mpitype, errcode)
+    CALL MPI_TYPE_COMMIT(mpitype, errcode)
+
+    bx_zface = mpitype
+
+    ! ng+1 cells, 1d slice of Bx-sized variable
+
+    idir = vdir
+    subsizes = sizes
+    subsizes(idir) = ng + 1
+
+    mpitype = MPI_DATATYPE_NULL
+    CALL MPI_TYPE_CREATE_SUBARRAY(c_ndims, sizes, subsizes, starts, &
+        MPI_ORDER_FORTRAN, mpireal, mpitype, errcode)
+    CALL MPI_TYPE_COMMIT(mpitype, errcode)
+
+    bx_xface1 = mpitype
+
+    ! MPI types for By-sized variables
+    vdir = 2
+
+    ! By-sized array dimensions
+    sizes = local_dims + 2 * ng
+    sizes(vdir) = sizes(vdir) + 1
+
+    ! ng cells, 1d slice of By-sized variable
+
+    idir = 1
+    subsizes = sizes
+    subsizes(idir) = ng
+    starts = 0
+
+    mpitype = MPI_DATATYPE_NULL
+    CALL MPI_TYPE_CREATE_SUBARRAY(c_ndims, sizes, subsizes, starts, &
+        MPI_ORDER_FORTRAN, mpireal, mpitype, errcode)
+    CALL MPI_TYPE_COMMIT(mpitype, errcode)
+
+    by_xface = mpitype
+
+    idir = 2
+    subsizes = sizes
+    subsizes(idir) = ng
+
+    mpitype = MPI_DATATYPE_NULL
+    CALL MPI_TYPE_CREATE_SUBARRAY(c_ndims, sizes, subsizes, starts, &
+        MPI_ORDER_FORTRAN, mpireal, mpitype, errcode)
+    CALL MPI_TYPE_COMMIT(mpitype, errcode)
+
+    by_yface = mpitype
+
+    idir = 3
+    subsizes = sizes
+    subsizes(idir) = ng
+
+    mpitype = MPI_DATATYPE_NULL
+    CALL MPI_TYPE_CREATE_SUBARRAY(c_ndims, sizes, subsizes, starts, &
+        MPI_ORDER_FORTRAN, mpireal, mpitype, errcode)
+    CALL MPI_TYPE_COMMIT(mpitype, errcode)
+
+    by_zface = mpitype
+
+    ! ng+1 cells, 1d slice of By-sized variable
+
+    idir = vdir
+    subsizes = sizes
+    subsizes(idir) = ng + 1
+
+    mpitype = MPI_DATATYPE_NULL
+    CALL MPI_TYPE_CREATE_SUBARRAY(c_ndims, sizes, subsizes, starts, &
+        MPI_ORDER_FORTRAN, mpireal, mpitype, errcode)
+    CALL MPI_TYPE_COMMIT(mpitype, errcode)
+
+    by_yface1 = mpitype
+
+    ! MPI types for Bz-sized variables
+    vdir = 3
+
+    ! Bz-sized array dimensions
+    sizes = local_dims + 2 * ng
+    sizes(vdir) = sizes(vdir) + 1
+
+    ! ng cells, 1d slice of Bz-sized variable
+
+    idir = 1
+    subsizes = sizes
+    subsizes(idir) = ng
+    starts = 0
+
+    mpitype = MPI_DATATYPE_NULL
+    CALL MPI_TYPE_CREATE_SUBARRAY(c_ndims, sizes, subsizes, starts, &
+        MPI_ORDER_FORTRAN, mpireal, mpitype, errcode)
+    CALL MPI_TYPE_COMMIT(mpitype, errcode)
+
+    bz_xface = mpitype
+
+    idir = 2
+    subsizes = sizes
+    subsizes(idir) = ng
+
+    mpitype = MPI_DATATYPE_NULL
+    CALL MPI_TYPE_CREATE_SUBARRAY(c_ndims, sizes, subsizes, starts, &
+        MPI_ORDER_FORTRAN, mpireal, mpitype, errcode)
+    CALL MPI_TYPE_COMMIT(mpitype, errcode)
+
+    bz_yface = mpitype
+
+    idir = 3
+    subsizes = sizes
+    subsizes(idir) = ng
+
+    mpitype = MPI_DATATYPE_NULL
+    CALL MPI_TYPE_CREATE_SUBARRAY(c_ndims, sizes, subsizes, starts, &
+        MPI_ORDER_FORTRAN, mpireal, mpitype, errcode)
+    CALL MPI_TYPE_COMMIT(mpitype, errcode)
+
+    bz_zface = mpitype
+
+    ! ng+1 cells, 1d slice of Bz-sized variable
+
+    idir = vdir
+    subsizes = sizes
+    subsizes(idir) = ng + 1
+
+    mpitype = MPI_DATATYPE_NULL
+    CALL MPI_TYPE_CREATE_SUBARRAY(c_ndims, sizes, subsizes, starts, &
+        MPI_ORDER_FORTRAN, mpireal, mpitype, errcode)
+    CALL MPI_TYPE_COMMIT(mpitype, errcode)
+
+    bz_zface1 = mpitype
+
+  END SUBROUTINE mpi_create_types
+
+
+
+  SUBROUTINE mpi_destroy_types
+
+    CALL MPI_TYPE_FREE(cell_xface, errcode)
+    CALL MPI_TYPE_FREE(cell_yface, errcode)
+    CALL MPI_TYPE_FREE(cell_zface, errcode)
+    CALL MPI_TYPE_FREE(node_xface, errcode)
+    CALL MPI_TYPE_FREE(node_yface, errcode)
+    CALL MPI_TYPE_FREE(node_zface, errcode)
+    CALL MPI_TYPE_FREE(node_xface1, errcode)
+    CALL MPI_TYPE_FREE(node_yface1, errcode)
+    CALL MPI_TYPE_FREE(node_zface1, errcode)
+    CALL MPI_TYPE_FREE(bx_xface, errcode)
+    CALL MPI_TYPE_FREE(bx_yface, errcode)
+    CALL MPI_TYPE_FREE(bx_zface, errcode)
+    CALL MPI_TYPE_FREE(by_xface, errcode)
+    CALL MPI_TYPE_FREE(by_yface, errcode)
+    CALL MPI_TYPE_FREE(by_zface, errcode)
+    CALL MPI_TYPE_FREE(bz_xface, errcode)
+    CALL MPI_TYPE_FREE(bz_yface, errcode)
+    CALL MPI_TYPE_FREE(bz_zface, errcode)
+    CALL MPI_TYPE_FREE(bx_xface1, errcode)
+    CALL MPI_TYPE_FREE(by_yface1, errcode)
+    CALL MPI_TYPE_FREE(bz_zface1, errcode)
+
+  END SUBROUTINE mpi_destroy_types
 
 END MODULE mpi_routines

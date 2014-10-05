@@ -903,17 +903,17 @@ CONTAINS
 
   SUBROUTINE dm_z_bcs
 
-    CALL MPI_SENDRECV( &
-        dm(0:nx+1,0:ny+1,1   ), (nx+2)*(ny+2), mpireal, proc_z_min, tag, &
-        dm(0:nx+1,0:ny+1,nz+1), (nx+2)*(ny+2), mpireal, proc_z_max, tag, &
+    CALL MPI_SENDRECV(&
+        dm(-1,-1,1   ), 1, cell_zface, proc_z_min, tag, &
+        dm(-1,-1,nz+1), 1, cell_zface, proc_z_max, tag, &
         comm, status, errcode)
 
     IF (proc_z_max == MPI_PROC_NULL) &
         dm(0:nx+1,0:ny+1,nz+1) = dm(0:nx+1,0:ny+1,nz)
 
-    CALL MPI_SENDRECV( &
-        dm(0:nx+1,0:ny+1,nz-1), (nx+2)*(ny+2), mpireal, proc_z_max, tag, &
-        dm(0:nx+1,0:ny+1,-1  ), (nx+2)*(ny+2), mpireal, proc_z_min, tag, &
+    CALL MPI_SENDRECV(&
+        dm(-1,-1,nz-1), 1, cell_zface, proc_z_max, tag, &
+        dm(-1,-1,-1  ), 1, cell_zface, proc_z_min, tag, &
         comm, status, errcode)
 
     IF (proc_z_min == MPI_PROC_NULL) &
