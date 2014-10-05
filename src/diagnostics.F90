@@ -55,7 +55,7 @@ CONTAINS
     ! Done just once at the start
     IF (i == 0 .AND. rank == 0) THEN
       CALL output_log
-      IF (.NOT. restart) WRITE(30) num, 6
+      IF (.NOT. restart) WRITE(en_unit) num, 6
     END IF
 
     ! Do every (step) steps
@@ -74,8 +74,8 @@ CONTAINS
       heating_ohmic = total
 
       IF (rank == 0) THEN
-        WRITE(30) t_out, en_b, en_ke, en_int
-        WRITE(30) heating_visc, heating_ohmic
+        WRITE(en_unit) t_out, en_b, en_ke, en_int
+        WRITE(en_unit) heating_visc, heating_ohmic
       END IF
 
       index = index + 1
@@ -87,8 +87,8 @@ CONTAINS
     ! Output a snapshot of arrays
     IF (print_arrays) THEN
       IF (rank == 0) THEN
-        WRITE(20,*) 'Dumping ', file_number, ' at time', time
-        CALL FLUSH(20)
+        WRITE(stat_unit,*) 'Dumping ', file_number, ' at time', time
+        CALL FLUSH(stat_unit)
       END IF
 
       ! Set the filename
@@ -243,7 +243,7 @@ CONTAINS
 
     ! Output energy diagnostics etc
     IF (last_call .AND. rank == 0) THEN
-      WRITE(20,*) 'final nsteps / time = ', i, time
+      WRITE(stat_unit,*) 'final nsteps / time = ', i, time
     END IF
 
   END SUBROUTINE output_routines
@@ -499,29 +499,29 @@ CONTAINS
 
     ! Writes basic data to 'lare3d.dat'
 
-    WRITE(20,*) 'nprocx, nprocy, nprocz = ', nprocx, nprocy, nprocz
-    WRITE(20,*) 'nx, ny, nz = ', nx, ny, nz
-    WRITE(20,*)
-    WRITE(20,*) 'length_x = ', length_x
-    WRITE(20,*) 'length_y = ', length_y
-    WRITE(20,*) 'length_z = ', length_z
-    WRITE(20,*)
+    WRITE(stat_unit,*) 'nprocx, nprocy, nprocz = ', nprocx, nprocy, nprocz
+    WRITE(stat_unit,*) 'nx, ny, nz = ', nx, ny, nz
+    WRITE(stat_unit,*)
+    WRITE(stat_unit,*) 'length_x = ', length_x
+    WRITE(stat_unit,*) 'length_y = ', length_y
+    WRITE(stat_unit,*) 'length_z = ', length_z
+    WRITE(stat_unit,*)
 #ifdef QMONO
-    WRITE(20,*) 'q_mono viscosity'
+    WRITE(stat_unit,*) 'q_mono viscosity'
 #else
-    WRITE(20,*) 'tensor shock viscosity'
+    WRITE(stat_unit,*) 'tensor shock viscosity'
 #endif
-    WRITE(20,*) 'linear viscosity coeff = ', visc1
-    WRITE(20,*) 'quadratic viscosity coeff = ', visc2
-    WRITE(20,*) 'uniform tensor viscosity coeff = ', visc3
-    WRITE(20,*) 'j_max = ', j_max
-    WRITE(20,*) 'eta0 = ', eta0
-    WRITE(20,*) 'eta_background = ', eta_background
-    WRITE(20,*) 'kappa = ', kappa_0
-    WRITE(20,*)
-    WRITE(20,*) 't_start, t_end = ', time, t_end
-    WRITE(20,*) 'nsteps =', nsteps
-    WRITE(20,*)
+    WRITE(stat_unit,*) 'linear viscosity coeff = ', visc1
+    WRITE(stat_unit,*) 'quadratic viscosity coeff = ', visc2
+    WRITE(stat_unit,*) 'uniform tensor viscosity coeff = ', visc3
+    WRITE(stat_unit,*) 'j_max = ', j_max
+    WRITE(stat_unit,*) 'eta0 = ', eta0
+    WRITE(stat_unit,*) 'eta_background = ', eta_background
+    WRITE(stat_unit,*) 'kappa = ', kappa_0
+    WRITE(stat_unit,*)
+    WRITE(stat_unit,*) 't_start, t_end = ', time, t_end
+    WRITE(stat_unit,*) 'nsteps =', nsteps
+    WRITE(stat_unit,*)
 
   END SUBROUTINE output_log
 

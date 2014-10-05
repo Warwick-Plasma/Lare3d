@@ -188,8 +188,8 @@ CONTAINS
       seconds = MOD(total, 60)
       minutes = MOD(total / 60, 60)
       hours = total / 3600
-      WRITE(20,*)
-      WRITE(20,'(''runtime = '', i4, ''h '', i2, ''m '', i2, ''s on '', &
+      WRITE(stat_unit,*)
+      WRITE(stat_unit,'(''runtime = '', i4, ''h '', i2, ''m '', i2, ''s on '', &
           & i4, '' process elements.'')') hours, minutes, seconds, nproc
     END IF
 

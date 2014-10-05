@@ -160,6 +160,9 @@ MODULE shared_data
   ! Number of variables to dump
   LOGICAL, DIMENSION(19) :: dump_mask
 
+  INTEGER, PARAMETER :: stat_unit = 20
+  INTEGER, PARAMETER :: en_unit = 30
+
 END MODULE shared_data
 
 

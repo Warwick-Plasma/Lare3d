@@ -429,7 +429,7 @@ CONTAINS
 
     IF (rank == 0) THEN
       WRITE(file2, '(a, ''/lare3d.dat'')') TRIM(data_dir)
-      OPEN(UNIT=20, STATUS='REPLACE', FILE=file2, iostat=ios)
+      OPEN(UNIT=stat_unit, STATUS='REPLACE', FILE=file2, iostat=ios)
 
       IF (ios /= 0) THEN
         PRINT*, 'Unable to open file lare3d.dat for writing. This is ', &
@@ -440,7 +440,7 @@ CONTAINS
       END IF
 
       WRITE(file3, '(a, ''/en.dat'')') TRIM(data_dir)
-      OPEN(UNIT=30, STATUS='REPLACE', FILE=file3, &
+      OPEN(UNIT=en_unit, STATUS='REPLACE', FILE=file3, &
           FORM='UNFORMATTED', ACCESS='STREAM', iostat=ios)
 
       IF (ios /= 0) THEN
@@ -463,8 +463,8 @@ CONTAINS
   SUBROUTINE close_files
 
     IF (rank == 0) THEN
-      CLOSE(UNIT=20)
-      CLOSE(UNIT=30)
+      CLOSE(UNIT=stat_unit)
+      CLOSE(UNIT=en_unit)
     END IF
 
   END SUBROUTINE close_files
