@@ -50,7 +50,7 @@
            ELSE
              costh = xb(ix)/rb
              sinth = yb(iy)/rb
-           ENDIF
+           END IF
            coskz = cos(k*zb(iz))
            sinkz = sin(k*zb(iz))
            v_r = EXP(-rb**2*(1+(rb/0.5_num)**6))*COS(pi*zb(iz)/length_z)*&
@@ -88,7 +88,7 @@
                    b_theta**2))
              vx(ix,iy,iz) = amp*(v_r*costh - v_theta*sinth)
              vy(ix,iy,iz) = amp*(v_r*sinth + v_theta*costh)
-           ENDIF
+           END IF
  !
  ! Define Bz on face centred at (xc,yc,zb)
  !
@@ -98,7 +98,7 @@
              bz(ix,iy,iz) = sqrt(1.0_num + B2 - C2)
            ELSE
              bz(ix,iy,iz) = sqrt(1.0_num - alpha2/7.0_num)
-           ENDIF
+           END IF
  !
  ! Define Bx on face centred at (xb,yc,zc)
  !
@@ -107,7 +107,7 @@
              bx(ix,iy,iz) = -b_theta * yc(iy) / rbx
            ELSE
              bx(ix,iy,iz) = 0.0_num
-           ENDIF
+           END IF
  !
  ! Define By on face centred at (xc,yb,zc)
  !
@@ -116,11 +116,11 @@
              by(ix,iy,iz) = b_theta * xc(ix) / rby
            ELSE
              by(ix,iy,iz) = 0.0_num
-           ENDIF
+           END IF
 
-         ENDDO
-       ENDDO
-     ENDDO
+         END DO
+       END DO
+     END DO
 
    END SUBROUTINE set_initial_conditions
 
@@ -165,8 +165,8 @@ SUBROUTINE set_initial_conditions
         t_ref(iz) = t_ph - (t_ph * a * zc_global(iz) * grav_global(iz) / (m+1.0_num))
      ELSE
         t_ref(iz) = t_ph + ((t_cor-t_ph) * 0.5_num * (TANH((zc_global(iz)-z_cor)/wtr)+1.0_num))
-     ENDIF
-  ENDDO
+     END IF
+  END DO
   t_ref(nz_global+2) = t_ref(nz_global+1)
 
   !solve HS eqn to get rho profile
@@ -176,7 +176,7 @@ SUBROUTINE set_initial_conditions
   DO iz = -1, nz_global
      dzb_global(iz) = zb_global(iz) - zb_global(iz-1)
      dzc_global(iz) = zc_global(iz+1) - zc_global(iz)
-  ENDDO
+  END DO
 
   !solve for density
   mu_m = 0.5_num    ! the reduced mass in units of proton mass
@@ -228,8 +228,8 @@ SUBROUTINE set_initial_conditions
         !store temperature in energy array for a few lines
         energy(ix,iy,:) = t_ref(coordinates(1)*nz-1:coordinates(1)*nz+nz+2)
         rho(ix,iy,:) = rho_ref(coordinates(1)*nz-1:coordinates(1)*nz+nz+2)
-     ENDDO
-  ENDDO
+     END DO
+  END DO
 
   DO iz = -1, nz + 2
     DO iy = -1, ny + 2

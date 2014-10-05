@@ -57,13 +57,13 @@ CONTAINS
         LOGOSTRING(ix*2-1:ix*2-1) = LOGOELS(LOGO(ix, MAX(iy/2, 1)) + 1)
         LOGOSTRING(ix*2:ix*2) = LOGOELS(LOGO(ix, MAX(iy/2, 1)) + 1)
       END DO
-      WRITE(*, *), LOGOSTRING
+      WRITE(*,*), LOGOSTRING
     END DO
 
-    WRITE(*, *) ""
-    WRITE(*, '("Welcome to Lare3D Version ", I1, ".", I1)'), &
+    WRITE(*,*) ""
+    WRITE(*,'("Welcome to Lare3D Version ", I1, ".", I1)'), &
         version, revision
-    WRITE(*, *) ""
+    WRITE(*,*) ""
 
   END SUBROUTINE welcome_message
 

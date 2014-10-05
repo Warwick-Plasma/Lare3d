@@ -1,15 +1,15 @@
-Lare2D main code directory
+Lare3D main code directory
 --------------------------
 Contains
-	boundary.f90
-	control.f90
-	diagnostics.f90
-	initial_conditions.f90
+  boundary.f90
+  control.f90
+  diagnostics.f90
+  initial_conditions.f90
 
 -----------------------------------------------------------------
 control.f90
 
-control.f90 contains all the code parameters, such as the number of gridpoints,  the length of the domain,the physics packages used, parameters for the packages etc.
+control.f90 contains all the code parameters, such as the number of gridpoints, the length of the domain, the physics packages used, parameters for the packages etc.
 
 It is subdivided into three subroutines
 user_normalisation - User sets the parameters used in the code normalisation
@@ -49,10 +49,10 @@ eos_number = EOS_ION
 This was needed to simplify maintenance of the code. Names are now
   xbc_min = BC_PERIODIC
   xbc_max = BC_PERIODIC
-  ybc_max = BC_OTHER
   ybc_min = BC_OTHER
-  zbc_max = BC_OTHER
+  ybc_max = BC_OTHER
   zbc_min = BC_OTHER
+  zbc_max = BC_OTHER
 Hopefully these names need no explaining.
 
 3. The neutral fraction based on modified Saha uses the local temperature, without a

@@ -211,7 +211,7 @@ $(OBJDIR):
 boundary.o: boundary.f90 mpiboundary.o shared_data.o
 conduct.o: conduct.f90 boundary.o shared_data.o
 control.o: control.f90 normalise.o shared_data.o
-diagnostics.o: diagnostics.F90 boundary.o iocontrol.o output.o \
+diagnostics.o: diagnostics.F90 boundary.o conduct.o iocontrol.o output.o \
   output_cartesian.o shared_data.o
 initial_conditions.o: initial_conditions.f90 neutral.o shared_data.o
 input.o: input.f90 inputfunctions.o iocommon.o shared_data.o
@@ -219,7 +219,7 @@ input_cartesian.o: input_cartesian.f90 inputfunctions.o iocommon.o shared_data.o
 inputfunctions.o: inputfunctions.f90 iocommon.o shared_data.o
 iocommon.o: iocommon.f90 shared_data.o
 iocontrol.o: iocontrol.f90 input.o iocommon.o output.o shared_data.o
-lagran.o: lagran.F90 boundary.o conduct.o diagnostics.o neutral.o shared_data.o
+lagran.o: lagran.F90 boundary.o conduct.o neutral.o shared_data.o
 lare3d.o: lare3d.f90 boundary.o control.o diagnostics.o initial_conditions.o \
   lagran.o mpi_routines.o neutral.o normalise.o openboundary.o remap.o setup.o \
   shared_data.o welcome.o
