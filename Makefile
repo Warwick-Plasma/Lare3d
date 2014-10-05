@@ -167,8 +167,8 @@ SRCFILES = boundary.f90 conduct.f90 control.f90 diagnostics.F90 \
   initial_conditions.f90 input.f90 input_cartesian.f90 inputfunctions.f90 \
   iocommon.f90 iocontrol.f90 lagran.F90 lare3d.f90 mpi_routines.f90 \
   mpiboundary.f90 neutral.f90 normalise.f90 openboundary.f90 output.f90 \
-  output_cartesian.f90 remap.f90 setup.F90 shared_data.F90 version_data.F90 \
-  welcome.f90 xremap.f90 yremap.f90 zremap.f90
+  output_cartesian.f90 remap.f90 sdf_job_info.f90 setup.F90 shared_data.F90 \
+  version_data.F90 welcome.f90 xremap.f90 yremap.f90 zremap.f90
 
 OBJFILES := $(SRCFILES:.f90=.o)
 OBJFILES := $(OBJFILES:.F90=.o)
@@ -241,9 +241,10 @@ openboundary.o: openboundary.f90 shared_data.o
 output.o: output.f90 iocommon.o shared_data.o
 output_cartesian.o: output_cartesian.f90 iocommon.o output.o shared_data.o
 remap.o: remap.f90 shared_data.o xremap.o yremap.o zremap.o
+sdf_job_info.o: sdf_job_info.f90
 setup.o: setup.F90 input.o input_cartesian.o iocommon.o iocontrol.o \
-  shared_data.o
-shared_data.o: shared_data.F90
+  sdf_job_info.o shared_data.o
+shared_data.o: shared_data.F90 sdf_job_info.o
 version_data.o: version_data.F90 COMMIT
 welcome.o: welcome.f90 shared_data.o version_data.o
 xremap.o: xremap.f90 boundary.o

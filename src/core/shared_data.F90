@@ -63,7 +63,10 @@ END MODULE constants
 MODULE shared_data
 
   USE constants
+  USE sdf_job_info
+
   IMPLICIT NONE
+
   INCLUDE 'mpif.h'
 
 #ifdef SINGLE
@@ -157,6 +160,8 @@ MODULE shared_data
   INTEGER :: initial
   INTEGER, PARAMETER :: n_zeros = 4
   INTEGER :: file_number = 0
+  TYPE(jobid_type) :: jobid
+  INTEGER :: run_date = 0
 
   ! Number of variables to dump
   LOGICAL, DIMENSION(19) :: dump_mask

@@ -71,8 +71,8 @@ CONTAINS
     CALL integer_as_string(c_minor_rev, minor_rev)
     version_string = TRIM(ver) // '.' // TRIM(ADJUSTL(rev)) // '.' &
       // TRIM(ADJUSTL(minor_rev))
-    !CALL integer_as_string(jobid%start_seconds, ver)
-    !CALL integer_as_string(jobid%start_milliseconds, rev)
+    CALL integer_as_string(jobid%start_seconds, ver)
+    CALL integer_as_string(jobid%start_milliseconds, rev)
     ascii_header = c_code_name // ' v' // TRIM(version_string) // ' ' &
         // c_commit_id // ' ' // TRIM(ver) // '.' // TRIM(ADJUSTL(rev))
 
