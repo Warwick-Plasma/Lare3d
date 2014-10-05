@@ -59,7 +59,7 @@ CONTAINS
     END IF
 
     ! Do every (step) steps
-    IF (MOD(i, step) .EQ. 0 .OR. last_call) THEN
+    IF (MOD(i, step) == 0 .OR. last_call) THEN
       t_out = time
       CALL energy_account(en_b, en_ke, en_int)
 
@@ -73,7 +73,7 @@ CONTAINS
 
       heating_ohmic = total
 
-      IF (rank .EQ. 0) THEN
+      IF (rank == 0) THEN
         WRITE(30) t_out, en_b, en_ke, en_int
         WRITE(30) heating_visc, heating_ohmic
       END IF
@@ -86,7 +86,7 @@ CONTAINS
 
     ! Output a snapshot of arrays
     IF (print_arrays) THEN
-      IF (rank .EQ. 0) THEN
+      IF (rank == 0) THEN
         WRITE(20,*) 'Dumping ', file_number, ' at time', time
         CALL FLUSH(20)
       END IF

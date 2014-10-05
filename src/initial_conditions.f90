@@ -94,7 +94,7 @@ CONTAINS
     ! NB : The variable beta used here is actually 1/beta
     beta_ref = 0.0_num
     DO iz = -1, nz_global + 1
-      IF ((zc_global(iz) .GT. yfsl) .AND. (zc_global(iz) .LT. yfsu)) THEN
+      IF ((zc_global(iz) > yfsl) .AND. (zc_global(iz) < yfsu)) THEN
         beta_ref(iz) = betafs &
             * (0.5_num * (TANH((zc_global(iz) - yfsl) / wfsl) + 1.0_num)) &
             * (0.5_num * (1.0_num - TANH((zc_global(iz) - yfsu) / wfsu)))
@@ -207,7 +207,7 @@ CONTAINS
     wptb = 20.0_num
 
     DO iz = 1, nz
-      IF (zc_global(iz) .GT. -10.0_num .AND. zc_global(iz) .LT. -1.0_num) THEN
+      IF (zc_global(iz) > -10.0_num .AND. zc_global(iz) < -1.0_num) THEN
         fac = 0.25_num * amp
         theta = 2.0_num * pi / wptb
         DO iy = 1, ny

@@ -40,13 +40,13 @@ PROGRAM lare3d
   CALL open_files                ! setup.f90
   CALL grid                      ! setup.f90
 
-  IF (IAND(initial, IC_RESTART) .NE. 0) THEN
+  IF (IAND(initial, IC_RESTART) /= 0) THEN
     CALL set_initial_conditions  ! required to reset gravity
     CALL restart_data            ! setup.f90
     restart = .TRUE.
   END IF
 
-  IF (IAND(initial, IC_NEW) .NE. 0) THEN
+  IF (IAND(initial, IC_NEW) /= 0) THEN
     CALL set_initial_conditions  ! initial_conditions.f90
   END IF
 
@@ -60,7 +60,7 @@ PROGRAM lare3d
 
   IF (cowling_resistivity) CALL perpendicular_resistivity ! neutral.f90
 
-  IF (rank .EQ. 0) PRINT*, 'Initial conditions setup OK. Running Code'
+  IF (rank == 0) PRINT*, 'Initial conditions setup OK. Running Code'
 
   CALL output_routines(step)        ! diagnostics.f90
 
@@ -79,7 +79,7 @@ PROGRAM lare3d
     CALL output_routines(step)       ! diagnostics.f90
   END DO
 
-  IF (rank .EQ. 0) PRINT*, 'Code Terminated normally'
+  IF (rank == 0) PRINT*, 'Code Terminated normally'
   CALL mpi_close                     ! mpi_routines.f90
   CALL close_files                   ! setup.f90
   CALL MPI_FINALIZE(errcode)

@@ -61,12 +61,12 @@ CONTAINS
     CALL MPI_FILE_READ_ALL(cfd_filehandle, nblocks, 1, MPI_INTEGER, &
         cfd_status, cfd_errcode)
 
-    IF (file_version .GT. cfd_version) THEN
+    IF (file_version > cfd_version) THEN
       IF (rank == default_rank) PRINT *, "Version number incompatible"
       CALL MPI_ABORT(cfd_comm, cfd_errcode)
     END IF
 
-    IF (file_revision .GT. cfd_revision) THEN
+    IF (file_revision > cfd_revision) THEN
       IF (rank == default_rank) PRINT *, "Revision number of file is ", &
           "too high. Writing disabled"
       cfd_writing = .FALSE.

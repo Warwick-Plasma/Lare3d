@@ -33,8 +33,6 @@ CONTAINS
     time = 0.0_num
     gamma = 5.0_num / 3.0_num
 
-    IF (num .EQ. 4) mpireal = MPI_REAL
-
   END SUBROUTINE before_control
 
 
@@ -49,7 +47,7 @@ CONTAINS
     ! Setup arrays and other variables which can only be set after
     ! user input
 
-    IF (IAND(initial, IC_RESTART) .EQ. 0) restart_snapshot = 0
+    IF (IAND(initial, IC_RESTART) == 0) restart_snapshot = 0
 
     p_visc = 0.0_num
     eta = 0.0_num
@@ -87,17 +85,17 @@ CONTAINS
     ! If the number of gridpoints cannot be exactly subdivided then fix
     ! The first nxp processors have nx0 grid points
     ! The remaining processors have nx0+1 grid points
-    IF (nx0 * nprocx .NE. nx_global) THEN
+    IF (nx0 * nprocx /= nx_global) THEN
       nxp = (nx0 + 1) * nprocx - nx_global
     ELSE
       nxp = nprocx
     END IF
-    IF (ny0 * nprocy .NE. ny_global) THEN
+    IF (ny0 * nprocy /= ny_global) THEN
       nyp = (ny0 + 1) * nprocy - ny_global
     ELSE
       nyp = nprocy
     END IF
-    IF (nz0 * nprocz .NE. nz_global) THEN
+    IF (nz0 * nprocz /= nz_global) THEN
       nzp = (nz0 + 1) * nprocz - nz_global
     ELSE
       nzp = nprocz
@@ -146,7 +144,7 @@ CONTAINS
     END IF
 
     cx = coordinates(c_ndims)
-    IF (cx .LT. nxp) THEN
+    IF (cx < nxp) THEN
       n0 = cx * nx0
       n1 = (cx + 1) * nx0
     ELSE
@@ -210,7 +208,7 @@ CONTAINS
     END IF
 
     cy = coordinates(c_ndims-1)
-    IF (cy .LT. nyp) THEN
+    IF (cy < nyp) THEN
       n0 = cy * ny0
       n1 = (cy + 1) * ny0
     ELSE
@@ -272,7 +270,7 @@ CONTAINS
     END IF
 
     cz = coordinates(c_ndims-2)
-    IF (cz .LT. nzp) THEN
+    IF (cz < nzp) THEN
       n0 = cz * nz0
       n1 = (cz + 1) * nz0
     ELSE
@@ -433,7 +431,7 @@ CONTAINS
       WRITE(file2, '(a, ''/lare3d.dat'')') TRIM(data_dir)
       OPEN(UNIT=20, STATUS='REPLACE', FILE=file2, iostat=ios)
 
-      IF (ios .NE. 0) THEN
+      IF (ios /= 0) THEN
         PRINT*, 'Unable to open file lare3d.dat for writing. This is ', &
                 'most commonly caused by the output directory not existing'
         PRINT*
@@ -445,7 +443,7 @@ CONTAINS
       OPEN(UNIT=30, STATUS='REPLACE', FILE=file3, &
           FORM='UNFORMATTED', ACCESS='STREAM', iostat=ios)
 
-      IF (ios .NE. 0) THEN
+      IF (ios /= 0) THEN
         PRINT*, 'Unable to open file en.dat for writing. This is ', &
                 'most commonly caused by the output directory not existing'
         PRINT*
@@ -485,12 +483,12 @@ CONTAINS
 
     str_trim = TRIM(ADJUSTL(str_in))
 
-    IF (LEN(str_test) .GT. LEN(str_in)) THEN
+    IF (LEN(str_test) > LEN(str_in)) THEN
       str_cmp = .FALSE.
       RETURN
     END IF
 
-    IF (str_trim(LEN(str_test)+1:LEN(str_test)+1) .NE. ' ') THEN
+    IF (str_trim(LEN(str_test)+1:LEN(str_test)+1) /= ' ') THEN
       str_cmp = .FALSE.
       RETURN
     END IF

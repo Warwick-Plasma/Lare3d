@@ -1096,7 +1096,7 @@ CONTAINS
             magn_b = bxv**2 + byv**2 + bzv**2
 
             ! Calculate parallel and perpendicular currents
-            IF (magn_b .GT. none_zero) THEN
+            IF (magn_b > none_zero) THEN
               j_par_x = (jx * bxv + jy * byv + jz * bzv) * bxv / magn_b
               j_par_y = (jx * bxv + jy * byv + jz * bzv) * byv / magn_b
               j_par_z = (jx * bxv + jy * byv + jz * bzv) * bzv / magn_b

@@ -31,9 +31,9 @@ CONTAINS
 
     dims = (/ nprocz, nprocy, nprocx /)
 
-    IF (PRODUCT(MAX(dims, 1)) .GT. nproc) THEN
+    IF (PRODUCT(MAX(dims, 1)) > nproc) THEN
       dims = 0
-      IF (rank .EQ. 0) THEN
+      IF (rank == 0) THEN
         PRINT*, 'Too many processors requested in override.'
         PRINT*, 'Reverting to automatic decomposition.'
         PRINT*, '******************************************'
@@ -90,38 +90,38 @@ CONTAINS
     ! If the number of gridpoints cannot be exactly subdivided then fix
     ! the first nxp processors have nx0 grid points
     ! The remaining processors have nx0+1 grid points
-    IF (nx0 * nprocx .NE. nx_global) THEN
+    IF (nx0 * nprocx /= nx_global) THEN
       nxp = (nx0 + 1) * nprocx - nx_global
-      IF (cx .GE. nxp) nx = nx0 + 1
+      IF (cx >= nxp) nx = nx0 + 1
     ELSE
       nxp = nprocx
     END IF
-    IF (ny0 * nprocy .NE. ny_global) THEN
+    IF (ny0 * nprocy /= ny_global) THEN
       nyp = (ny0 + 1) * nprocy - ny_global
-      IF (cy .GE. nyp) ny = ny0 + 1
+      IF (cy >= nyp) ny = ny0 + 1
     ELSE
       nyp = nprocy
     END IF
-    IF (nz0 * nprocz .NE. nz_global) THEN
+    IF (nz0 * nprocz /= nz_global) THEN
       nzp = (nz0 + 1) * nprocz - nz_global
-      IF (cz .GE. nzp) nz = nz0 + 1
+      IF (cz >= nzp) nz = nz0 + 1
     ELSE
       nzp = nprocz
     END IF
 
     ! Set up the starting point for my subgrid (assumes arrays start at 0)
 
-    IF (cx .LT. nxp) THEN
+    IF (cx < nxp) THEN
       starts(1) = cx * nx0
     ELSE
       starts(1) = nxp * nx0 + (cx - nxp) * (nx0 + 1)
     END IF
-    IF (cy .LT. nyp) THEN
+    IF (cy < nyp) THEN
       starts(2) = cy * ny0
     ELSE
       starts(2) = nyp * ny0 + (cy - nyp) * (ny0 + 1)
     END IF
-    IF (cz .LT. nzp) THEN
+    IF (cz < nzp) THEN
       starts(3) = cz * nz0
     ELSE
       starts(3) = nzp * nz0 + (cz - nzp) * (nz0 + 1)

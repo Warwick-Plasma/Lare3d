@@ -19,11 +19,11 @@ CONTAINS
     cfd_mode = mode
 
     cfd_writing = IOR(IAND(mode, MPI_MODE_RDWR), IAND(mode, MPI_MODE_WRONLY)) &
-        .NE. 0
+        /= 0
     cfd_reading = IOR(IAND(mode, MPI_MODE_RDWR), IAND(mode, MPI_MODE_RDONLY)) &
-        .NE. 0
+        /= 0
 
-    IF (IAND(mode, MPI_MODE_CREATE) .NE. 0) THEN
+    IF (IAND(mode, MPI_MODE_CREATE) /= 0) THEN
       ! Creating a new file of the current version, so set the header offset
       ! to reflect current version
       header_offset = header_offset_this_version

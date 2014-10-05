@@ -376,7 +376,7 @@ CONTAINS
       CALL MPI_ALLREDUCE(errmax, error, 1, mpireal, MPI_MAX, comm, errcode)
       errmax = error
 
-      IF (errmax .LT. fractional_error) THEN
+      IF (errmax < fractional_error) THEN
         converged = .TRUE.
         EXIT iterate
       END IF

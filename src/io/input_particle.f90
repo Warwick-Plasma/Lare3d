@@ -121,7 +121,7 @@ CONTAINS
       CALL MPI_FILE_SET_VIEW(cfd_filehandle, current_displacement, mpireal, &
           sub_type, "native", MPI_INFO_NULL, cfd_errcode)
 
-      DO WHILE (npart_this_it .GT. 0)
+      DO WHILE (npart_this_it > 0)
         CALL MPI_FILE_READ(cfd_filehandle, data, npart_this_it, mpireal, &
             cfd_status, cfd_errcode)
 
@@ -246,7 +246,7 @@ CONTAINS
     npart_remain = npart_local
     npart_this_it = MIN(npart_remain, npart_per_it)
 
-    DO WHILE (npart_this_it .GT. 0)
+    DO WHILE (npart_this_it > 0)
       npart_this_it = MIN(npart_remain, npart_per_it)
       CALL MPI_FILE_READ(cfd_filehandle, data, npart_this_it, mpireal, &
           cfd_status, cfd_errcode)
