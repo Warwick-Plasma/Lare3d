@@ -11,6 +11,7 @@ MODULE diagnostics
   USE output_cartesian
   USE output
   USE iocontrol
+  USE version_data
 
   IMPLICIT NONE
 
@@ -499,6 +500,8 @@ CONTAINS
 
     ! Writes basic data to 'lare3d.dat'
 
+    WRITE(stat_unit,*) ascii_header
+    WRITE(stat_unit,*)
     WRITE(stat_unit,*) 'nprocx, nprocy, nprocz = ', nprocx, nprocy, nprocz
     WRITE(stat_unit,*) 'nx, ny, nz = ', nx, ny, nz
     WRITE(stat_unit,*)

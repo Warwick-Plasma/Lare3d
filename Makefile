@@ -147,19 +147,28 @@ DEFINES := $(DEF)
 # Shouldn't need to touch below here
 # --------------------------------------------------
 
+all: main
+
+COMMIT: FORCE
+	@./$(SRCDIR)/gen_commit_string || $(MAKE) $(MAKECMDGOALS)
+-include COMMIT
+
 SDFDIR = SDF/FORTRAN/src
 SRCDIR = src
 OBJDIR = obj
 BINDIR = bin
 FC = $(MPIF90)
-PREPROFLAGS = $(DEFINES)
+DATE := $(shell date +%s)
+MACHINE := $(shell uname -n)
+PREPROFLAGS = $(DEFINES) $(D)_COMMIT='"$(COMMIT)"' $(D)_DATE=$(DATE) \
+  $(D)_MACHINE='"$(MACHINE)"'
 
 SRCFILES = boundary.f90 conduct.f90 control.f90 diagnostics.F90 \
   initial_conditions.f90 input.f90 input_cartesian.f90 inputfunctions.f90 \
   iocommon.f90 iocontrol.f90 lagran.F90 lare3d.f90 mpi_routines.f90 \
   mpiboundary.f90 neutral.f90 normalise.f90 openboundary.f90 output.f90 \
-  output_cartesian.f90 remap.f90 setup.F90 shared_data.F90 welcome.f90 \
-  xremap.f90 yremap.f90 zremap.f90
+  output_cartesian.f90 remap.f90 setup.F90 shared_data.F90 version_data.F90 \
+  welcome.f90 xremap.f90 yremap.f90 zremap.f90
 
 OBJFILES := $(SRCFILES:.f90=.o)
 OBJFILES := $(OBJFILES:.F90=.o)
@@ -179,6 +188,7 @@ VPATH = $(SRCDIR):$(SRCDIR)/core:$(SRCDIR)/io:$(SDFDIR):$(OBJDIR)
 %.o: %.F90
 	$(FC) -c $(FFLAGS) $(MODULEFLAG) -o $(OBJDIR)/$@ $(PREPROFLAGS) $<
 
+main: $(FULLTARGET)
 $(FULLTARGET): $(OBJFILES)
 	@mkdir -p $(BINDIR)
 	$(FC) $(FFLAGS) $(MODULEFLAG) -o $@ $(addprefix $(OBJDIR)/,$(OBJFILES))
@@ -212,7 +222,7 @@ boundary.o: boundary.f90 mpiboundary.o shared_data.o
 conduct.o: conduct.f90 boundary.o shared_data.o
 control.o: control.f90 normalise.o shared_data.o
 diagnostics.o: diagnostics.F90 boundary.o conduct.o iocontrol.o output.o \
-  output_cartesian.o shared_data.o
+  output_cartesian.o shared_data.o version_data.o
 initial_conditions.o: initial_conditions.f90 neutral.o shared_data.o
 input.o: input.f90 inputfunctions.o iocommon.o shared_data.o
 input_cartesian.o: input_cartesian.f90 inputfunctions.o iocommon.o shared_data.o
@@ -234,7 +244,8 @@ remap.o: remap.f90 shared_data.o xremap.o yremap.o zremap.o
 setup.o: setup.F90 input.o input_cartesian.o iocommon.o iocontrol.o \
   shared_data.o
 shared_data.o: shared_data.F90
-welcome.o: welcome.f90 shared_data.o
+version_data.o: version_data.F90 COMMIT
+welcome.o: welcome.f90 shared_data.o version_data.o
 xremap.o: xremap.f90 boundary.o
 yremap.o: yremap.f90 boundary.o
 zremap.o: zremap.f90 boundary.o
