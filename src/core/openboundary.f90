@@ -24,7 +24,7 @@ CONTAINS
 
     fraction = 0.9_num
 
-    ! x_start boundary
+    ! x_min boundary
     IF (xbc_min == BC_OPEN .AND. proc_x_min == MPI_PROC_NULL) THEN
       DO iz = 1, nz
         DO iy = 1, ny
@@ -75,7 +75,7 @@ CONTAINS
       END DO
     END IF
 
-    ! x_end boundary
+    ! x_max boundary
     IF (xbc_max == BC_OPEN .AND. proc_x_max == MPI_PROC_NULL) THEN
       DO iz = 1, nz
         DO iy = 1, ny
@@ -126,7 +126,7 @@ CONTAINS
       END DO
     END IF
 
-    ! y_start boundary
+    ! y_min boundary
     IF (ybc_min == BC_OPEN .AND. proc_y_min == MPI_PROC_NULL) THEN
       DO iz = 1, nz
         DO ix = 1, nx
@@ -177,7 +177,7 @@ CONTAINS
       END DO
     END IF
 
-    ! y_end boundary
+    ! y_max boundary
     IF (ybc_max == BC_OPEN .AND. proc_y_max == MPI_PROC_NULL) THEN
       DO iz = 1, nz
         DO ix = 1, nx
@@ -228,7 +228,7 @@ CONTAINS
       END DO
     END IF
 
-    ! z_start boundary
+    ! z_min boundary
     IF (zbc_min == BC_OPEN .AND. proc_z_min == MPI_PROC_NULL) THEN
       DO iy = 1, ny
         DO ix = 1, nx
@@ -280,7 +280,7 @@ CONTAINS
       END DO
     END IF
 
-    ! z_end boundary
+    ! z_max boundary
     IF (zbc_max == BC_OPEN .AND. proc_z_max == MPI_PROC_NULL) THEN
       DO iy = 1, ny
         DO ix = 1, nx

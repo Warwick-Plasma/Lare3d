@@ -82,20 +82,20 @@ CONTAINS
     nprocz = 0
 
     ! The length of the domain in the x direction
-    x_start = 0.0_num
-    x_end = 100.0_num
+    x_min = 0.0_num
+    x_max = 100.0_num
     ! Should the x grid be stretched or uniform
     x_stretch = .FALSE.
 
     ! The length of the domain in the y direction
-    y_start = 0.0_num
-    y_end = 100.0_num
+    y_min = 0.0_num
+    y_max = 100.0_num
     ! Should the y grid be stretched or uniform
     y_stretch = .FALSE.
 
     ! The length of the domain in the z direction
-    z_start = -20.0_num
-    z_end = 80.0_num
+    z_min = -20.0_num
+    z_max = 80.0_num
     ! Should the z grid be stretched or uniform
     z_stretch = .FALSE.
 

@@ -100,9 +100,9 @@ MODULE shared_data
   REAL(num) :: w1, w2, w3, w4, w5, w6, w7, w8, w9
   REAL(num) :: dt, dt2, dtr, dth, t_end, time
   REAL(num) :: visc1, visc2, visc3
-  REAL(num) :: x_start, x_end, length_x
-  REAL(num) :: y_start, y_end, length_y
-  REAL(num) :: z_start, z_end, length_z
+  REAL(num) :: x_min, x_max, length_x
+  REAL(num) :: y_min, y_max, length_y
+  REAL(num) :: z_min, z_max, length_z
   REAL(num) :: gamma, eta0, j_max, dt_snapshots, eta_background
   REAL(num) :: total_visc_heating = 0.0_num, total_ohmic_heating = 0.0_num
 

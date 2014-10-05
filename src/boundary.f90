@@ -340,12 +340,12 @@ CONTAINS
     IF (.NOT.damping) RETURN
 
     IF (proc_x_min == MPI_PROC_NULL) THEN
-      d = 0.7_num * x_start
+      d = 0.7_num * x_min
       DO iz = -1, nz + 1
         DO iy = -1, ny + 1
           DO ix = -1, nx + 1
             IF (xb(ix) < d) THEN
-              a = dt * (xb(ix) - d) / (x_start - d) + 1.0_num
+              a = dt * (xb(ix) - d) / (x_min - d) + 1.0_num
               vx(ix,iy,iz) = vx(ix,iy,iz) / a
               vy(ix,iy,iz) = vy(ix,iy,iz) / a
               vz(ix,iy,iz) = vz(ix,iy,iz) / a
@@ -356,12 +356,12 @@ CONTAINS
     END IF
 
     IF (proc_x_max == MPI_PROC_NULL) THEN
-      d = 0.7_num * x_end
+      d = 0.7_num * x_max
       DO iz = -1, nz + 1
         DO iy = -1, ny + 1
           DO ix = -1, nx + 1
             IF (xb(ix) > d) THEN
-              a = dt * (xb(ix) - d) / (x_end - d) + 1.0_num
+              a = dt * (xb(ix) - d) / (x_max - d) + 1.0_num
               vx(ix,iy,iz) = vx(ix,iy,iz) / a
               vy(ix,iy,iz) = vy(ix,iy,iz) / a
               vz(ix,iy,iz) = vz(ix,iy,iz) / a
@@ -372,12 +372,12 @@ CONTAINS
     END IF
 
     IF (proc_y_min == MPI_PROC_NULL) THEN
-      d = 0.7_num * y_start
+      d = 0.7_num * y_min
       DO iz = -1, nz + 1
         DO iy = -1, ny + 1
           DO ix = -1, nx + 1
             IF (yb(iy) < d) THEN
-              a = dt * (yb(iy) - d) / (y_start - d) + 1.0_num
+              a = dt * (yb(iy) - d) / (y_min - d) + 1.0_num
               vx(ix,iy,iz) = vx(ix,iy,iz) / a
               vy(ix,iy,iz) = vy(ix,iy,iz) / a
               vz(ix,iy,iz) = vz(ix,iy,iz) / a
@@ -388,12 +388,12 @@ CONTAINS
     END IF
 
     IF (proc_y_max == MPI_PROC_NULL) THEN
-      d = 0.7_num * y_end
+      d = 0.7_num * y_max
       DO iz = -1, nz + 1
         DO iy = -1, ny + 1
           DO ix = -1, nx + 1
             IF (yb(iy) > d) THEN
-              a = dt * (yb(iy) - d) / (y_end - d) + 1.0_num
+              a = dt * (yb(iy) - d) / (y_max - d) + 1.0_num
               vx(ix,iy,iz) = vx(ix,iy,iz) / a
               vy(ix,iy,iz) = vy(ix,iy,iz) / a
               vz(ix,iy,iz) = vz(ix,iy,iz) / a
@@ -404,12 +404,12 @@ CONTAINS
     END IF
 
     IF (proc_z_min == MPI_PROC_NULL) THEN
-      d = 0.7_num * z_start
+      d = 0.7_num * z_min
       DO iz = -1, nz + 1
         DO iy = -1, ny + 1
           DO ix = -1, nx + 1
             IF (zb(iz) < d) THEN
-              a = dt * (zb(iz) - d) / (z_start - d) + 1.0_num
+              a = dt * (zb(iz) - d) / (z_min - d) + 1.0_num
               vx(ix,iy,iz) = vx(ix,iy,iz) / a
               vy(ix,iy,iz) = vy(ix,iy,iz) / a
               vz(ix,iy,iz) = vz(ix,iy,iz) / a
@@ -420,12 +420,12 @@ CONTAINS
     END IF
 
     IF (proc_z_max == MPI_PROC_NULL) THEN
-      d = 0.7_num * z_end
+      d = 0.7_num * z_max
       DO iz = -1, nz + 1
         DO iy = -1, ny + 1
           DO ix = -1, nx + 1
             IF (zb(iz) > d) THEN
-              a = dt * (zb(iz) - d) / (z_end - d) + 1.0_num
+              a = dt * (zb(iz) - d) / (z_max - d) + 1.0_num
               vx(ix,iy,iz) = vx(ix,iy,iz) / a
               vy(ix,iy,iz) = vy(ix,iy,iz) / a
               vz(ix,iy,iz) = vz(ix,iy,iz) / a
