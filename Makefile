@@ -170,14 +170,13 @@ PREPROFLAGS = $(DEFINES) $(D)_COMMIT='"$(COMMIT)"' $(D)_DATE=$(DATE) \
   $(D)_MACHINE='"$(MACHINE)"'
 
 SRCFILES = boundary.f90 conduct.f90 control.f90 diagnostics.F90 \
-  initial_conditions.f90 input.f90 input_cartesian.f90 inputfunctions.f90 \
-  iocommon.f90 iocontrol.f90 lagran.F90 lare3d.f90 mpi_routines.f90 \
-  mpiboundary.f90 neutral.f90 normalise.f90 openboundary.f90 output.f90 \
-  remap.f90 sdf.f90 sdf_common.f90 sdf_control.f90 sdf_input.f90 \
-  sdf_input_cartesian.f90 sdf_input_cartesian_r4.f90 \
-  sdf_input_cartesian_r8.f90 sdf_input_cartesian_ru.f90 sdf_input_point.f90 \
-  sdf_input_point_r4.f90 sdf_input_point_r8.f90 sdf_input_point_ru.f90 \
-  sdf_input_r4.f90 sdf_input_r8.f90 sdf_input_ru.f90 sdf_input_station.f90 \
+  initial_conditions.f90 lagran.F90 lare3d.f90 mpi_routines.f90 \
+  mpiboundary.f90 neutral.f90 normalise.f90 openboundary.f90 remap.f90 sdf.f90 \
+  sdf_common.f90 sdf_control.f90 sdf_input.f90 sdf_input_cartesian.f90 \
+  sdf_input_cartesian_r4.f90 sdf_input_cartesian_r8.f90 \
+  sdf_input_cartesian_ru.f90 sdf_input_point.f90 sdf_input_point_r4.f90 \
+  sdf_input_point_r8.f90 sdf_input_point_ru.f90 sdf_input_r4.f90 \
+  sdf_input_r8.f90 sdf_input_ru.f90 sdf_input_station.f90 \
   sdf_input_station_r4.f90 sdf_input_station_r8.f90 sdf_input_station_ru.f90 \
   sdf_input_util.f90 sdf_job_info.f90 sdf_output.f90 sdf_output_cartesian.f90 \
   sdf_output_cartesian_r4.f90 sdf_output_cartesian_r8.f90 \
@@ -243,11 +242,6 @@ control.o: control.f90 normalise.o shared_data.o
 diagnostics.o: diagnostics.F90 boundary.o conduct.o sdf.o shared_data.o \
   version_data.o
 initial_conditions.o: initial_conditions.f90 neutral.o shared_data.o
-input.o: input.f90 inputfunctions.o iocommon.o shared_data.o
-input_cartesian.o: input_cartesian.f90 inputfunctions.o iocommon.o shared_data.o
-inputfunctions.o: inputfunctions.f90 iocommon.o shared_data.o
-iocommon.o: iocommon.f90 shared_data.o
-iocontrol.o: iocontrol.f90 input.o iocommon.o output.o shared_data.o
 lagran.o: lagran.F90 boundary.o conduct.o neutral.o shared_data.o
 lare3d.o: lare3d.f90 boundary.o control.o diagnostics.o initial_conditions.o \
   lagran.o mpi_routines.o neutral.o normalise.o openboundary.o remap.o setup.o \
@@ -257,7 +251,6 @@ mpiboundary.o: mpiboundary.f90 shared_data.o
 neutral.o: neutral.f90 boundary.o shared_data.o
 normalise.o: normalise.f90 shared_data.o
 openboundary.o: openboundary.f90 shared_data.o
-output.o: output.f90 iocommon.o shared_data.o
 remap.o: remap.f90 shared_data.o xremap.o yremap.o zremap.o
 sdf.o: sdf.f90 sdf_control.o sdf_input.o sdf_input_cartesian.o \
   sdf_input_point.o sdf_input_station.o sdf_input_util.o sdf_output.o \
@@ -312,8 +305,7 @@ sdf_output_station_ru.o: sdf_output_station_ru.f90 sdf_output_ru.o
 sdf_output_util.o: sdf_output_util.f90 sdf_output_cartesian_ru.o \
   sdf_output_point_ru.o
 sdf_source_info_dummy.o: sdf_source_info_dummy.f90
-setup.o: setup.F90 input.o input_cartesian.o iocommon.o iocontrol.o \
-  sdf_job_info.o shared_data.o
+setup.o: setup.F90 sdf_job_info.o shared_data.o version_data.o welcome.o
 shared_data.o: shared_data.F90 sdf.o sdf_job_info.o
 version_data.o: version_data.F90 COMMIT
 welcome.o: welcome.f90 shared_data.o version_data.o

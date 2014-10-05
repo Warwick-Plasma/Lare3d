@@ -20,7 +20,7 @@ PROGRAM lare3d
 
   IMPLICIT NONE
 
-  INTEGER :: step = 0
+  step = 0
 
   CALL MPI_INIT(errcode)
 

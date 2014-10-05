@@ -82,7 +82,7 @@ MODULE shared_data
 
   ! NB: as there are now 2 ghost cells, indexing will fail if (nx,ny,nz) < 2
   INTEGER :: nx, ny, nz
-  INTEGER :: nsteps
+  INTEGER :: nsteps, step
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: rho, energy
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: bx, vx, vx1
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: by, vy, vy1
