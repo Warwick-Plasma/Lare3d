@@ -144,7 +144,10 @@ MODULE shared_data
   REAL(num) :: eta_bar
 
   ! MPI data
-  INTEGER :: coordinates(c_ndims)
+  INTEGER :: coordinates(c_ndims), n_global_min(c_ndims), n_global_max(c_ndims)
+  INTEGER, DIMENSION(:), ALLOCATABLE :: cell_nx_mins, cell_nx_maxs
+  INTEGER, DIMENSION(:), ALLOCATABLE :: cell_ny_mins, cell_ny_maxs
+  INTEGER, DIMENSION(:), ALLOCATABLE :: cell_nz_mins, cell_nz_maxs
   INTEGER :: nprocx, proc_x_min, proc_x_max
   INTEGER :: nprocy, proc_y_min, proc_y_max
   INTEGER :: nprocz, proc_z_min, proc_z_max

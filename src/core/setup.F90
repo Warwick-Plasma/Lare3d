@@ -13,8 +13,6 @@ MODULE setup
   PUBLIC :: grid
   PUBLIC :: open_files, close_files, restart_data
 
-  REAL(num), DIMENSION(:), ALLOCATABLE :: dxnew, dynew, dznew
-
 CONTAINS
 
   !****************************************************************************
@@ -73,54 +71,21 @@ CONTAINS
   SUBROUTINE grid
 
     REAL(num) :: dx, dy, dz
-    INTEGER :: ix, iy, iz, n0, n1
-    INTEGER :: nx0, ny0, nz0
-    INTEGER :: nxp, nyp, nzp
-    INTEGER :: cx, cy, cz
-
-    nx0 = nx_global / nprocx
-    ny0 = ny_global / nprocy
-    nz0 = nz_global / nprocz
-
-    ! If the number of gridpoints cannot be exactly subdivided then fix
-    ! The first nxp processors have nx0 grid points
-    ! The remaining processors have nx0+1 grid points
-    IF (nx0 * nprocx /= nx_global) THEN
-      nxp = (nx0 + 1) * nprocx - nx_global
-    ELSE
-      nxp = nprocx
-    END IF
-    IF (ny0 * nprocy /= ny_global) THEN
-      nyp = (ny0 + 1) * nprocy - ny_global
-    ELSE
-      nyp = nprocy
-    END IF
-    IF (nz0 * nprocz /= nz_global) THEN
-      nzp = (nz0 + 1) * nprocz - nz_global
-    ELSE
-      nzp = nprocz
-    END IF
-
-    ALLOCATE(dxnew(-2:nx_global+2))
-    ALLOCATE(dynew(-2:ny_global+2))
-    ALLOCATE(dznew(-2:nz_global+2))
-
-    ! Initially assume uniform grid
-    dx = 1.0_num / REAL(nx_global, num)
-    dy = 1.0_num / REAL(ny_global, num)
-    dz = 1.0_num / REAL(nz_global, num)
+    INTEGER :: ix, iy, iz
 
     length_x = x_max - x_min
     length_y = y_max - y_min
     length_z = z_max - z_min
 
+    ! Initially assume uniform grid
+    dx = length_x / REAL(nx_global, num)
+    dy = length_y / REAL(ny_global, num)
+    dz = length_z / REAL(nz_global, num)
+
     ! Grid cell boundary for x coordinates
-    ! set to - 0.5_num to have x = 0 in centre of domain
-    xb_global(0) = 0.0_num
     DO ix = -2, nx_global + 2
-      xb_global(ix) = xb_global(0) + REAL(ix, num) * dx
+      xb_global(ix) = x_min + REAL(ix, num) * dx
     END DO
-    xb_global = xb_global * length_x + x_min
 
     IF (x_stretch) CALL stretch_x ! stretch grid ?
 
@@ -131,9 +96,9 @@ CONTAINS
       xb_global(nx_global+2) = xb_global(nx_global) &
           + (xb_global(2) - xb_global(0))
       xb_global(-1) = xb_global(0) &
-          - (xb_global(nx) - xb_global(nx-1))
+          - (xb_global(nx_global) - xb_global(nx_global-1))
       xb_global(-2) = xb_global(0) &
-          - (xb_global(nx) - xb_global(nx-2))
+          - (xb_global(nx_global) - xb_global(nx_global-2))
     ELSE
       xb_global(nx_global+1) = 2.0_num * xb_global(nx_global) &
           - xb_global(nx_global-1)
@@ -143,21 +108,18 @@ CONTAINS
       xb_global(-2) = 2.0_num * xb_global(0) - xb_global(2)
     END IF
 
-    cx = coordinates(c_ndims)
-    IF (cx < nxp) THEN
-      n0 = cx * nx0
-      n1 = (cx + 1) * nx0
-    ELSE
-      n0 = nxp * nx0 + (cx - nxp) * (nx0 + 1)
-      n1 = nxp * nx0 + (cx - nxp + 1) * (nx0 + 1)
-    END IF
+    ! Setup local grid
 
-    xb = xb_global(n0-2:n1+2)
+    xb(-2) = xb_global(-2+n_global_min(1))
 
     DO ix = -1, nx + 2
       ixm = ix - 1
+
+      xb(ix) = xb_global(ix+n_global_min(1))
       ! Cell centre
       xc(ix) = 0.5_num * (xb(ixm) + xb(ix))
+      ! Cell width
+      dxb(ix) = xb(ix) - xb(ixm)
     END DO
 
     DO ix = -1, nx + 1
@@ -166,19 +128,11 @@ CONTAINS
       dxc(ix) = xc(ixp) - xc(ix)
     END DO
 
-    DO ix = -1, nx + 2
-      ixm = ix - 1
-      ! Cell width
-      dxb(ix) = xb(ix) - xb(ixm)
-    END DO
-
     ! Repeat for y
 
-    yb_global(0) = 0.0_num
     DO iy = -2, ny_global + 2
-      yb_global(iy) = yb_global(0) + REAL(iy, num) * dy
+      yb_global(iy) = y_min + REAL(iy, num) * dy
     END DO
-    yb_global = yb_global * length_y + y_min
 
     IF (y_stretch) CALL stretch_y
 
@@ -188,9 +142,9 @@ CONTAINS
       yb_global(ny_global+2) = yb_global(ny_global) &
           + (yb_global(2) - yb_global(0))
       yb_global(-1) = yb_global(0) &
-          - (yb_global(ny) - yb_global(ny-1))
+          - (yb_global(ny_global) - yb_global(ny_global-1))
       yb_global(-2) = yb_global(0) &
-          - (yb_global(ny) - yb_global(ny-2))
+          - (yb_global(ny_global) - yb_global(ny_global-2))
     ELSE
       yb_global(ny_global+1) = 2.0_num * yb_global(ny_global) &
           - yb_global(ny_global-1)
@@ -200,20 +154,16 @@ CONTAINS
       yb_global(-2) = 2.0_num * yb_global(0) - yb_global(2)
     END IF
 
-    cy = coordinates(c_ndims-1)
-    IF (cy < nyp) THEN
-      n0 = cy * ny0
-      n1 = (cy + 1) * ny0
-    ELSE
-      n0 = nyp * ny0 + (cy - nyp) * (ny0 + 1)
-      n1 = nyp * ny0 + (cy - nyp + 1) * (ny0 + 1)
-    END IF
-
-    yb = yb_global(n0-2:n1+2)
+    yb(-2) = yb_global(-2+n_global_min(2))
 
     DO iy = -1, ny + 2
       iym = iy - 1
+
+      yb(iy) = yb_global(iy+n_global_min(2))
+      ! Cell centre
       yc(iy) = 0.5_num * (yb(iym) + yb(iy))
+      ! Cell width
+      dyb(iy) = yb(iy) - yb(iym)
     END DO
 
     DO iy = -1, ny + 1
@@ -221,19 +171,11 @@ CONTAINS
       dyc(iy) = yc(iyp) - yc(iy)
     END DO
 
-    DO iy = -1, ny + 2
-      iym = iy - 1
-      ! Cell width
-      dyb(iy) = yb(iy) - yb(iym)
-    END DO
-
     ! Repeat for z
 
-    zb_global(0) = 0.0_num
     DO iz = -2, nz_global + 2
-      zb_global(iz) = zb_global(0) + REAL(iz, num) * dz
+      zb_global(iz) = z_min + REAL(iz, num) * dz
     END DO
-    zb_global = zb_global * length_z + z_min
 
     IF (z_stretch) CALL stretch_z
 
@@ -243,9 +185,9 @@ CONTAINS
       zb_global(nz_global+2) = zb_global(nz_global) &
           + (zb_global(2) - zb_global(0))
       zb_global(-1) = zb_global(0) &
-          - (zb_global(nz) - zb_global(nz-1))
+          - (zb_global(nz_global) - zb_global(nz_global-1))
       zb_global(-2) = zb_global(0) &
-          - (zb_global(nz) - zb_global(nz-2))
+          - (zb_global(nz_global) - zb_global(nz_global-2))
     ELSE
       zb_global(nz_global+1) = 2.0_num * zb_global(nz_global) &
           - zb_global(nz_global-1)
@@ -255,31 +197,21 @@ CONTAINS
       zb_global(-2) = 2.0_num * zb_global(0) - zb_global(2)
     END IF
 
-    cz = coordinates(c_ndims-2)
-    IF (cz < nzp) THEN
-      n0 = cz * nz0
-      n1 = (cz + 1) * nz0
-    ELSE
-      n0 = nzp * nz0 + (cz - nzp) * (nz0 + 1)
-      n1 = nzp * nz0 + (cz - nzp + 1) * (nz0 + 1)
-    END IF
-
-    zb = zb_global(n0-2:n1+2)
+    zb(-2) = zb_global(-2+n_global_min(3))
 
     DO iz = -1, nz + 2
       izm = iz - 1
+
+      zb(iz) = zb_global(iz+n_global_min(3))
+      ! Cell centre
       zc(iz) = 0.5_num * (zb(izm) + zb(iz))
+      ! Cell width
+      dzb(iz) = zb(iz) - zb(izm)
     END DO
 
     DO iz = -1, nz + 1
       izp = iz + 1
       dzc(iz) = zc(izp) - zc(iz)
-    END DO
-
-    DO iz = -1, nz + 2
-      izm = iz - 1
-      ! Cell width
-      dzb(iz) = zb(iz) - zb(izm)
     END DO
 
     ! Define the cell area
@@ -290,8 +222,6 @@ CONTAINS
         END DO
       END DO
     END DO
-
-    DEALLOCATE(dxnew, dynew, dznew)
 
   END SUBROUTINE grid
 
@@ -305,6 +235,9 @@ CONTAINS
   SUBROUTINE stretch_x
 
     REAL(num) :: width, dx, L, f, lx_new
+    REAL(num), DIMENSION(:), ALLOCATABLE :: dxnew
+
+    ALLOCATE(dxnew(-2:nx_global+2))
 
     ! New total length
     lx_new = 200.0_num
@@ -326,6 +259,8 @@ CONTAINS
 
     length_x = lx_new
 
+    DEALLOCATE(dxnew)
+
   END SUBROUTINE stretch_x
 
 
@@ -338,6 +273,9 @@ CONTAINS
   SUBROUTINE stretch_y
 
     REAL(num) :: width, dy, L, f, ly_new
+    REAL(num), DIMENSION(:), ALLOCATABLE :: dynew
+
+    ALLOCATE(dynew(-2:ny_global+2))
 
     ! New total length
     ly_new = 100.0_num
@@ -359,6 +297,8 @@ CONTAINS
 
     length_y = ly_new
 
+    DEALLOCATE(dynew)
+
   END SUBROUTINE stretch_y
 
 
@@ -371,6 +311,9 @@ CONTAINS
   SUBROUTINE stretch_z
 
     REAL(num) :: width, dz, L, f, lz_new
+    REAL(num), DIMENSION(:), ALLOCATABLE :: dznew
+
+    ALLOCATE(dznew(-2:nz_global+2))
 
     ! New total length
     lz_new = 100.0_num
@@ -391,6 +334,8 @@ CONTAINS
     END DO
 
     length_z = lz_new
+
+    DEALLOCATE(dznew)
 
   END SUBROUTINE stretch_z
 

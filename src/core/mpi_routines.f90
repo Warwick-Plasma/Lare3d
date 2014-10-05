@@ -20,16 +20,131 @@ CONTAINS
 
   SUBROUTINE mpi_initialise
 
-    LOGICAL :: periods(c_ndims), reorder
+    INTEGER, PARAMETER :: ng = 1
+    LOGICAL, PARAMETER :: allow_cpu_reduce = .FALSE.
+    INTEGER :: dims(c_ndims), icoord, old_comm, ierr
+    LOGICAL :: periods(c_ndims), reorder, reset
     INTEGER :: starts(c_ndims), sizes(c_ndims), subsizes(c_ndims)
-    INTEGER :: dims(c_ndims)
+    INTEGER :: ix, iy, iz
     INTEGER :: nx0, ny0, nz0
     INTEGER :: nxp, nyp, nzp
-    INTEGER :: cx, cy, cz, icoord
+    INTEGER :: nxsplit, nysplit, nzsplit
+    INTEGER :: x_coords, y_coords, z_coords
+    INTEGER :: area, minarea, nprocyz
+    INTEGER :: ranges(3,1), nproc_orig, oldgroup, newgroup
 
     CALL MPI_COMM_SIZE(MPI_COMM_WORLD, nproc, errcode)
 
-    dims = (/ nprocz, nprocy, nprocx /)
+    nproc_orig = nproc
+
+    IF (nx_global < ng .OR. ny_global < ng .OR. nz_global < ng) THEN
+      IF (rank == 0) THEN
+        PRINT*,'*** ERROR ***'
+        PRINT*,'Simulation domain is too small.'
+        PRINT*,'There must be at least ', ng, ' cells in each direction.'
+      ENDIF
+      CALL MPI_ABORT(MPI_COMM_WORLD, errcode, ierr)
+    ENDIF
+
+    reset = .FALSE.
+    IF (MAX(nprocx,1) * MAX(nprocy,1) * MAX(nprocz,1) > nproc) THEN
+      reset = .TRUE.
+    ELSE IF (nprocx * nprocy * nprocz > 0) THEN
+      ! Sanity check
+      nxsplit = nx_global / nprocx
+      nysplit = ny_global / nprocy
+      nzsplit = nz_global / nprocz
+      IF (nxsplit < ng .OR. nysplit < ng .OR. nzsplit < ng) &
+          reset = .TRUE.
+    ENDIF
+
+    IF (reset) THEN
+      IF (rank == 0) THEN
+        PRINT *, 'Unable to use requested processor subdivision. Using ' &
+            // 'default division.'
+      ENDIF
+      nprocx = 0
+      nprocy = 0
+      nprocz = 0
+    ENDIF
+
+    IF (nprocx * nprocy * nprocz == 0) THEN
+      DO WHILE (nproc > 1)
+        ! Find the processor split which minimizes surface area of
+        ! the resulting domain
+
+        minarea = nx_global * ny_global + ny_global * nz_global &
+            + nz_global * nx_global
+
+        DO ix = 1, nproc
+          nprocyz = nproc / ix
+          IF (ix * nprocyz /= nproc) CYCLE
+
+          nxsplit = nx_global / ix
+          ! Actual domain must be bigger than the number of ghostcells
+          IF (nxsplit < ng) CYCLE
+
+          DO iy = 1, nprocyz
+            iz = nprocyz / iy
+            IF (iy * iz /= nprocyz) CYCLE
+
+            nysplit = ny_global / iy
+            nzsplit = nz_global / iz
+            ! Actual domain must be bigger than the number of ghostcells
+            IF (nysplit < ng .OR. nzsplit < ng) CYCLE
+
+            area = nxsplit * nysplit + nysplit * nzsplit + nzsplit * nxsplit
+            IF (area < minarea) THEN
+              nprocx = ix
+              nprocy = iy
+              nprocz = iz
+              minarea = area
+            ENDIF
+          ENDDO
+        ENDDO
+
+        IF (nprocx > 0) EXIT
+
+        ! If we get here then no suitable split could be found. Decrease the
+        ! number of processors and try again.
+
+        nproc = nproc - 1
+      ENDDO
+    ENDIF
+
+    IF (nproc_orig /= nproc) THEN
+      IF (.NOT.allow_cpu_reduce) THEN
+        IF (rank == 0) THEN
+          PRINT*,'*** ERROR ***'
+          PRINT*,'Cannot split the domain using the requested number of CPUs.'
+          PRINT*,'Try reducing the number of CPUs to ', nproc
+        ENDIF
+        CALL MPI_ABORT(MPI_COMM_WORLD, errcode, ierr)
+        STOP
+      ENDIF
+      IF (rank == 0) THEN
+        PRINT*,'*** WARNING ***'
+        PRINT*,'Cannot split the domain using the requested number of CPUs.'
+        PRINT*,'Reducing the number of CPUs to ', nproc
+      ENDIF
+      ranges(1,1) = nproc
+      ranges(2,1) = nproc_orig - 1
+      ranges(3,1) = 1
+      old_comm = comm
+      CALL MPI_COMM_GROUP(old_comm, oldgroup, errcode)
+      CALL MPI_GROUP_RANGE_EXCL(oldgroup, 1, ranges, newgroup, errcode)
+      CALL MPI_COMM_CREATE(old_comm, newgroup, comm, errcode)
+      IF (comm == MPI_COMM_NULL) THEN
+        CALL MPI_FINALIZE(errcode)
+        STOP
+      ENDIF
+      CALL MPI_GROUP_FREE(oldgroup, errcode)
+      CALL MPI_GROUP_FREE(newgroup, errcode)
+      CALL MPI_COMM_FREE(old_comm, errcode)
+    ENDIF
+
+    dims = (/nprocz, nprocy, nprocx/)
+    CALL MPI_DIMS_CREATE(nproc, c_ndims, dims, errcode)
 
     IF (PRODUCT(MAX(dims, 1)) > nproc) THEN
       dims = 0
@@ -46,6 +161,10 @@ CONTAINS
     nprocx = dims(c_ndims  )
     nprocy = dims(c_ndims-1)
     nprocz = dims(c_ndims-2)
+
+    ALLOCATE(cell_nx_mins(0:nprocx-1), cell_nx_maxs(0:nprocx-1))
+    ALLOCATE(cell_ny_mins(0:nprocy-1), cell_ny_maxs(0:nprocy-1))
+    ALLOCATE(cell_nz_mins(0:nprocz-1), cell_nz_maxs(0:nprocz-1))
 
     periods = .TRUE.
     reorder = .TRUE.
@@ -73,9 +192,9 @@ CONTAINS
     CALL MPI_CART_SHIFT(comm, c_ndims-2, 1, proc_y_min, proc_y_max, errcode)
     CALL MPI_CART_SHIFT(comm, c_ndims-3, 1, proc_z_min, proc_z_max, errcode)
 
-    cx = coordinates(c_ndims  )
-    cy = coordinates(c_ndims-1)
-    cz = coordinates(c_ndims-2)
+    x_coords = coordinates(c_ndims  )
+    y_coords = coordinates(c_ndims-1)
+    z_coords = coordinates(c_ndims-2)
 
     ! Create the subarray for this problem: subtype decribes where this
     ! process's data fits into the global picture.
@@ -83,53 +202,74 @@ CONTAINS
     nx0 = nx_global / nprocx
     ny0 = ny_global / nprocy
     nz0 = nz_global / nprocz
-    nx = nx0
-    ny = ny0
-    nz = nz0
 
     ! If the number of gridpoints cannot be exactly subdivided then fix
-    ! the first nxp processors have nx0 grid points
+    ! The first nxp processors have nx0 grid points
     ! The remaining processors have nx0+1 grid points
     IF (nx0 * nprocx /= nx_global) THEN
       nxp = (nx0 + 1) * nprocx - nx_global
-      IF (cx >= nxp) nx = nx0 + 1
     ELSE
       nxp = nprocx
     END IF
+
     IF (ny0 * nprocy /= ny_global) THEN
       nyp = (ny0 + 1) * nprocy - ny_global
-      IF (cy >= nyp) ny = ny0 + 1
     ELSE
       nyp = nprocy
     END IF
+
     IF (nz0 * nprocz /= nz_global) THEN
       nzp = (nz0 + 1) * nprocz - nz_global
-      IF (cz >= nzp) nz = nz0 + 1
     ELSE
       nzp = nprocz
     END IF
 
     ! Set up the starting point for my subgrid (assumes arrays start at 0)
 
-    IF (cx < nxp) THEN
-      starts(1) = cx * nx0
-    ELSE
-      starts(1) = nxp * nx0 + (cx - nxp) * (nx0 + 1)
-    END IF
-    IF (cy < nyp) THEN
-      starts(2) = cy * ny0
-    ELSE
-      starts(2) = nyp * ny0 + (cy - nyp) * (ny0 + 1)
-    END IF
-    IF (cz < nzp) THEN
-      starts(3) = cz * nz0
-    ELSE
-      starts(3) = nzp * nz0 + (cz - nzp) * (nz0 + 1)
-    END IF
+    DO icoord = 0, nxp - 1
+      cell_nx_mins(icoord) = icoord * nx0 + 1
+      cell_nx_maxs(icoord) = (icoord + 1) * nx0
+    END DO
+    DO icoord = nxp, nprocx - 1
+      cell_nx_mins(icoord) = nxp * nx0 + (icoord - nxp) * (nx0 + 1) + 1
+      cell_nx_maxs(icoord) = nxp * nx0 + (icoord - nxp + 1) * (nx0 + 1)
+    END DO
+
+    DO icoord = 0, nyp - 1
+      cell_ny_mins(icoord) = icoord * ny0 + 1
+      cell_ny_maxs(icoord) = (icoord + 1) * ny0
+    END DO
+    DO icoord = nyp, nprocy - 1
+      cell_ny_mins(icoord) = nyp * ny0 + (icoord - nyp) * (ny0 + 1) + 1
+      cell_ny_maxs(icoord) = nyp * ny0 + (icoord - nyp + 1) * (ny0 + 1)
+    END DO
+
+    DO icoord = 0, nzp - 1
+      cell_nz_mins(icoord) = icoord * nz0 + 1
+      cell_nz_maxs(icoord) = (icoord + 1) * nz0
+    END DO
+    DO icoord = nzp, nprocz - 1
+      cell_nz_mins(icoord) = nzp * nz0 + (icoord - nzp) * (nz0 + 1) + 1
+      cell_nz_maxs(icoord) = nzp * nz0 + (icoord - nzp + 1) * (nz0 + 1)
+    END DO
+
+    n_global_min(1) = cell_nx_mins(x_coords) - 1
+    n_global_max(1) = cell_nx_maxs(x_coords)
+
+    n_global_min(2) = cell_ny_mins(y_coords) - 1
+    n_global_max(2) = cell_ny_maxs(y_coords)
+
+    n_global_min(3) = cell_nz_mins(z_coords) - 1
+    n_global_max(3) = cell_nz_maxs(z_coords)
+
+    nx = n_global_max(1) - n_global_min(1)
+    ny = n_global_max(2) - n_global_min(2)
+    nz = n_global_max(3) - n_global_min(3)
 
     ! The grid sizes
     subsizes = (/ nx+1, ny+1, nz+1 /)
     sizes = (/ nx_global+1, ny_global+1, nz_global+1 /)
+    starts = n_global_min
 
     CALL MPI_TYPE_CREATE_SUBARRAY(c_ndims, sizes, subsizes, starts, &
         MPI_ORDER_FORTRAN, mpireal, subtype, errcode)
@@ -208,6 +348,9 @@ CONTAINS
     DEALLOCATE(grav)
     DEALLOCATE(jx_r, jy_r, jz_r)
     DEALLOCATE(xb_global, yb_global, zb_global)
+    DEALLOCATE(cell_nx_mins, cell_nx_maxs)
+    DEALLOCATE(cell_ny_mins, cell_ny_maxs)
+    DEALLOCATE(cell_nz_mins, cell_nz_maxs)
 
     IF (ALLOCATED(xi_n)) DEALLOCATE(xi_n)
     IF (ALLOCATED(delta_ke)) DEALLOCATE(delta_ke)
