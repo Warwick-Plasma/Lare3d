@@ -818,7 +818,6 @@ CONTAINS
   SUBROUTINE resistive_effects
 
     REAL(num) :: jx1, jx2, jy1, jy2, jz1, jz2
-    REAL(num) :: area
 #ifdef FOURTHORDER
     REAL(num) :: dt6, half_dt
     REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: k1x, k2x, k3x, k4x
@@ -845,52 +844,7 @@ CONTAINS
 
     ! Default is first order in time
 #ifndef FOURTHORDER
-    DO iz = 1, nz
-      izm = iz - 1
-      DO iy = 1, ny
-        iym = iy - 1
-        area = dyb(iy) * dzb(iz)
-        DO ix = 0, nx
-          bx(ix,iy,iz) = bx1(ix,iy,iz) &
-              + (flux_z(ix,iy ,iz ) - flux_z(ix,iym,iz ) &
-              +  flux_z(ix,iy ,izm) - flux_z(ix,iym,izm) &
-              -  flux_y(ix,iy ,iz ) + flux_y(ix,iy ,izm) &
-              -  flux_y(ix,iym,iz ) + flux_y(ix,iym,izm)) * dt / area
-        END DO
-      END DO
-    END DO
-
-    DO iz = 1, nz
-      izm = iz - 1
-      DO iy = 0, ny
-        DO ix = 1, nx
-          ixm = ix - 1
-          area = dxb(ix) * dzb(iz)
-          by(ix,iy,iz) = by1(ix,iy,iz) &
-              + (flux_x(ix ,iy,iz ) - flux_x(ix ,iy,izm) &
-              +  flux_x(ixm,iy,iz ) - flux_x(ixm,iy,izm) &
-              -  flux_z(ix ,iy,iz ) + flux_z(ixm,iy,iz ) &
-              -  flux_z(ix ,iy,izm) + flux_z(ixm,iy,izm)) * dt / area
-        END DO
-      END DO
-    END DO
-
-    DO iz = 0, nz
-      DO iy = 1, ny
-        iym = iy - 1
-        DO ix = 1, nx
-          ixm = ix - 1
-          area = dxb(ix) * dyb(iy)
-          bz(ix,iy,iz) = bz1(ix,iy,iz) &
-              + (flux_y(ix ,iy ,iz) - flux_y(ixm,iy ,iz) &
-              +  flux_y(ix ,iym,iz) - flux_y(ixm,iym,iz) &
-              -  flux_x(ix ,iy ,iz) + flux_x(ix ,iym,iz) &
-              -  flux_x(ixm,iy ,iz) + flux_x(ixm,iym,iz)) * dt / area
-        END DO
-      END DO
-    END DO
-
-    CALL bfield_bcs
+    CALL bstep(flux_x, flux_y, flux_z, dt)
 
     DO iz = 1, nz
       izm = iz - 1
@@ -941,52 +895,8 @@ CONTAINS
     c1 = curlb
 
     ! Step 2
-    DO iz = 1, nz
-      izm = iz - 1
-      DO iy = 1, ny
-        iym = iy - 1
-        area = dyb(iy) * dzb(iz)
-        DO ix = 0, nx
-          bx(ix,iy,iz) = bx1(ix,iy,iz) &
-              + (k1z(ix,iy ,iz ) - k1z(ix,iym,iz ) &
-              +  k1z(ix,iy ,izm) - k1z(ix,iym,izm) &
-              -  k1y(ix,iy ,iz ) + k1y(ix,iy ,izm) &
-              -  k1y(ix,iym,iz ) + k1y(ix,iym,izm)) * half_dt / area
-        END DO
-      END DO
-    END DO
+    CALL bstep(k1x, k1y, k1z, half_dt)
 
-    DO iz = 1, nz
-      izm = iz - 1
-      DO iy = 0, ny
-        DO ix = 1, nx
-          ixm = ix - 1
-          area = dxb(ix) * dzb(iz)
-          by(ix,iy,iz) = by1(ix,iy,iz) &
-              + (k1x(ix ,iy,iz ) - k1x(ix ,iy,izm) &
-              +  k1x(ixm,iy,iz ) - k1x(ixm,iy,izm) &
-              -  k1z(ix ,iy,iz ) + k1z(ixm,iy,iz ) &
-              -  k1z(ix ,iy,izm) + k1z(ixm,iy,izm)) * half_dt / area
-        END DO
-      END DO
-    END DO
-
-    DO iz = 0, nz
-      DO iy = 1, ny
-        iym = iy - 1
-        DO ix = 1, nx
-          ixm = ix - 1
-          area = dxb(ix) * dyb(iy)
-          bz(ix,iy,iz) = bz1(ix,iy,iz) &
-              + (k1y(ix ,iy ,iz) - k1y(ixm,iy ,iz) &
-              +  k1y(ix ,iym,iz) - k1y(ixm,iym,iz) &
-              -  k1x(ix ,iy ,iz) + k1x(ix ,iym,iz) &
-              -  k1x(ixm,iy ,iz) + k1x(ixm,iym,iz)) * half_dt / area
-        END DO
-      END DO
-    END DO
-
-    CALL bfield_bcs
     CALL rkstep
 
     k2x = flux_x
@@ -995,52 +905,8 @@ CONTAINS
     c2 = curlb
 
     ! Step 3
-    DO iz = 1, nz
-      izm = iz - 1
-      DO iy = 1, ny
-        iym = iy - 1
-        area = dyb(iy) * dzb(iz)
-        DO ix = 0, nx
-          bx(ix,iy,iz) = bx1(ix,iy,iz) &
-              + (k2z(ix,iy ,iz ) - k2z(ix,iym,iz ) &
-              +  k2z(ix,iy ,izm) - k2z(ix,iym,izm) &
-              -  k2y(ix,iy ,iz ) + k2y(ix,iy ,izm) &
-              -  k2y(ix,iym,iz ) + k2y(ix,iym,izm)) * half_dt / area
-        END DO
-      END DO
-    END DO
+    CALL bstep(k2x, k2y, k2z, half_dt)
 
-    DO iz = 1, nz
-      izm = iz - 1
-      DO iy = 0, ny
-        DO ix = 1, nx
-          ixm = ix - 1
-          area = dxb(ix) * dzb(iz)
-          by(ix,iy,iz) = by1(ix,iy,iz) &
-              + (k2x(ix ,iy,iz ) - k2x(ix ,iy,izm) &
-              +  k2x(ixm,iy,iz ) - k2x(ixm,iy,izm) &
-              -  k2z(ix ,iy,iz ) + k2z(ixm,iy,iz ) &
-              -  k2z(ix ,iy,izm) + k2z(ixm,iy,izm)) * half_dt / area
-        END DO
-      END DO
-    END DO
-
-    DO iz = 0, nz
-      DO iy = 1, ny
-        iym = iy - 1
-        DO ix = 1, nx
-          ixm = ix - 1
-          area = dxb(ix) * dyb(iy)
-          bz(ix,iy,iz) = bz1(ix,iy,iz) &
-              + (k2y(ix ,iy ,iz) - k2y(ixm,iy ,iz) &
-              +  k2y(ix ,iym,iz) - k2y(ixm,iym,iz) &
-              -  k2x(ix ,iy ,iz) + k2x(ix ,iym,iz) &
-              -  k2x(ixm,iy ,iz) + k2x(ixm,iym,iz)) * half_dt / area
-        END DO
-      END DO
-    END DO
-
-    CALL bfield_bcs
     CALL rkstep
 
     k3x = flux_x
@@ -1049,52 +915,8 @@ CONTAINS
     c3 = curlb
 
     ! Step 4
-    DO iz = 1, nz
-      izm = iz - 1
-      DO iy = 1, ny
-        iym = iy - 1
-        area = dyb(iy) * dzb(iz)
-        DO ix = 0, nx
-          bx(ix,iy,iz) = bx1(ix,iy,iz) &
-              + (k3z(ix,iy ,iz ) - k3z(ix,iym,iz ) &
-              +  k3z(ix,iy ,izm) - k3z(ix,iym,izm) &
-              -  k3y(ix,iy ,iz ) + k3y(ix,iy ,izm) &
-              -  k3y(ix,iym,iz ) + k3y(ix,iym,izm)) * dt / area
-        END DO
-      END DO
-    END DO
+    CALL bstep(k3x, k3y, k3z, dt)
 
-    DO iz = 1, nz
-      izm = iz - 1
-      DO iy = 0, ny
-        DO ix = 1, nx
-          ixm = ix - 1
-          area = dxb(ix) * dzb(iz)
-          by(ix,iy,iz) = by1(ix,iy,iz) &
-              + (k3x(ix ,iy,iz ) - k3x(ix ,iy,izm) &
-              +  k3x(ixm,iy,iz ) - k3x(ixm,iy,izm) &
-              -  k3z(ix ,iy,iz ) + k3z(ixm,iy,iz ) &
-              -  k3z(ix ,iy,izm) + k3z(ixm,iy,izm)) * dt / area
-        END DO
-      END DO
-    END DO
-
-    DO iz = 0, nz
-      DO iy = 1, ny
-        iym = iy - 1
-        DO ix = 1, nx
-          ixm = ix - 1
-          area = dxb(ix) * dyb(iy)
-          bz(ix,iy,iz) = bz1(ix,iy,iz) &
-              + (k3y(ix ,iy ,iz) - k3y(ixm,iy ,iz) &
-              +  k3y(ix ,iym,iz) - k3y(ixm,iym,iz) &
-              -  k3x(ix ,iy ,iz) + k3x(ix ,iym,iz) &
-              -  k3x(ixm,iy ,iz) + k3x(ixm,iym,iz)) * dt / area
-        END DO
-      END DO
-    END DO
-
-    CALL bfield_bcs
     CALL rkstep
 
     k4x = flux_x
@@ -1108,52 +930,7 @@ CONTAINS
     k1z = k1z + 2.0_num * k2z + 2.0_num * k3z + k4z
     c1 = c1 + 2.0_num * c2 + 2.0_num * c3 + c4
 
-    DO iz = 1, nz
-      izm = iz - 1
-      DO iy = 1, ny
-        iym = iy - 1
-        area = dyb(iy) * dzb(iz)
-        DO ix = 0, nx
-          bx(ix,iy,iz) = bx1(ix,iy,iz) &
-              + (k1z(ix,iy ,iz ) - k1z(ix,iym,iz ) &
-              +  k1z(ix,iy ,izm) - k1z(ix,iym,izm) &
-              -  k1y(ix,iy ,iz ) + k1y(ix,iy ,izm) &
-              -  k1y(ix,iym,iz ) + k1y(ix,iym,izm)) * dt6 / area
-        END DO
-      END DO
-    END DO
-
-    DO iz = 1, nz
-      izm = iz - 1
-      DO iy = 0, ny
-        DO ix = 1, nx
-          ixm = ix - 1
-          area = dxb(ix) * dzb(iz)
-          by(ix,iy,iz) = by1(ix,iy,iz) &
-              + (k1x(ix ,iy,iz ) - k1x(ix ,iy,izm) &
-              +  k1x(ixm,iy,iz ) - k1x(ixm,iy,izm) &
-              -  k1z(ix ,iy,iz ) + k1z(ixm,iy,iz ) &
-              -  k1z(ix ,iy,izm) + k1z(ixm,iy,izm)) * dt6 / area
-        END DO
-      END DO
-    END DO
-
-    DO iz = 0, nz
-      DO iy = 1, ny
-        iym = iy - 1
-        DO ix = 1, nx
-          ixm = ix - 1
-          area = dxb(ix) * dyb(iy)
-          bz(ix,iy,iz) = bz1(ix,iy,iz) &
-              + (k1y(ix ,iy ,iz) - k1y(ixm,iy ,iz) &
-              +  k1y(ix ,iym,iz) - k1y(ixm,iym,iz) &
-              -  k1x(ix ,iy ,iz) + k1x(ix ,iym,iz) &
-              -  k1x(ixm,iy ,iz) + k1x(ixm,iym,iz)) * dt6 / area
-        END DO
-      END DO
-    END DO
-
-    CALL bfield_bcs
+    CALL bstep(k1x, k1y, k1z, dt6)
 
     DO iz = 1, nz
       izm = iz - 1
@@ -1357,5 +1134,62 @@ CONTAINS
     END IF
 
   END SUBROUTINE rkstep
+
+
+
+  SUBROUTINE bstep(kx, ky, kz, dt)
+
+    REAL(num), DIMENSION(:,:,:), INTENT(IN) :: kx, ky, kz
+    REAL(num), INTENT(IN) :: dt
+    REAL(num) :: area
+
+    DO iz = 1, nz
+      izm = iz - 1
+      DO iy = 1, ny
+        iym = iy - 1
+        area = dyb(iy) * dzb(iz)
+        DO ix = 0, nx
+          bx(ix,iy,iz) = bx1(ix,iy,iz) &
+              + (kz(ix,iy ,iz ) - kz(ix,iym,iz ) &
+              +  kz(ix,iy ,izm) - kz(ix,iym,izm) &
+              -  ky(ix,iy ,iz ) + ky(ix,iy ,izm) &
+              -  ky(ix,iym,iz ) + ky(ix,iym,izm)) * dt / area
+        END DO
+      END DO
+    END DO
+
+    DO iz = 1, nz
+      izm = iz - 1
+      DO iy = 0, ny
+        DO ix = 1, nx
+          ixm = ix - 1
+          area = dxb(ix) * dzb(iz)
+          by(ix,iy,iz) = by1(ix,iy,iz) &
+              + (kx(ix ,iy,iz ) - kx(ix ,iy,izm) &
+              +  kx(ixm,iy,iz ) - kx(ixm,iy,izm) &
+              -  kz(ix ,iy,iz ) + kz(ixm,iy,iz ) &
+              -  kz(ix ,iy,izm) + kz(ixm,iy,izm)) * dt / area
+        END DO
+      END DO
+    END DO
+
+    DO iz = 0, nz
+      DO iy = 1, ny
+        iym = iy - 1
+        DO ix = 1, nx
+          ixm = ix - 1
+          area = dxb(ix) * dyb(iy)
+          bz(ix,iy,iz) = bz1(ix,iy,iz) &
+              + (ky(ix ,iy ,iz) - ky(ixm,iy ,iz) &
+              +  ky(ix ,iym,iz) - ky(ixm,iym,iz) &
+              -  kx(ix ,iy ,iz) + kx(ix ,iym,iz) &
+              -  kx(ixm,iy ,iz) + kx(ixm,iym,iz)) * dt / area
+        END DO
+      END DO
+    END DO
+
+    CALL bfield_bcs
+
+  END SUBROUTINE bstep
 
 END MODULE lagran
