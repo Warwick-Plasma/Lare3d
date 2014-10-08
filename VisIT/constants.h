@@ -11,7 +11,6 @@
   #define TYPE_STITCHED_VECTOR 4
   #define TYPE_STITCHED_MAGNITUDE 5
 
-
   #define MESH_CARTESIAN 0
   #define MESH_PARTICLE 1
 
@@ -29,6 +28,5 @@
 
   #define CFD_VERSION 1
   #define CFD_REVISION 0
-
 
 #endif

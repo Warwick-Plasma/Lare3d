@@ -5,7 +5,7 @@
 
 class Stitched_Vector_Reader : public BlockReader
 {
- private:
+private:
 
     int Dimensions;
     int SizeOfFloat;
@@ -16,14 +16,16 @@ class Stitched_Vector_Reader : public BlockReader
     char *MeshClass;
     Block **SubBlocks;
 
- public:
- virtual vtkDataArray * GetVectorVar(int domain);
- virtual vtkDataArray * GetVar(int domain){return NULL;}
- virtual vtkDataSet * GetMesh(int domain){return NULL;}
- virtual void PopulateDatabaseMetaData(avtDatabaseMetaData *md);
- virtual bool Cache(){return true;}
+public:
+    virtual vtkDataArray *GetVectorVar(int domain);
+    virtual vtkDataArray *GetVar(int domain) { return NULL; }
+    virtual vtkDataSet *GetMesh(int domain) { return NULL; }
+    virtual void PopulateDatabaseMetaData(avtDatabaseMetaData *md);
+    virtual bool Cache() { return true; }
 
-    Stitched_Vector_Reader(BlockHandler *Handler,ifstream *file,Block* Owner,int MaxStringLen,bool CacheOnly);
+    Stitched_Vector_Reader(BlockHandler *Handler, ifstream *file,
+        Block *Owner, int MaxStringLen, bool CacheOnly);
     ~Stitched_Vector_Reader();
 };
+
 #endif
