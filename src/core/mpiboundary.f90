@@ -120,67 +120,67 @@ CONTAINS
 
   SUBROUTINE velocity_mpi
 
-    CALL MPI_SENDRECV(vx(1   , -2, -2), 1, node_xface,  proc_x_min, tag, &
-                      vx(nx+1, -2, -2), 1, node_xface,  proc_x_max, tag, &
+    CALL MPI_SENDRECV(vx(0   , -2, -2), 1, node_xface1, proc_x_min, tag, &
+                      vx(nx  , -2, -2), 1, node_xface1, proc_x_max, tag, &
                       comm, status, errcode)
-    CALL MPI_SENDRECV(vx(nx-2, -2, -2), 1, node_xface1, proc_x_max, tag, &
-                      vx(-2  , -2, -2), 1, node_xface1, proc_x_min, tag, &
-                      comm, status, errcode)
-
-    CALL MPI_SENDRECV(vy(1   , -2, -2), 1, node_xface,  proc_x_min, tag, &
-                      vy(nx+1, -2, -2), 1, node_xface,  proc_x_max, tag, &
-                      comm, status, errcode)
-    CALL MPI_SENDRECV(vy(nx-2, -2, -2), 1, node_xface1, proc_x_max, tag, &
-                      vy(-2  , -2, -2), 1, node_xface1, proc_x_min, tag, &
+    CALL MPI_SENDRECV(vx(nx-2, -2, -2), 1, node_xface,  proc_x_max, tag, &
+                      vx(-2  , -2, -2), 1, node_xface,  proc_x_min, tag, &
                       comm, status, errcode)
 
-    CALL MPI_SENDRECV(vz(1   , -2, -2), 1, node_xface,  proc_x_min, tag, &
-                      vz(nx+1, -2, -2), 1, node_xface,  proc_x_max, tag, &
+    CALL MPI_SENDRECV(vy(0   , -2, -2), 1, node_xface1, proc_x_min, tag, &
+                      vy(nx  , -2, -2), 1, node_xface1, proc_x_max, tag, &
                       comm, status, errcode)
-    CALL MPI_SENDRECV(vz(nx-2, -2, -2), 1, node_xface1, proc_x_max, tag, &
-                      vz(-2  , -2, -2), 1, node_xface1, proc_x_min, tag, &
-                      comm, status, errcode)
-
-    CALL MPI_SENDRECV(vx(-2, 1   , -2), 1, node_yface,  proc_y_min, tag, &
-                      vx(-2, ny+1, -2), 1, node_yface,  proc_y_max, tag, &
-                      comm, status, errcode)
-    CALL MPI_SENDRECV(vx(-2, ny-2, -2), 1, node_yface1, proc_y_max, tag, &
-                      vx(-2, -2  , -2), 1, node_yface1, proc_y_min, tag, &
+    CALL MPI_SENDRECV(vy(nx-2, -2, -2), 1, node_xface,  proc_x_max, tag, &
+                      vy(-2  , -2, -2), 1, node_xface,  proc_x_min, tag, &
                       comm, status, errcode)
 
-    CALL MPI_SENDRECV(vy(-2, 1   , -2), 1, node_yface,  proc_y_min, tag, &
-                      vy(-2, ny+1, -2), 1, node_yface,  proc_y_max, tag, &
+    CALL MPI_SENDRECV(vz(0   , -2, -2), 1, node_xface1, proc_x_min, tag, &
+                      vz(nx  , -2, -2), 1, node_xface1, proc_x_max, tag, &
                       comm, status, errcode)
-    CALL MPI_SENDRECV(vy(-2, ny-2, -2), 1, node_yface1, proc_y_max, tag, &
-                      vy(-2, -2  , -2), 1, node_yface1, proc_y_min, tag, &
-                      comm, status, errcode)
-
-    CALL MPI_SENDRECV(vz(-2, 1   , -2), 1, node_yface,  proc_y_min, tag, &
-                      vz(-2, ny+1, -2), 1, node_yface,  proc_y_max, tag, &
-                      comm, status, errcode)
-    CALL MPI_SENDRECV(vz(-2, ny-2, -2), 1, node_yface1, proc_y_max, tag, &
-                      vz(-2, -2  , -2), 1, node_yface1, proc_y_min, tag, &
+    CALL MPI_SENDRECV(vz(nx-2, -2, -2), 1, node_xface,  proc_x_max, tag, &
+                      vz(-2  , -2, -2), 1, node_xface,  proc_x_min, tag, &
                       comm, status, errcode)
 
-    CALL MPI_SENDRECV(vx(-2, -2, 1   ), 1, node_zface,  proc_z_min, tag, &
-                      vx(-2, -2, nz+1), 1, node_zface,  proc_z_max, tag, &
+    CALL MPI_SENDRECV(vx(-2, 0   , -2), 1, node_yface1, proc_y_min, tag, &
+                      vx(-2, ny  , -2), 1, node_yface1, proc_y_max, tag, &
                       comm, status, errcode)
-    CALL MPI_SENDRECV(vx(-2, -2, nz-2), 1, node_zface1, proc_z_max, tag, &
-                      vx(-2, -2, -2  ), 1, node_zface1, proc_z_min, tag, &
-                      comm, status, errcode)
-
-    CALL MPI_SENDRECV(vy(-2, -2, 1   ), 1, node_zface,  proc_z_min, tag, &
-                      vy(-2, -2, nz+1), 1, node_zface,  proc_z_max, tag, &
-                      comm, status, errcode)
-    CALL MPI_SENDRECV(vy(-2, -2, nz-2), 1, node_zface1, proc_z_max, tag, &
-                      vy(-2, -2, -2  ), 1, node_zface1, proc_z_min, tag, &
+    CALL MPI_SENDRECV(vx(-2, ny-2, -2), 1, node_yface,  proc_y_max, tag, &
+                      vx(-2, -2  , -2), 1, node_yface,  proc_y_min, tag, &
                       comm, status, errcode)
 
-    CALL MPI_SENDRECV(vz(-2, -2, 1   ), 1, node_zface,  proc_z_min, tag, &
-                      vz(-2, -2, nz+1), 1, node_zface,  proc_z_max, tag, &
+    CALL MPI_SENDRECV(vy(-2, 0   , -2), 1, node_yface1, proc_y_min, tag, &
+                      vy(-2, ny  , -2), 1, node_yface1, proc_y_max, tag, &
                       comm, status, errcode)
-    CALL MPI_SENDRECV(vz(-2, -2, nz-2), 1, node_zface1, proc_z_max, tag, &
-                      vz(-2, -2, -2  ), 1, node_zface1, proc_z_min, tag, &
+    CALL MPI_SENDRECV(vy(-2, ny-2, -2), 1, node_yface,  proc_y_max, tag, &
+                      vy(-2, -2  , -2), 1, node_yface,  proc_y_min, tag, &
+                      comm, status, errcode)
+
+    CALL MPI_SENDRECV(vz(-2, 0   , -2), 1, node_yface1, proc_y_min, tag, &
+                      vz(-2, ny  , -2), 1, node_yface1, proc_y_max, tag, &
+                      comm, status, errcode)
+    CALL MPI_SENDRECV(vz(-2, ny-2, -2), 1, node_yface,  proc_y_max, tag, &
+                      vz(-2, -2  , -2), 1, node_yface,  proc_y_min, tag, &
+                      comm, status, errcode)
+
+    CALL MPI_SENDRECV(vx(-2, -2, 0   ), 1, node_zface1, proc_z_min, tag, &
+                      vx(-2, -2, nz  ), 1, node_zface1, proc_z_max, tag, &
+                      comm, status, errcode)
+    CALL MPI_SENDRECV(vx(-2, -2, nz-2), 1, node_zface,  proc_z_max, tag, &
+                      vx(-2, -2, -2  ), 1, node_zface,  proc_z_min, tag, &
+                      comm, status, errcode)
+
+    CALL MPI_SENDRECV(vy(-2, -2, 0   ), 1, node_zface1, proc_z_min, tag, &
+                      vy(-2, -2, nz  ), 1, node_zface1, proc_z_max, tag, &
+                      comm, status, errcode)
+    CALL MPI_SENDRECV(vy(-2, -2, nz-2), 1, node_zface,  proc_z_max, tag, &
+                      vy(-2, -2, -2  ), 1, node_zface,  proc_z_min, tag, &
+                      comm, status, errcode)
+
+    CALL MPI_SENDRECV(vz(-2, -2, 0   ), 1, node_zface1, proc_z_min, tag, &
+                      vz(-2, -2, nz  ), 1, node_zface1, proc_z_max, tag, &
+                      comm, status, errcode)
+    CALL MPI_SENDRECV(vz(-2, -2, nz-2), 1, node_zface,  proc_z_max, tag, &
+                      vz(-2, -2, -2  ), 1, node_zface,  proc_z_min, tag, &
                       comm, status, errcode)
 
   END SUBROUTINE velocity_mpi
@@ -189,69 +189,68 @@ CONTAINS
 
   SUBROUTINE remap_v_mpi
 
-    CALL MPI_SENDRECV(vx1(1   , -2, -2), 1, node_xface,  proc_x_min, tag, &
-                      vx1(nx+1, -2, -2), 1, node_xface,  proc_x_max, tag, &
+    CALL MPI_SENDRECV(vx1(0   , -2, -2), 1, node_xface1, proc_x_min, tag, &
+                      vx1(nx  , -2, -2), 1, node_xface1, proc_x_max, tag, &
                       comm, status, errcode)
-    CALL MPI_SENDRECV(vx1(nx-2, -2, -2), 1, node_xface1, proc_x_max, tag, &
-                      vx1(-2  , -2, -2), 1, node_xface1, proc_x_min, tag, &
-                      comm, status, errcode)
-
-    CALL MPI_SENDRECV(vy1(1   , -2, -2), 1, node_xface,  proc_x_min, tag, &
-                      vy1(nx+1, -2, -2), 1, node_xface,  proc_x_max, tag, &
-                      comm, status, errcode)
-    CALL MPI_SENDRECV(vy1(nx-2, -2, -2), 1, node_xface1, proc_x_max, tag, &
-                      vy1(-2  , -2, -2), 1, node_xface1, proc_x_min, tag, &
+    CALL MPI_SENDRECV(vx1(nx-2, -2, -2), 1, node_xface,  proc_x_max, tag, &
+                      vx1(-2  , -2, -2), 1, node_xface,  proc_x_min, tag, &
                       comm, status, errcode)
 
-    CALL MPI_SENDRECV(vz1(1   , -2, -2), 1, node_xface,  proc_x_min, tag, &
-                      vz1(nx+1, -2, -2), 1, node_xface,  proc_x_max, tag, &
+    CALL MPI_SENDRECV(vy1(0   , -2, -2), 1, node_xface1, proc_x_min, tag, &
+                      vy1(nx  , -2, -2), 1, node_xface1, proc_x_max, tag, &
                       comm, status, errcode)
-    CALL MPI_SENDRECV(vz1(nx-2, -2, -2), 1, node_xface1, proc_x_max, tag, &
-                      vz1(-2  , -2, -2), 1, node_xface1, proc_x_min, tag, &
-                      comm, status, errcode)
-
-    CALL MPI_SENDRECV(vx1(-2, 1   , -2), 1, node_yface,  proc_y_min, tag, &
-                      vx1(-2, ny+1, -2), 1, node_yface,  proc_y_max, tag, &
-                      comm, status, errcode)
-    CALL MPI_SENDRECV(vx1(-2, ny-2, -2), 1, node_yface1, proc_y_max, tag, &
-                      vx1(-2, -2  , -2), 1, node_yface1, proc_y_min, tag, &
+    CALL MPI_SENDRECV(vy1(nx-2, -2, -2), 1, node_xface,  proc_x_max, tag, &
+                      vy1(-2  , -2, -2), 1, node_xface,  proc_x_min, tag, &
                       comm, status, errcode)
 
-    CALL MPI_SENDRECV(vy1(-2, 1   , -2), 1, node_yface,  proc_y_min, tag, &
-                      vy1(-2, ny+1, -2), 1, node_yface,  proc_y_max, tag, &
+    CALL MPI_SENDRECV(vz1(0   , -2, -2), 1, node_xface1, proc_x_min, tag, &
+                      vz1(nx  , -2, -2), 1, node_xface1, proc_x_max, tag, &
                       comm, status, errcode)
-    CALL MPI_SENDRECV(vy1(-2, ny-2, -2), 1, node_yface1, proc_y_max, tag, &
-                      vy1(-2, -2  , -2), 1, node_yface1, proc_y_min, tag, &
-                      comm, status, errcode)
-
-    CALL MPI_SENDRECV(vz1(-2, 1   , -2), 1, node_yface,  proc_y_min, tag, &
-                      vz1(-2, ny+1, -2), 1, node_yface,  proc_y_max, tag, &
-                      comm, status, errcode)
-    CALL MPI_SENDRECV(vz1(-2, ny-2, -2), 1, node_yface1, proc_y_max, tag, &
-                      vz1(-2, -2  , -2), 1, node_yface1, proc_y_min, tag, &
+    CALL MPI_SENDRECV(vz1(nx-2, -2, -2), 1, node_xface,  proc_x_max, tag, &
+                      vz1(-2  , -2, -2), 1, node_xface,  proc_x_min, tag, &
                       comm, status, errcode)
 
-    CALL MPI_SENDRECV(vx1(-2, -2, 1   ), 1, node_zface,  proc_z_min, tag, &
-                      vx1(-2, -2, nz+1), 1, node_zface,  proc_z_max, tag, &
+    CALL MPI_SENDRECV(vx1(-2, 0   , -2), 1, node_yface1, proc_y_min, tag, &
+                      vx1(-2, ny  , -2), 1, node_yface1, proc_y_max, tag, &
                       comm, status, errcode)
-    CALL MPI_SENDRECV(vx1(-2, -2, nz-2), 1, node_zface1, proc_z_max, tag, &
-                      vx1(-2, -2, -2  ), 1, node_zface1, proc_z_min, tag, &
-                      comm, status, errcode)
-
-    CALL MPI_SENDRECV(vy1(-2, -2, 1   ), 1, node_zface,  proc_z_min, tag, &
-                      vy1(-2, -2, nz+1), 1, node_zface,  proc_z_max, tag, &
-                      comm, status, errcode)
-    CALL MPI_SENDRECV(vy1(-2, -2, nz-2), 1, node_zface1, proc_z_max, tag, &
-                      vy1(-2, -2, -2  ), 1, node_zface1, proc_z_min, tag, &
+    CALL MPI_SENDRECV(vx1(-2, ny-2, -2), 1, node_yface,  proc_y_max, tag, &
+                      vx1(-2, -2  , -2), 1, node_yface,  proc_y_min, tag, &
                       comm, status, errcode)
 
-    CALL MPI_SENDRECV(vz1(-2, -2, 1   ), 1, node_zface,  proc_z_min, tag, &
-                      vz1(-2, -2, nz+1), 1, node_zface,  proc_z_max, tag, &
+    CALL MPI_SENDRECV(vy1(-2, 0   , -2), 1, node_yface1, proc_y_min, tag, &
+                      vy1(-2, ny  , -2), 1, node_yface1, proc_y_max, tag, &
                       comm, status, errcode)
-    CALL MPI_SENDRECV(vz1(-2, -2, nz-2), 1, node_zface1, proc_z_max, tag, &
-                      vz1(-2, -2, -2  ), 1, node_zface1, proc_z_min, tag, &
+    CALL MPI_SENDRECV(vy1(-2, ny-2, -2), 1, node_yface,  proc_y_max, tag, &
+                      vy1(-2, -2  , -2), 1, node_yface,  proc_y_min, tag, &
                       comm, status, errcode)
 
+    CALL MPI_SENDRECV(vz1(-2, 0   , -2), 1, node_yface1, proc_y_min, tag, &
+                      vz1(-2, ny  , -2), 1, node_yface1, proc_y_max, tag, &
+                      comm, status, errcode)
+    CALL MPI_SENDRECV(vz1(-2, ny-2, -2), 1, node_yface,  proc_y_max, tag, &
+                      vz1(-2, -2  , -2), 1, node_yface,  proc_y_min, tag, &
+                      comm, status, errcode)
+
+    CALL MPI_SENDRECV(vx1(-2, -2, 0   ), 1, node_zface1, proc_z_min, tag, &
+                      vx1(-2, -2, nz  ), 1, node_zface1, proc_z_max, tag, &
+                      comm, status, errcode)
+    CALL MPI_SENDRECV(vx1(-2, -2, nz-2), 1, node_zface,  proc_z_max, tag, &
+                      vx1(-2, -2, -2  ), 1, node_zface,  proc_z_min, tag, &
+                      comm, status, errcode)
+
+    CALL MPI_SENDRECV(vy1(-2, -2, 0   ), 1, node_zface1, proc_z_min, tag, &
+                      vy1(-2, -2, nz  ), 1, node_zface1, proc_z_max, tag, &
+                      comm, status, errcode)
+    CALL MPI_SENDRECV(vy1(-2, -2, nz-2), 1, node_zface,  proc_z_max, tag, &
+                      vy1(-2, -2, -2  ), 1, node_zface,  proc_z_min, tag, &
+                      comm, status, errcode)
+
+    CALL MPI_SENDRECV(vz1(-2, -2, 0   ), 1, node_zface1, proc_z_min, tag, &
+                      vz1(-2, -2, nz  ), 1, node_zface1, proc_z_max, tag, &
+                      comm, status, errcode)
+    CALL MPI_SENDRECV(vz1(-2, -2, nz-2), 1, node_zface,  proc_z_max, tag, &
+                      vz1(-2, -2, -2  ), 1, node_zface,  proc_z_min, tag, &
+                      comm, status, errcode)
 
   END SUBROUTINE remap_v_mpi
 
