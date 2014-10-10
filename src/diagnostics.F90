@@ -15,7 +15,7 @@ MODULE diagnostics
 
   PRIVATE
 
-  PUBLIC :: set_dt, output_routines, energy_correction
+  PUBLIC :: set_dt, output_routines, energy_correction, write_file
 
 CONTAINS
 
@@ -27,25 +27,10 @@ CONTAINS
 
     INTEGER, INTENT(IN) :: i
     INTEGER, PARAMETER :: outstep = 1
-    REAL(num), DIMENSION(:), ALLOCATABLE :: work
-    REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: array
-    LOGICAL :: print_arrays, last_call, restart_flag, convert
-    INTEGER, DIMENSION(c_ndims) :: global_dims, dims
-
-    CHARACTER(LEN=22) :: filename_fmt
-    CHARACTER(LEN=5+n_zeros+c_id_length) :: filename
-    CHARACTER(LEN=6+data_dir_max_length+n_zeros+c_id_length) :: full_filename
-    CHARACTER(LEN=c_id_length) :: varname, units
-    TYPE(sdf_file_handle) :: sdf_handle
-
+    LOGICAL :: print_arrays, last_call
     REAL(num) :: t_out = 0.0_num
-    REAL(num) :: en_ke = 0.0_num, en_int = 0.0_num
-    REAL(num) :: en_b = 0.0_num, heating_visc = 0.0_num
-    REAL(num) :: heating_ohmic = 0.0_num
-    REAL(num) :: total
-    LOGICAL, SAVE :: first = .TRUE.
-
-    global_dims = (/ nx_global, ny_global, nz_global /)
+    REAL(num) :: en_ke = 0.0_num, en_int = 0.0_num, en_b = 0.0_num
+    REAL(dbl) :: heating_local(2), heating_sum(2)
 
 #ifdef NO_IO
     RETURN
@@ -62,31 +47,51 @@ CONTAINS
       t_out = time
       CALL energy_account(en_b, en_ke, en_int)
 
-      CALL MPI_ALLREDUCE(total_visc_heating, total, 1, mpireal, MPI_SUM, &
-          comm, errcode)
+      heating_local(1) = total_visc_heating
+      heating_local(2) = total_ohmic_heating
 
-      heating_visc = total
-
-      CALL MPI_ALLREDUCE(total_ohmic_heating, total, 1, mpireal, MPI_SUM, &
-          comm, errcode)
-
-      heating_ohmic = total
+      CALL MPI_ALLREDUCE(heating_local, heating_sum, 2, MPI_DOUBLE_PRECISION, &
+          MPI_SUM, comm, errcode)
 
       IF (rank == 0) THEN
         WRITE(en_unit) t_out, en_b, en_ke, en_int
-        WRITE(en_unit) heating_visc, heating_ohmic
+        WRITE(en_unit) REAL(heating_sum(1), num), REAL(heating_sum(2), num)
       END IF
     END IF
 
     ! Check if snapshot is needed
     CALL io_test(i, print_arrays, last_call)
 
+    IF (print_arrays) CALL write_file(i)
+
     ! Output energy diagnostics etc
     IF (last_call .AND. rank == 0) THEN
       WRITE(stat_unit,*) 'final nsteps / time = ', i, time
     END IF
 
-    IF (.NOT.print_arrays) RETURN
+  END SUBROUTINE output_routines
+
+
+
+  !****************************************************************************
+  ! Write SDF file
+  !****************************************************************************
+
+  SUBROUTINE write_file(i) ! i = step index
+
+    INTEGER, INTENT(IN) :: i
+    REAL(num), DIMENSION(:), ALLOCATABLE :: work
+    REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: array
+    LOGICAL :: restart_flag, convert
+    INTEGER, DIMENSION(c_ndims) :: global_dims, dims
+    CHARACTER(LEN=22) :: filename_fmt
+    CHARACTER(LEN=5+n_zeros+c_id_length) :: filename
+    CHARACTER(LEN=6+data_dir_max_length+n_zeros+c_id_length) :: full_filename
+    CHARACTER(LEN=c_id_length) :: varname, units
+    TYPE(sdf_file_handle) :: sdf_handle
+    LOGICAL, SAVE :: first = .TRUE.
+
+    global_dims = (/ nx_global, ny_global, nz_global /)
 
     IF (first) THEN
       ! Resize the {x,y,z}b_global to be the correct size for output
@@ -385,7 +390,7 @@ CONTAINS
 
     file_number = file_number + 1
 
-  END SUBROUTINE output_routines
+  END SUBROUTINE write_file
 
 
 
