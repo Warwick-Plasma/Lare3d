@@ -8,14 +8,31 @@ MODULE mpi_routines
   IMPLICIT NONE
 
   PRIVATE
-  PUBLIC :: mpi_initialise, mpi_close
+  PUBLIC :: mpi_minimal_init, mpi_initialise, mpi_close
 
   REAL(dbl) :: start_time, end_time
 
 CONTAINS
 
   !****************************************************************************
-  ! Start up the MPI layer, allocate arrays and set up MPI types
+  ! Start up MPI, set rank and size
+  !****************************************************************************
+
+  SUBROUTINE mpi_minimal_init
+
+    CALL MPI_INIT(errcode)
+    CALL MPI_COMM_SIZE(MPI_COMM_WORLD, nproc, errcode)
+    CALL MPI_COMM_RANK(MPI_COMM_WORLD, rank, errcode)
+#ifdef MPI_DEBUG
+    CALL mpi_set_error_handler
+#endif
+
+  END SUBROUTINE mpi_minimal_init
+
+
+
+  !****************************************************************************
+  ! Allocate arrays and set up MPI types
   !****************************************************************************
 
   SUBROUTINE mpi_initialise
@@ -31,11 +48,6 @@ CONTAINS
     INTEGER :: x_coords, y_coords, z_coords
     INTEGER :: area, minarea, nprocyz
     INTEGER :: ranges(3,1), nproc_orig, oldgroup, newgroup
-
-#ifdef MPI_DEBUG
-    CALL mpi_set_error_handler
-#endif
-    CALL MPI_COMM_SIZE(MPI_COMM_WORLD, nproc, errcode)
 
     nproc_orig = nproc
 

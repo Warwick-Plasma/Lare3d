@@ -22,7 +22,7 @@ PROGRAM lare3d
 
   step = 0
 
-  CALL MPI_INIT(errcode)
+  CALL mpi_minimal_init    ! mpi_routines.f90
 
   CALL before_control      ! setup.F90
   CALL user_normalisation  ! control.f90
