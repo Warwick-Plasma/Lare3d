@@ -254,7 +254,7 @@ mpiboundary.o: mpiboundary.f90 shared_data.o
 neutral.o: neutral.f90 boundary.o shared_data.o
 normalise.o: normalise.f90 shared_data.o
 openboundary.o: openboundary.f90 shared_data.o
-remap.o: remap.f90 shared_data.o xremap.o yremap.o zremap.o
+remap.o: remap.f90 boundary.o shared_data.o xremap.o yremap.o zremap.o
 sdf.o: sdf.f90 sdf_control.o sdf_input.o sdf_input_cartesian.o \
   sdf_input_point.o sdf_input_station.o sdf_input_util.o sdf_output.o \
   sdf_output_cartesian.o sdf_output_point.o sdf_output_source.o \

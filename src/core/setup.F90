@@ -527,10 +527,12 @@ CONTAINS
           ndims, datatype)
 
       SELECT CASE(blocktype)
-      !CASE(c_blocktype_constant)
-      !  IF (str_cmp(block_id, 'dt')) THEN
-      !    CALL sdf_read_srl(sdf_handle, dt_from_restart)
-      !  END IF
+      CASE(c_blocktype_constant)
+        IF (str_cmp(block_id, 'dt')) THEN
+          CALL sdf_read_srl(sdf_handle, dt_from_restart)
+        ELSE IF (str_cmp(block_id, 'time_prev')) THEN
+          CALL sdf_read_srl(sdf_handle, time_prev)
+        END IF
       CASE(c_blocktype_plain_mesh)
         IF (ndims /= c_ndims .OR. datatype /= sdf_num &
             .OR. .NOT.str_cmp(block_id, 'grid')) CYCLE
