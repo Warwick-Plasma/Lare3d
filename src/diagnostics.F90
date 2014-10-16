@@ -30,7 +30,8 @@ CONTAINS
     LOGICAL :: print_arrays, last_call
     REAL(num) :: t_out = 0.0_num
     REAL(num) :: en_ke = 0.0_num, en_int = 0.0_num, en_b = 0.0_num
-    REAL(dbl) :: heating_local(2), heating_sum(2)
+    INTEGER, PARAMETER :: nvar = 5
+    REAL(dbl) :: var_local(nvar), var_sum(nvar)
 
 #ifdef NO_IO
     RETURN
@@ -45,17 +46,19 @@ CONTAINS
     ! Do every (outstep) steps
     IF (MOD(i, outstep) == 0 .OR. last_call) THEN
       t_out = time
-      CALL energy_account(en_b, en_ke, en_int)
+      CALL energy_account(en_b, en_ke, en_int, .FALSE.)
 
-      heating_local(1) = total_visc_heating
-      heating_local(2) = total_ohmic_heating
+      var_local(1) = en_b
+      var_local(2) = en_ke
+      var_local(3) = en_int
+      var_local(4) = total_visc_heating
+      var_local(5) = total_ohmic_heating
 
-      CALL MPI_ALLREDUCE(heating_local, heating_sum, 2, MPI_DOUBLE_PRECISION, &
+      CALL MPI_ALLREDUCE(var_local, var_sum, nvar, MPI_DOUBLE_PRECISION, &
           MPI_SUM, comm, errcode)
 
       IF (rank == 0) THEN
-        WRITE(en_unit) t_out, en_b, en_ke, en_int
-        WRITE(en_unit) REAL(heating_sum(1), num), REAL(heating_sum(2), num)
+        WRITE(en_unit) t_out, REAL(var_sum, num)
       END IF
     END IF
 
@@ -548,9 +551,10 @@ CONTAINS
 
 
 
-  SUBROUTINE energy_account(energy_b, energy_ke, energy_int)
+  SUBROUTINE energy_account(energy_b, energy_ke, energy_int, do_sum)
 
-    REAL(num), INTENT(OUT) :: energy_b, energy_ke, energy_int
+    REAL(dbl), INTENT(OUT) :: energy_b, energy_ke, energy_int
+    LOGICAL, INTENT(IN) :: do_sum
     REAL(dbl) :: energy_b_local, energy_ke_local, energy_int_local
     REAL(dbl) :: energy_local(3), energy_sum(3)
     REAL(dbl) :: cv_v, rho_v, w1, w2, w3
@@ -622,16 +626,22 @@ CONTAINS
       END DO
     END DO
 
-    energy_local(1) = energy_b_local
-    energy_local(2) = energy_ke_local
-    energy_local(3) = energy_int_local
+    IF (do_sum) THEN
+      energy_local(1) = energy_b_local
+      energy_local(2) = energy_ke_local
+      energy_local(3) = energy_int_local
 
-    CALL MPI_ALLREDUCE(energy_local, energy_sum, 3, MPI_DOUBLE_PRECISION, &
-        MPI_SUM, comm, errcode)
+      CALL MPI_ALLREDUCE(energy_local, energy_sum, 3, MPI_DOUBLE_PRECISION, &
+          MPI_SUM, comm, errcode)
 
-    energy_b   = REAL(energy_sum(1), num)
-    energy_ke  = REAL(energy_sum(2), num)
-    energy_int = REAL(energy_sum(3), num)
+      energy_b   = energy_sum(1)
+      energy_ke  = energy_sum(2)
+      energy_int = energy_sum(3)
+    ELSE
+      energy_b   = energy_b_local
+      energy_ke  = energy_ke_local
+      energy_int = energy_int_local
+    END IF
 
   END SUBROUTINE energy_account
 
