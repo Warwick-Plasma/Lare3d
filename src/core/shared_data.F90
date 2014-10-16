@@ -9,8 +9,10 @@ MODULE constants
 
 #ifdef SINGLE
   INTEGER, PARAMETER :: num = KIND(1.0)
+  INTEGER, PARAMETER :: num_sz = 4
 #else
   INTEGER, PARAMETER :: num = KIND(1.D0)
+  INTEGER, PARAMETER :: num_sz = 8
 #endif
   INTEGER, PARAMETER :: dbl = KIND(1.D0)
 
@@ -174,6 +176,7 @@ MODULE shared_data
   INTEGER :: subtype, obstype
   INTEGER :: initial
   INTEGER, PARAMETER :: n_zeros = 4
+  INTEGER, PARAMETER :: en_nvars = 6
   INTEGER :: file_number = 0
 #ifdef FILEPREFIX
   CHARACTER(LEN=4), PARAMETER :: filesystem = 'nfs:'

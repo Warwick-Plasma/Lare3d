@@ -15,7 +15,10 @@ MODULE diagnostics
 
   PRIVATE
 
-  PUBLIC :: set_dt, output_routines, energy_correction, write_file
+  PUBLIC :: set_dt, output_routines, energy_correction, write_file, output_log
+
+  REAL(dbl) :: visc_heating
+  LOGICAL, SAVE :: visc_heating_updated = .FALSE.
 
 CONTAINS
 
@@ -30,18 +33,13 @@ CONTAINS
     LOGICAL :: print_arrays, last_call
     REAL(num) :: t_out = 0.0_num
     REAL(num) :: en_ke = 0.0_num, en_int = 0.0_num, en_b = 0.0_num
-    INTEGER, PARAMETER :: nvar = 5
-    REAL(dbl) :: var_local(nvar), var_sum(nvar)
+    REAL(dbl) :: var_local(en_nvars-1), var_sum(en_nvars-1)
 
 #ifdef NO_IO
     RETURN
 #endif
 
-    ! Done just once at the start
-    IF (i == 0 .AND. rank == 0) THEN
-      CALL output_log
-      IF (.NOT. restart) WRITE(en_unit) num, 6
-    END IF
+    visc_heating_updated = .FALSE.
 
     ! Do every (outstep) steps
     IF (MOD(i, outstep) == 0 .OR. last_call) THEN
@@ -54,8 +52,11 @@ CONTAINS
       var_local(4) = total_visc_heating
       var_local(5) = total_ohmic_heating
 
-      CALL MPI_ALLREDUCE(var_local, var_sum, nvar, MPI_DOUBLE_PRECISION, &
+      CALL MPI_ALLREDUCE(var_local, var_sum, en_nvars-1, MPI_DOUBLE_PRECISION, &
           MPI_SUM, comm, errcode)
+
+      visc_heating = var_sum(4)
+      visc_heating_updated = .TRUE.
 
       IF (rank == 0) THEN
         WRITE(en_unit) t_out, REAL(var_sum, num)
@@ -136,6 +137,12 @@ CONTAINS
 
     convert = .FALSE.
 
+    IF (.NOT.visc_heating_updated) THEN
+      CALL MPI_ALLREDUCE(total_visc_heating, visc_heating, 1, &
+          MPI_DOUBLE_PRECISION, MPI_SUM, comm, errcode)
+      visc_heating_updated = .TRUE.
+    END IF
+
     CALL sdf_open(sdf_handle, full_filename, comm, c_sdf_write)
     CALL sdf_write_header(sdf_handle, TRIM(c_code_name), 1, i, time, &
         restart_flag, jobid)
@@ -147,6 +154,8 @@ CONTAINS
     CALL sdf_write_srl(sdf_handle, 'dt', 'Time increment', dt)
     CALL sdf_write_srl(sdf_handle, 'time_prev', 'Last dump time requested', &
         time_prev)
+    CALL sdf_write_srl(sdf_handle, 'visc_heating', 'Viscous heating total', &
+        visc_heating)
 
     CALL sdf_write_srl_plain_mesh(sdf_handle, 'grid', 'Grid/Grid', &
         xb_global, yb_global, zb_global, convert)
@@ -670,6 +679,14 @@ CONTAINS
   SUBROUTINE output_log
 
     ! Writes basic data to 'lare3d.dat'
+
+    IF (restart) THEN
+      WRITE(stat_unit,*)
+      WRITE(stat_unit,*) '#####################################################'
+      WRITE(stat_unit,*)
+      WRITE(stat_unit,*) 'Restarting from step ', step, ' and time ', time
+      WRITE(stat_unit,*)
+    END IF
 
     WRITE(stat_unit,*) ascii_header
     WRITE(stat_unit,*)

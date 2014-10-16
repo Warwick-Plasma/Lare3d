@@ -4,6 +4,7 @@ MODULE setup
   USE sdf_job_info
   USE version_data
   USE welcome
+  USE diagnostics
 
   IMPLICIT NONE
 
@@ -353,15 +354,28 @@ CONTAINS
 
     CHARACTER(LEN=11+data_dir_max_length) :: file2
     CHARACTER(LEN=7+data_dir_max_length) :: file3
-    INTEGER :: ios
+    REAL(num) :: time0, time1, dt_en
+    INTEGER :: ios, num_sz_in, en_nvars_in, p1, p2, nrecs, nrec, recsz
+    LOGICAL :: exists
 
 #ifdef NO_IO
     RETURN
 #endif
 
     IF (rank == 0) THEN
+      ! Setup lare3d.dat file
+
       WRITE(file2, '(a, ''/lare3d.dat'')') TRIM(data_dir)
-      OPEN(UNIT=stat_unit, STATUS='REPLACE', FILE=file2, iostat=ios)
+
+      INQUIRE(FILE=file2, EXIST=exists)
+
+      IF (.NOT.exists .OR. .NOT.restart) THEN
+        OPEN(UNIT=stat_unit, STATUS='REPLACE', FILE=file2, &
+            FORM='FORMATTED', iostat=ios)
+      ELSE
+        OPEN(UNIT=stat_unit, STATUS='OLD', POSITION='APPEND', FILE=file2, &
+            FORM='FORMATTED', iostat=ios)
+      END IF
 
       IF (ios /= 0) THEN
         PRINT*, 'Unable to open file lare3d.dat for writing. This is ', &
@@ -371,9 +385,62 @@ CONTAINS
         CALL MPI_ABORT(comm, errcode)
       END IF
 
+      CALL output_log
+
+      ! Setup en.dat file
+
       WRITE(file3, '(a, ''/en.dat'')') TRIM(data_dir)
-      OPEN(UNIT=en_unit, STATUS='REPLACE', FILE=file3, &
-          FORM='UNFORMATTED', ACCESS='STREAM', iostat=ios)
+
+      INQUIRE(FILE=file3, EXIST=exists)
+
+      IF (.NOT.exists .OR. .NOT.restart) THEN
+        OPEN(UNIT=en_unit, STATUS='REPLACE', FILE=file3, &
+            FORM='UNFORMATTED', ACCESS='STREAM', iostat=ios)
+        WRITE(en_unit) num_sz, en_nvars
+      ELSE
+        OPEN(UNIT=en_unit, STATUS='OLD', FILE=file3, &
+            FORM='UNFORMATTED', ACCESS='STREAM', iostat=ios)
+
+        READ(en_unit) num_sz_in, en_nvars_in
+
+        IF (num_sz_in /= num_sz .OR. en_nvars_in /= en_nvars) THEN
+          PRINT*, 'WARNING: incompatible en.dat file found. ', &
+              'File will be overwritten.'
+          REWIND(en_unit)
+          WRITE(en_unit) num_sz, en_nvars
+        ELSE
+          INQUIRE(en_unit, POS=p1, SIZE=p2)
+
+          recsz = num_sz * en_nvars
+          nrecs = (p2 + 1 - p1) / recsz
+
+          READ(en_unit) time0
+          READ(en_unit,POS=p1+(nrecs-1)*recsz) time1
+
+          ! Guess location of current time position and read it
+          dt_en = (time1 - time0) / nrecs
+          nrec = FLOOR((time - time0) / dt_en)
+
+          READ(en_unit,POS=p1+nrec*recsz) time1
+
+          ! Search forwards until we reach the first en.dat time after
+          ! the current simulation time
+          DO WHILE (time-time1 > 1.0e-20_num)
+            nrec = nrec + 1
+            READ(en_unit,POS=p1+nrec*recsz) time1
+          END DO
+
+          ! Search backwards until we reach the first en.dat time before
+          ! the current simulation time
+          DO WHILE (time1-time > 1.0e-20_num)
+            nrec = nrec - 1
+            READ(en_unit,POS=p1+nrec*recsz) time1
+          END DO
+
+          ! Set file position
+          READ(en_unit,POS=p1+nrec*recsz-num_sz) time1
+        END IF
+      END IF
 
       IF (ios /= 0) THEN
         PRINT*, 'Unable to open file en.dat for writing. This is ', &
@@ -508,10 +575,6 @@ CONTAINS
     IF (rank == 0) THEN
       PRINT*, 'Loading snapshot for time', time
       CALL create_ascii_header
-#ifndef NO_IO
-      WRITE(stat_unit,*) ascii_header
-      WRITE(stat_unit,*)
-#endif
     END IF
 
     IF (rank == 0) PRINT*, 'Input file contains', nblocks, 'blocks'
@@ -532,6 +595,9 @@ CONTAINS
           CALL sdf_read_srl(sdf_handle, dt_from_restart)
         ELSE IF (str_cmp(block_id, 'time_prev')) THEN
           CALL sdf_read_srl(sdf_handle, time_prev)
+        ELSE IF (str_cmp(block_id, 'visc_heating')) THEN
+          CALL sdf_read_srl(sdf_handle, total_visc_heating)
+          IF (rank /= 0) total_visc_heating = 0
         END IF
       CASE(c_blocktype_plain_mesh)
         IF (ndims /= c_ndims .OR. datatype /= sdf_num &

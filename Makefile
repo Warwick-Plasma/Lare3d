@@ -308,7 +308,8 @@ sdf_output_station_ru.o: sdf_output_station_ru.f90 sdf_output_ru.o
 sdf_output_util.o: sdf_output_util.f90 sdf_output_cartesian_ru.o \
   sdf_output_point_ru.o
 sdf_source_info_dummy.o: sdf_source_info_dummy.f90
-setup.o: setup.F90 sdf_job_info.o shared_data.o version_data.o welcome.o
+setup.o: setup.F90 diagnostics.o sdf_job_info.o shared_data.o version_data.o \
+  welcome.o
 shared_data.o: shared_data.F90 sdf.o sdf_job_info.o
 version_data.o: version_data.F90 COMMIT
 welcome.o: welcome.f90 shared_data.o version_data.o
