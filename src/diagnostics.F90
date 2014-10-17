@@ -26,10 +26,10 @@ CONTAINS
   ! Call the output routines
   !****************************************************************************
 
-  SUBROUTINE output_routines(i) ! i = step index
+  SUBROUTINE output_routines(step)
 
-    INTEGER, INTENT(IN) :: i
-    INTEGER, PARAMETER :: outstep = 1
+    INTEGER, INTENT(IN) :: step
+    INTEGER, PARAMETER :: history_frequency = 1
     LOGICAL :: print_arrays, last_call
     REAL(num) :: t_out = 0.0_num
     REAL(num) :: en_ke = 0.0_num, en_int = 0.0_num, en_b = 0.0_num
@@ -41,8 +41,8 @@ CONTAINS
 
     visc_heating_updated = .FALSE.
 
-    ! Do every (outstep) steps
-    IF (MOD(i, outstep) == 0 .OR. last_call) THEN
+    ! Do every (history_frequency) steps
+    IF (MOD(step, history_frequency) == 0 .OR. last_call) THEN
       t_out = time
       CALL energy_account(en_b, en_ke, en_int, .FALSE.)
 
@@ -64,13 +64,13 @@ CONTAINS
     END IF
 
     ! Check if snapshot is needed
-    CALL io_test(i, print_arrays, last_call)
+    CALL io_test(step, print_arrays, last_call)
 
-    IF (print_arrays) CALL write_file(i)
+    IF (print_arrays) CALL write_file(step)
 
     ! Output energy diagnostics etc
     IF (last_call .AND. rank == 0) THEN
-      WRITE(stat_unit,*) 'final nsteps / time = ', i, time
+      WRITE(stat_unit,*) 'final nsteps / time = ', step, time
     END IF
 
   END SUBROUTINE output_routines
@@ -81,9 +81,9 @@ CONTAINS
   ! Write SDF file
   !****************************************************************************
 
-  SUBROUTINE write_file(i) ! i = step index
+  SUBROUTINE write_file(step)
 
-    INTEGER, INTENT(IN) :: i
+    INTEGER, INTENT(IN) :: step
     REAL(num), DIMENSION(:), ALLOCATABLE :: work
     REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: array
     LOGICAL :: restart_flag, convert
@@ -144,7 +144,7 @@ CONTAINS
     END IF
 
     CALL sdf_open(sdf_handle, full_filename, comm, c_sdf_write)
-    CALL sdf_write_header(sdf_handle, TRIM(c_code_name), 1, i, time, &
+    CALL sdf_write_header(sdf_handle, TRIM(c_code_name), 1, step, time, &
         restart_flag, jobid)
     CALL sdf_write_run_info(sdf_handle, c_version, c_revision, c_minor_rev, &
         c_commit_id, '', c_compile_machine, c_compile_flags, 0_8, &
@@ -414,9 +414,9 @@ CONTAINS
   ! iteration are met
   !****************************************************************************
 
-  SUBROUTINE io_test(i, print_arrays, last_call)
+  SUBROUTINE io_test(step, print_arrays, last_call)
 
-    INTEGER, INTENT(IN) :: i
+    INTEGER, INTENT(IN) :: step
     LOGICAL, INTENT(OUT) :: print_arrays, last_call
 
     REAL(num), SAVE :: t1 = 0.0_num
@@ -434,7 +434,7 @@ CONTAINS
       t1 = t1 + dt_snapshots
     END IF
 
-    IF (time >= t_end .OR. i == nsteps) THEN
+    IF (time >= t_end .OR. step == nsteps) THEN
       last_call = .TRUE.
       print_arrays = .TRUE.
     END IF
