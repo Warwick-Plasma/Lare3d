@@ -31,8 +31,8 @@ CONTAINS
     INTEGER, INTENT(IN) :: step
     INTEGER, PARAMETER :: history_frequency = 1
     LOGICAL :: print_arrays, last_call
-    REAL(num) :: t_out = 0.0_num
     REAL(num) :: en_ke = 0.0_num, en_int = 0.0_num, en_b = 0.0_num
+    REAL(num) :: t_out
     REAL(dbl) :: var_local(en_nvars-1), var_sum(en_nvars-1)
 
 #ifdef NO_IO
@@ -41,19 +41,22 @@ CONTAINS
 
     visc_heating_updated = .FALSE.
 
+    ! Check if snapshot is needed
+    CALL io_test(step, print_arrays, last_call)
+
     ! Do every (history_frequency) steps
     IF (MOD(step, history_frequency) == 0 .OR. last_call) THEN
-      t_out = time
       CALL energy_account(en_b, en_ke, en_int, .FALSE.)
 
+      t_out = time
       var_local(1) = en_b
       var_local(2) = en_ke
       var_local(3) = en_int
       var_local(4) = total_visc_heating
       var_local(5) = total_ohmic_heating
 
-      CALL MPI_ALLREDUCE(var_local, var_sum, en_nvars-1, MPI_DOUBLE_PRECISION, &
-          MPI_SUM, comm, errcode)
+      CALL MPI_REDUCE(var_local, var_sum, en_nvars-1, &
+          MPI_DOUBLE_PRECISION, MPI_SUM, 0, comm, errcode)
 
       visc_heating = var_sum(4)
       visc_heating_updated = .TRUE.
@@ -62,9 +65,6 @@ CONTAINS
         WRITE(en_unit) t_out, REAL(var_sum, num)
       END IF
     END IF
-
-    ! Check if snapshot is needed
-    CALL io_test(step, print_arrays, last_call)
 
     IF (print_arrays) CALL write_file(step)
 
@@ -138,8 +138,8 @@ CONTAINS
     convert = .FALSE.
 
     IF (.NOT.visc_heating_updated) THEN
-      CALL MPI_ALLREDUCE(total_visc_heating, visc_heating, 1, &
-          MPI_DOUBLE_PRECISION, MPI_SUM, comm, errcode)
+      CALL MPI_REDUCE(total_visc_heating, visc_heating, 1, &
+          MPI_DOUBLE_PRECISION, MPI_SUM, 0, comm, errcode)
       visc_heating_updated = .TRUE.
     END IF
 
