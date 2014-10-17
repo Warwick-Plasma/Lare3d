@@ -187,6 +187,12 @@ MODULE shared_data
   TYPE(jobid_type) :: jobid
   INTEGER :: run_date = 0
 
+  ! History file header
+  CHARACTER(LEN=3) :: c_history_magic = 'HIS'
+  INTEGER, PARAMETER :: c_history_version = 1
+  INTEGER, PARAMETER :: c_history_revision = 0
+  INTEGER, PARAMETER :: c_endianness = 16911887
+
   INTEGER, PARAMETER :: c_stagger_bx = c_stagger_edge_x
   INTEGER, PARAMETER :: c_stagger_by = c_stagger_edge_y
   INTEGER, PARAMETER :: c_stagger_bz = c_stagger_edge_z

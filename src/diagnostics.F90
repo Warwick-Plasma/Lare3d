@@ -15,7 +15,7 @@ MODULE diagnostics
 
   PRIVATE
 
-  PUBLIC :: set_dt, output_routines, energy_correction, write_file, output_log
+  PUBLIC :: set_dt, output_routines, energy_correction, write_file, setup_files
 
   REAL(dbl) :: visc_heating
   LOGICAL, SAVE :: visc_heating_updated = .FALSE.
@@ -698,6 +698,36 @@ CONTAINS
     CALL energy_bcs
 
   END SUBROUTINE energy_correction
+
+
+
+  SUBROUTINE setup_files
+
+    INTEGER :: p1, header_length
+    CHARACTER(LEN=c_id_length) :: varnames(en_nvars)
+
+    CALL output_log
+
+    INQUIRE(en_unit, POS=p1)
+    IF (p1 /= 1) RETURN
+
+    varnames(1) = 'time'
+    varnames(2) = 'en_b'
+    varnames(3) = 'en_ke'
+    varnames(4) = 'en_int'
+    varnames(5) = 'heating_visc'
+    varnames(6) = 'heating_ohmic'
+
+    header_length = 3 + 7 * 4 + en_nvars * c_id_length
+    ! Write history file header if not appending to file
+    WRITE(en_unit) c_history_magic, c_history_version, c_history_revision
+    WRITE(en_unit) c_endianness
+    WRITE(en_unit) header_length
+    WRITE(en_unit) num_sz, en_nvars
+    WRITE(en_unit) c_id_length
+    WRITE(en_unit) varnames
+
+  END SUBROUTINE setup_files
 
 
 

@@ -354,8 +354,10 @@ CONTAINS
 
     CHARACTER(LEN=11+data_dir_max_length) :: file2
     CHARACTER(LEN=7+data_dir_max_length) :: file3
+    CHARACTER(LEN=3) :: magic
     REAL(num) :: time0, time1, dt_en
     INTEGER :: ios, num_sz_in, en_nvars_in, p1, p2, nrecs, nrec, recsz
+    INTEGER :: version, revision, endianness, header_length
     LOGICAL :: exists
 
 #ifdef NO_IO
@@ -385,8 +387,6 @@ CONTAINS
         CALL MPI_ABORT(comm, errcode)
       END IF
 
-      CALL output_log
-
       ! Setup en.dat file
 
       WRITE(file3, '(a, ''/en.dat'')') TRIM(data_dir)
@@ -396,20 +396,23 @@ CONTAINS
       IF (.NOT.exists .OR. .NOT.restart) THEN
         OPEN(UNIT=en_unit, STATUS='REPLACE', FILE=file3, &
             FORM='UNFORMATTED', ACCESS='STREAM', iostat=ios)
-        WRITE(en_unit) num_sz, en_nvars
       ELSE
         OPEN(UNIT=en_unit, STATUS='OLD', FILE=file3, &
             FORM='UNFORMATTED', ACCESS='STREAM', iostat=ios)
 
+        READ(en_unit) magic, version, revision
+        READ(en_unit) endianness
+        READ(en_unit) header_length
         READ(en_unit) num_sz_in, en_nvars_in
 
-        IF (num_sz_in /= num_sz .OR. en_nvars_in /= en_nvars) THEN
+        IF (magic /= c_history_magic .OR. endianness /= c_endianness &
+            .OR. num_sz_in /= num_sz .OR. en_nvars_in /= en_nvars) THEN
           PRINT*, 'WARNING: incompatible en.dat file found. ', &
               'File will be overwritten.'
           REWIND(en_unit)
-          WRITE(en_unit) num_sz, en_nvars
         ELSE
-          INQUIRE(en_unit, POS=p1, SIZE=p2)
+          INQUIRE(en_unit, SIZE=p2)
+          p1 = header_length
 
           recsz = num_sz * en_nvars
           nrecs = (p2 + 1 - p1) / recsz
@@ -449,6 +452,8 @@ CONTAINS
         PRINT*
         CALL MPI_ABORT(comm, errcode)
       END IF
+
+      CALL setup_files
     END IF
 
   END SUBROUTINE open_files

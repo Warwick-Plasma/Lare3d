@@ -43,26 +43,59 @@ FUNCTION getenergy, wkdir_in, _EXTRA=extra
 
   OPENR, lun, file, /GET_LUN
   file_info = FSTAT(lun)
-  fileint = ASSOC(lun, LONARR(1), 0, /packed)
 
-  ; Set the size of the variables in bytes
-  prec = REFORM(fileint[0])
+  magic = 'mmm'
+  READU, lun, magic
 
-  ; Set the number of variables (including time) in the energy data.
-  ; If you change this you also need to alter the structure below
-  nv = REFORM(fileint[1])
+  IF magic EQ 'HIS' THEN BEGIN
+    fileint = ASSOC(lun, LONARR(1), 3, /packed)
 
-  ; Calculate the number of outputs (the -8 is due to the prec/columns output)
-  outs = (file_info.size - 8) / nv / prec
+    endianness = REFORM(fileint[2])
+    header_length = REFORM(fileint[3])
 
-  ; Again 8 offset due to prec/columns
+    ; Set the size of the variables in bytes
+    prec = REFORM(fileint[4])
+
+    ; Set the number of variables (including time) in the energy data.
+    nv = REFORM(fileint[5])
+
+    id_length = REFORM(fileint[6])
+
+    ; Read in the variable id names
+    var_id_start = 3 + 7 * 4
+    varbytes = ASSOC(lun, BYTARR(id_length), var_id_start, /packed)
+    varnames = STRARR(nv)
+    FOR i = 0, nv[0]-1 DO BEGIN
+      varnames[i] = STRTRIM(STRING(varbytes[i]), 2)
+    ENDFOR
+
+  ENDIF ELSE BEGIN
+    fileint = ASSOC(lun, LONARR(1), 0, /packed)
+
+    ; Set the size of the variables in bytes
+    prec = REFORM(fileint[0])
+
+    ; Set the number of variables (including time) in the energy data.
+    ; If you change this you also need to alter the array below
+    nv = REFORM(fileint[1])
+
+    header_length = 8
+    varnames = ['time', 'en_b', 'en_ke', 'en_int', $
+                'heating_visc', 'heating_ohmic']
+  ENDELSE
+
+  ; Calculate the number of outputs
+  outs = (file_info.size - header_length) / nv / prec
+
   energy_mask = ASSOC(lun, $
-      (prec EQ 4) ? FLTARR(nv,outs) : DBLARR(nv,outs) , 8, /packed)
+      (prec EQ 4) ? FLTARR(nv,outs) : DBLARR(nv,outs), header_length, /packed)
   data = energy_mask[0]
 
-  energy = {points:outs, time:REFORM(data[0,*]), en_b:REFORM(data[1,*]), $
-            en_ke:REFORM(data[2,*]), en_int:REFORM(data[3,*]), $
-            heating_visc:REFORM(data[4,*]), heating_ohmic:REFORM(data[5,*])}
+  energy = CREATE_STRUCT('points', outs)
+
+  FOR i = 0, nv[0]-1 DO BEGIN
+    energy = CREATE_STRUCT(energy, varnames[i], REFORM(data[i,*]))
+  ENDFOR
 
   CLOSE, lun
 
