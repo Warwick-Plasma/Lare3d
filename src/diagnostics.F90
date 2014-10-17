@@ -30,10 +30,14 @@ CONTAINS
 
     INTEGER, INTENT(IN) :: step
     INTEGER, PARAMETER :: history_frequency = 1
+    INTEGER, PARAMETER :: dump_frequency = 100
+    INTEGER, SAVE :: ndump = 1
+    INTEGER :: i
     LOGICAL :: print_arrays, last_call
     REAL(num) :: en_ke = 0.0_num, en_int = 0.0_num, en_b = 0.0_num
-    REAL(num) :: t_out
-    REAL(dbl) :: var_local(en_nvars-1), var_sum(en_nvars-1)
+    REAL(num), ALLOCATABLE, SAVE :: t_out(:)
+    REAL(dbl), ALLOCATABLE, SAVE :: var_local(:,:), var_sum(:,:)
+    LOGICAL, SAVE :: first = .TRUE.
 
 #ifdef NO_IO
     RETURN
@@ -46,24 +50,41 @@ CONTAINS
 
     ! Do every (history_frequency) steps
     IF (MOD(step, history_frequency) == 0 .OR. last_call) THEN
+      IF (first) THEN
+        ALLOCATE(var_local(en_nvars-1,dump_frequency))
+        IF (rank == 0) THEN
+          ALLOCATE(var_sum(en_nvars-1,dump_frequency))
+          ALLOCATE(t_out(dump_frequency))
+        END IF
+        first = .FALSE.
+      END IF
+
       CALL energy_account(en_b, en_ke, en_int, .FALSE.)
 
-      t_out = time
-      var_local(1) = en_b
-      var_local(2) = en_ke
-      var_local(3) = en_int
-      var_local(4) = total_visc_heating
-      var_local(5) = total_ohmic_heating
+      IF (rank == 0) t_out(ndump) = time
+      var_local(1,ndump) = en_b
+      var_local(2,ndump) = en_ke
+      var_local(3,ndump) = en_int
+      var_local(4,ndump) = total_visc_heating
+      var_local(5,ndump) = total_ohmic_heating
 
-      CALL MPI_REDUCE(var_local, var_sum, en_nvars-1, &
-          MPI_DOUBLE_PRECISION, MPI_SUM, 0, comm, errcode)
+      IF (ndump == dump_frequency .OR. last_call) THEN
+        CALL MPI_REDUCE(var_local, var_sum, (en_nvars-1) * ndump, &
+            MPI_DOUBLE_PRECISION, MPI_SUM, 0, comm, errcode)
 
-      visc_heating = var_sum(4)
-      visc_heating_updated = .TRUE.
+        visc_heating_updated = .TRUE.
 
-      IF (rank == 0) THEN
-        WRITE(en_unit) t_out, REAL(var_sum, num)
+        IF (rank == 0) THEN
+          visc_heating = var_sum(4,ndump)
+          DO i = 1, ndump
+            WRITE(en_unit) t_out(i), REAL(var_sum(:,i), num)
+          END DO
+        END IF
+
+        ndump = 0
       END IF
+
+      ndump = ndump + 1
     END IF
 
     IF (print_arrays) CALL write_file(step)
@@ -71,6 +92,10 @@ CONTAINS
     ! Output energy diagnostics etc
     IF (last_call .AND. rank == 0) THEN
       WRITE(stat_unit,*) 'final nsteps / time = ', step, time
+
+      IF (ALLOCATED(var_local)) DEALLOCATE(var_local)
+      IF (ALLOCATED(var_sum)) DEALLOCATE(var_sum)
+      IF (ALLOCATED(t_out)) DEALLOCATE(t_out)
     END IF
 
   END SUBROUTINE output_routines
