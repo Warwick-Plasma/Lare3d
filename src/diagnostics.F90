@@ -474,7 +474,11 @@ CONTAINS
 
 
 
-  SUBROUTINE set_dt ! sets CFL limited step
+  !****************************************************************************
+  ! Sets CFL limited step
+  !****************************************************************************
+
+  SUBROUTINE set_dt
 
     ! Assumes all variables are defined at the same point. Be careful with
     ! setting 'dt_multiplier' if you expect massive changes across cells.

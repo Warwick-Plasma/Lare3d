@@ -64,17 +64,54 @@ CONTAINS
 
   SUBROUTINE create_ascii_header
 
-    CHARACTER(LEN=11) :: ver, rev, minor_rev
+    CHARACTER(LEN=16) :: job1, job2
+    CHARACTER(LEN=4) :: str
+    INTEGER :: i, strmin, strmax, strlen
 
-    CALL integer_as_string(c_version, ver)
-    CALL integer_as_string(c_revision, rev)
-    CALL integer_as_string(c_minor_rev, minor_rev)
-    version_string = TRIM(ver) // '.' // TRIM(ADJUSTL(rev)) // '.' &
-      // TRIM(ADJUSTL(minor_rev))
-    CALL integer_as_string(jobid%start_seconds, ver)
-    CALL integer_as_string(jobid%start_milliseconds, rev)
-    ascii_header = c_code_name // ' v' // TRIM(version_string) // ' ' &
-        // c_commit_id // ' ' // TRIM(ver) // '.' // TRIM(ADJUSTL(rev))
+    ! Parse commit string to get version number
+    ! Commit ID begins with the string v[0-9].[0-9].[0-9]-
+    strlen = LEN_TRIM(c_commit_id)
+    strmin = 2
+    strmax = strmin + 4
+
+    ! Version
+    DO i = strmin, MIN(strmax,strlen)
+      IF (c_commit_id(i:i) == '.') THEN
+        str = c_commit_id(strmin:i-1)
+        READ(str, '(i9)') c_version
+        strmin = i + 1
+        strmax = strmin + 4
+        EXIT
+      END IF
+    END DO
+
+    ! Revision
+    DO i = strmin, MIN(strmax,strlen)
+      IF (c_commit_id(i:i) == '.') THEN
+        str = c_commit_id(strmin:i-1)
+        READ(str, '(i9)') c_revision
+        strmin = i + 1
+        strmax = strmin + 4
+        EXIT
+      END IF
+    END DO
+
+    ! Minor revision
+    DO i = strmin, MIN(strmax,strlen)
+      IF (c_commit_id(i:i) == '-') THEN
+        str = c_commit_id(strmin:i-1)
+        READ(str, '(i9)') c_minor_rev
+        strmax = i - 1
+        EXIT
+      END IF
+    END DO
+
+    version_string = c_commit_id(2:strmax)
+
+    CALL integer_as_string(jobid%start_seconds, job1)
+    CALL integer_as_string(jobid%start_milliseconds, job2)
+    ascii_header = c_code_name // ' v' // TRIM(version_string) // '   ' &
+        // c_commit_id // ' ' // TRIM(job1) // '.' // TRIM(ADJUSTL(job2))
 
   END SUBROUTINE create_ascii_header
 

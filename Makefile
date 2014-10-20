@@ -223,6 +223,9 @@ tidy:
 datatidy:
 	@rm -rf Data/*
 
+tarball:
+	@sh $(SRCDIR)/make_tarball.sh
+
 visit:
 	@cd SDF/VisIt; ./build
 
