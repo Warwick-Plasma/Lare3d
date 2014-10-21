@@ -147,7 +147,7 @@ CONTAINS
 
 
   !****************************************************************************
-  ! Boundary condition for specific internal energy
+  ! Boundary conditions for specific internal energy
   !****************************************************************************
 
   SUBROUTINE energy_bcs
@@ -189,7 +189,7 @@ CONTAINS
 
 
   !****************************************************************************
-  ! Density boundary conditions
+  ! Boundary conditions for density
   !****************************************************************************
 
   SUBROUTINE density_bcs

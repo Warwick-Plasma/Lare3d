@@ -1,3 +1,7 @@
+!******************************************************************************
+! Welcome message routines
+!******************************************************************************
+
 MODULE welcome
 
   USE version_data
@@ -9,6 +13,10 @@ MODULE welcome
   PUBLIC :: welcome_message, create_ascii_header
 
 CONTAINS
+
+  !****************************************************************************
+  ! This routine prints the welcome message, MPI status
+  !****************************************************************************
 
   SUBROUTINE welcome_message
 

@@ -374,20 +374,15 @@ CONTAINS
 
     INTEGER :: sizes(c_ndims), subsizes(c_ndims), starts(c_ndims)
     INTEGER :: local_dims(c_ndims), global_dims(c_ndims)
-    INTEGER :: local_size(c_ndims), global_size(c_ndims)
     INTEGER :: idir, vdir, mpitype
     INTEGER, PARAMETER :: ng = 2 ! Number of ghost cells
 
-    local_dims = (/ nx, ny, nz /)
-    global_dims = (/ nx_global, ny_global, nz_global /)
-
-    ! MPI types for cell-centred variables
-    local_size  = local_dims
-    global_size = global_dims
+    local_dims = (/nx, ny, nz/)
+    global_dims = (/nx_global, ny_global, nz_global/)
 
     ! File view for cell-centred variables (excluding the ghost cells)
-    sizes = global_size
-    subsizes = local_size
+    sizes = global_dims
+    subsizes = local_dims
     starts = n_global_min
 
     mpitype = MPI_DATATYPE_NULL
@@ -398,7 +393,7 @@ CONTAINS
     cell_distribution = mpitype
 
     ! Subarray for cell-centred variable which has no ghost cells
-    sizes = local_size
+    sizes = subsizes
     starts = 0
 
     mpitype = MPI_DATATYPE_NULL
@@ -409,7 +404,7 @@ CONTAINS
     cellng_subarray = mpitype
 
     ! Cell-centred array dimensions
-    sizes = local_size + 2 * ng
+    sizes = subsizes + 2 * ng
 
     ! Subarray for cell-centred variable which excludes the ghost cells
     starts = ng
@@ -420,6 +415,8 @@ CONTAINS
     CALL MPI_TYPE_COMMIT(mpitype, errcode)
 
     cell_subarray = mpitype
+
+    ! MPI subtypes for communication of cell-centred variables
 
     ! ng cells, 1d slice of cell-centred variable
 
@@ -457,13 +454,9 @@ CONTAINS
 
     cell_zface = mpitype
 
-    ! MPI types for node-centred variables
-    local_size  = local_dims + 1
-    global_size = global_dims + 1
-
     ! File view for node-centred variables (excluding the ghost cells)
-    sizes = global_size
-    subsizes = local_size
+    sizes = global_dims + 1
+    subsizes = local_dims + 1
     starts = n_global_min
 
     mpitype = MPI_DATATYPE_NULL
@@ -474,7 +467,7 @@ CONTAINS
     node_distribution = mpitype
 
     ! Subarray for node-centred variable which has no ghost cells
-    sizes = local_size
+    sizes = subsizes
     starts = 0
 
     mpitype = MPI_DATATYPE_NULL
@@ -485,7 +478,7 @@ CONTAINS
     nodeng_subarray = mpitype
 
     ! Node-centred array dimensions
-    sizes = local_size + 2 * ng
+    sizes = subsizes + 2 * ng
 
     ! Subarray for node-centred variable which excludes the ghost cells
     starts = ng
@@ -496,6 +489,8 @@ CONTAINS
     CALL MPI_TYPE_COMMIT(mpitype, errcode)
 
     node_subarray = mpitype
+
+    ! MPI subtypes for communication of node-centred variables
 
     ! ng cells, 1d slice of node-centred variable
 
@@ -568,16 +563,14 @@ CONTAINS
 
     node_zface1 = mpitype
 
-    ! MPI types for Bx-sized variables
+    ! Array sizes for Bx-sized variables
     vdir = 1
-    local_size  = local_dims
-    global_size = global_dims
-    local_size (vdir) = local_size (vdir) + 1
-    global_size(vdir) = global_size(vdir) + 1
+    sizes = global_dims
+    sizes(vdir) = sizes(vdir) + 1
 
     ! File view for Bx-sized variables (excluding the ghost cells)
-    sizes = global_size
-    subsizes = local_size
+    subsizes = local_dims
+    subsizes(vdir) = subsizes(vdir) + 1
     starts = n_global_min
 
     mpitype = MPI_DATATYPE_NULL
@@ -588,7 +581,7 @@ CONTAINS
     bx_distribution = mpitype
 
     ! Bx-sized array dimensions
-    sizes = local_size + 2 * ng
+    sizes = subsizes + 2 * ng
 
     ! Subarray for Bx-sized variable which excludes the ghost cells
     starts = ng
@@ -599,6 +592,8 @@ CONTAINS
     CALL MPI_TYPE_COMMIT(mpitype, errcode)
 
     bx_subarray = mpitype
+
+    ! MPI subtypes for communication of Bx-sized variables
 
     ! ng cells, 1d slice of Bx-sized variable
 
@@ -649,16 +644,14 @@ CONTAINS
 
     bx_xface1 = mpitype
 
-    ! MPI types for By-sized variables
+    ! Array sizes for By-sized variables
     vdir = 2
-    local_size  = local_dims
-    global_size = global_dims
-    local_size (vdir) = local_size (vdir) + 1
-    global_size(vdir) = global_size(vdir) + 1
+    sizes = global_dims
+    sizes(vdir) = sizes(vdir) + 1
 
     ! File view for By-sized variables (excluding the ghost cells)
-    sizes = global_size
-    subsizes = local_size
+    subsizes = local_dims
+    subsizes(vdir) = subsizes(vdir) + 1
     starts = n_global_min
 
     mpitype = MPI_DATATYPE_NULL
@@ -669,7 +662,7 @@ CONTAINS
     by_distribution = mpitype
 
     ! By-sized array dimensions
-    sizes = local_size + 2 * ng
+    sizes = subsizes + 2 * ng
 
     ! Subarray for By-sized variable which excludes the ghost cells
     starts = ng
@@ -680,6 +673,8 @@ CONTAINS
     CALL MPI_TYPE_COMMIT(mpitype, errcode)
 
     by_subarray = mpitype
+
+    ! MPI subtypes for communication of By-sized variables
 
     ! ng cells, 1d slice of By-sized variable
 
@@ -730,16 +725,14 @@ CONTAINS
 
     by_yface1 = mpitype
 
-    ! MPI types for Bz-sized variables
+    ! Array sizes for Bz-sized variables
     vdir = 3
-    local_size  = local_dims
-    global_size = global_dims
-    local_size (vdir) = local_size (vdir) + 1
-    global_size(vdir) = global_size(vdir) + 1
+    sizes = global_dims
+    sizes(vdir) = sizes(vdir) + 1
 
     ! File view for Bz-sized variables (excluding the ghost cells)
-    sizes = global_size
-    subsizes = local_size
+    subsizes = local_dims
+    subsizes(vdir) = subsizes(vdir) + 1
     starts = n_global_min
 
     mpitype = MPI_DATATYPE_NULL
@@ -750,7 +743,7 @@ CONTAINS
     bz_distribution = mpitype
 
     ! Bz-sized array dimensions
-    sizes = local_size + 2 * ng
+    sizes = subsizes + 2 * ng
 
     ! Subarray for Bz-sized variable which excludes the ghost cells
     starts = ng
@@ -761,6 +754,8 @@ CONTAINS
     CALL MPI_TYPE_COMMIT(mpitype, errcode)
 
     bz_subarray = mpitype
+
+    ! MPI subtypes for communication of Bz-sized variables
 
     ! ng cells, 1d slice of Bz-sized variable
 

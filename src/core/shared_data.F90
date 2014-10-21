@@ -103,6 +103,8 @@ MODULE shared_data
   INTEGER, PARAMETER :: data_dir_max_length = 64
   CHARACTER(LEN = data_dir_max_length) :: data_dir
 
+  INTEGER, PARAMETER :: c_max_string_length = 64
+
   REAL(num) :: w1, w2, w3, w4, w5, w6, w7, w8, w9
   REAL(num) :: dt, dt2, dtr, dth, t_end, time
   REAL(num) :: dt_from_restart, time_prev
@@ -183,7 +185,7 @@ MODULE shared_data
 #else
   CHARACTER(LEN=1), PARAMETER :: filesystem = ''
 #endif
-  CHARACTER(LEN=1), PARAMETER :: file_prefix = ''
+  CHARACTER(LEN=6) :: file_prefix = ''
   TYPE(jobid_type) :: jobid
   INTEGER :: run_date = 0
 
@@ -198,12 +200,10 @@ MODULE shared_data
   INTEGER, PARAMETER :: c_stagger_bz = c_stagger_edge_z
 
   ! Number of variables to dump
-  LOGICAL, DIMENSION(19) :: dump_mask
+  LOGICAL, DIMENSION(20) :: dump_mask
 
   INTEGER, PARAMETER :: stat_unit = 20
   INTEGER, PARAMETER :: en_unit = 30
-
-  INTEGER, PARAMETER :: c_max_string_length = 64
 
 END MODULE shared_data
 
