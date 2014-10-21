@@ -50,6 +50,7 @@ CONTAINS
     INTEGER :: ranges(3,1), nproc_orig, oldgroup, newgroup
 
     nproc_orig = nproc
+    dims = (/nprocz, nprocy, nprocx/)
 
     IF (nx_global < ng .OR. ny_global < ng .OR. nz_global < ng) THEN
       IF (rank == 0) THEN
@@ -61,9 +62,9 @@ CONTAINS
     ENDIF
 
     reset = .FALSE.
-    IF (MAX(nprocx,1) * MAX(nprocy,1) * MAX(nprocz,1) > nproc) THEN
+    IF (PRODUCT(MAX(dims,1)) > nproc) THEN
       reset = .TRUE.
-    ELSE IF (nprocx * nprocy * nprocz > 0) THEN
+    ELSE IF (PRODUCT(dims) > 0) THEN
       ! Sanity check
       nxsplit = nx_global / nprocx
       nysplit = ny_global / nprocy
@@ -77,12 +78,10 @@ CONTAINS
         PRINT *, 'Unable to use requested processor subdivision. Using ' &
             // 'default division.'
       ENDIF
-      nprocx = 0
-      nprocy = 0
-      nprocz = 0
+      dims = 0
     ENDIF
 
-    IF (nprocx * nprocy * nprocz == 0) THEN
+    IF (PRODUCT(dims) == 0) THEN
       DO WHILE (nproc > 1)
         ! Find the processor split which minimizes surface area of
         ! the resulting domain
@@ -109,15 +108,15 @@ CONTAINS
 
             area = nxsplit * nysplit + nysplit * nzsplit + nzsplit * nxsplit
             IF (area < minarea) THEN
-              nprocx = ix
-              nprocy = iy
-              nprocz = iz
+              dims(c_ndims  ) = ix
+              dims(c_ndims-1) = iy
+              dims(c_ndims-2) = iz
               minarea = area
             ENDIF
           ENDDO
         ENDDO
 
-        IF (nprocx > 0) EXIT
+        IF (dims(c_ndims) > 0) EXIT
 
         ! If we get here then no suitable split could be found. Decrease the
         ! number of processors and try again.
@@ -157,7 +156,6 @@ CONTAINS
       CALL MPI_COMM_FREE(old_comm, errcode)
     ENDIF
 
-    dims = (/nprocz, nprocy, nprocx/)
     CALL MPI_DIMS_CREATE(nproc, c_ndims, dims, errcode)
 
     IF (PRODUCT(MAX(dims, 1)) > nproc) THEN
