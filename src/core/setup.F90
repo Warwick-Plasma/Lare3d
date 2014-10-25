@@ -357,104 +357,104 @@ CONTAINS
     CHARACTER(LEN=3) :: magic
     REAL(num) :: time0, time1, dt_en
     INTEGER :: ios, num_sz_in, en_nvars_in, p1, p2, nrecs, nrec, recsz
-    INTEGER :: version, revision, endianness, header_length
+    INTEGER :: version, revision, endianness, header_length, ierr
     LOGICAL :: exists
 
 #ifdef NO_IO
     RETURN
 #endif
 
-    IF (rank == 0) THEN
-      ! Setup lare3d.dat file
+    IF (rank /= 0) RETURN
 
-      WRITE(file2, '(a, ''/lare3d.dat'')') TRIM(data_dir)
+    ! Setup lare3d.dat file
 
-      INQUIRE(FILE=file2, EXIST=exists)
+    WRITE(file2, '(a, ''/lare3d.dat'')') TRIM(data_dir)
 
-      IF (.NOT.exists .OR. .NOT.restart) THEN
-        OPEN(UNIT=stat_unit, STATUS='REPLACE', FILE=file2, &
-            FORM='FORMATTED', iostat=ios)
-      ELSE
-        OPEN(UNIT=stat_unit, STATUS='OLD', POSITION='APPEND', FILE=file2, &
-            FORM='FORMATTED', iostat=ios)
-      END IF
+    INQUIRE(FILE=file2, EXIST=exists)
 
-      IF (ios /= 0) THEN
-        PRINT*, 'Unable to open file lare3d.dat for writing. This is ', &
-                'most commonly caused by the output directory not existing'
-        PRINT*
-        PRINT*
-        CALL MPI_ABORT(comm, errcode)
-      END IF
-
-      ! Setup en.dat file
-
-      WRITE(file3, '(a, ''/en.dat'')') TRIM(data_dir)
-
-      INQUIRE(FILE=file3, EXIST=exists)
-
-      IF (.NOT.exists .OR. .NOT.restart) THEN
-        OPEN(UNIT=en_unit, STATUS='REPLACE', FILE=file3, &
-            FORM='UNFORMATTED', ACCESS='STREAM', iostat=ios)
-      ELSE
-        OPEN(UNIT=en_unit, STATUS='OLD', FILE=file3, &
-            FORM='UNFORMATTED', ACCESS='STREAM', iostat=ios)
-
-        READ(en_unit) magic, version, revision
-        READ(en_unit) endianness
-        READ(en_unit) header_length
-        READ(en_unit) num_sz_in, en_nvars_in
-
-        IF (magic /= c_history_magic .OR. endianness /= c_endianness &
-            .OR. num_sz_in /= num_sz .OR. en_nvars_in /= en_nvars) THEN
-          PRINT*, 'WARNING: incompatible en.dat file found. ', &
-              'File will be overwritten.'
-          REWIND(en_unit)
-        ELSE
-          INQUIRE(en_unit, SIZE=p2)
-          p1 = header_length
-
-          recsz = num_sz * en_nvars
-          nrecs = (p2 + 1 - p1) / recsz
-
-          READ(en_unit) time0
-          READ(en_unit,POS=p1+(nrecs-1)*recsz) time1
-
-          ! Guess location of current time position and read it
-          dt_en = (time1 - time0) / nrecs
-          nrec = FLOOR((time - time0) / dt_en)
-
-          READ(en_unit,POS=p1+nrec*recsz) time1
-
-          ! Search forwards until we reach the first en.dat time after
-          ! the current simulation time
-          DO WHILE (time-time1 > 1.0e-20_num)
-            nrec = nrec + 1
-            READ(en_unit,POS=p1+nrec*recsz) time1
-          END DO
-
-          ! Search backwards until we reach the first en.dat time before
-          ! the current simulation time
-          DO WHILE (time1-time > 1.0e-20_num)
-            nrec = nrec - 1
-            READ(en_unit,POS=p1+nrec*recsz) time1
-          END DO
-
-          ! Set file position
-          READ(en_unit,POS=p1+nrec*recsz-num_sz) time1
-        END IF
-      END IF
-
-      IF (ios /= 0) THEN
-        PRINT*, 'Unable to open file en.dat for writing. This is ', &
-                'most commonly caused by the output directory not existing'
-        PRINT*
-        PRINT*
-        CALL MPI_ABORT(comm, errcode)
-      END IF
-
-      CALL setup_files
+    IF (.NOT.exists .OR. .NOT.restart) THEN
+      OPEN(UNIT=stat_unit, STATUS='REPLACE', FILE=file2, &
+          FORM='FORMATTED', iostat=ios)
+    ELSE
+      OPEN(UNIT=stat_unit, STATUS='OLD', POSITION='APPEND', FILE=file2, &
+          FORM='FORMATTED', iostat=ios)
     END IF
+
+    IF (ios /= 0) THEN
+      PRINT*, 'Unable to open file lare3d.dat for writing. This is ', &
+              'most commonly caused by the output directory not existing'
+      PRINT*
+      PRINT*
+      CALL MPI_ABORT(comm, errcode, ierr)
+    END IF
+
+    ! Setup en.dat file
+
+    WRITE(file3, '(a, ''/en.dat'')') TRIM(data_dir)
+
+    INQUIRE(FILE=file3, EXIST=exists)
+
+    IF (.NOT.exists .OR. .NOT.restart) THEN
+      OPEN(UNIT=en_unit, STATUS='REPLACE', FILE=file3, &
+          FORM='UNFORMATTED', ACCESS='STREAM', iostat=ios)
+    ELSE
+      OPEN(UNIT=en_unit, STATUS='OLD', FILE=file3, &
+          FORM='UNFORMATTED', ACCESS='STREAM', iostat=ios)
+
+      READ(en_unit) magic, version, revision
+      READ(en_unit) endianness
+      READ(en_unit) header_length
+      READ(en_unit) num_sz_in, en_nvars_in
+
+      IF (magic /= c_history_magic .OR. endianness /= c_endianness &
+          .OR. num_sz_in /= num_sz .OR. en_nvars_in /= en_nvars) THEN
+        PRINT*, 'WARNING: incompatible en.dat file found. ', &
+                'File will be overwritten.'
+        REWIND(en_unit)
+      ELSE
+        INQUIRE(en_unit, SIZE=p2)
+        p1 = header_length
+
+        recsz = num_sz * en_nvars
+        nrecs = (p2 + 1 - p1) / recsz
+
+        READ(en_unit) time0
+        READ(en_unit,POS=p1+(nrecs-1)*recsz) time1
+
+        ! Guess location of current time position and read it
+        dt_en = (time1 - time0) / nrecs
+        nrec = FLOOR((time - time0) / dt_en)
+
+        READ(en_unit,POS=p1+nrec*recsz) time1
+
+        ! Search forwards until we reach the first en.dat time after
+        ! the current simulation time
+        DO WHILE (time-time1 > 1.0e-20_num)
+          nrec = nrec + 1
+          READ(en_unit,POS=p1+nrec*recsz) time1
+        END DO
+
+        ! Search backwards until we reach the first en.dat time before
+        ! the current simulation time
+        DO WHILE (time1-time > 1.0e-20_num)
+          nrec = nrec - 1
+          READ(en_unit,POS=p1+nrec*recsz) time1
+        END DO
+
+        ! Set file position
+        READ(en_unit,POS=p1+nrec*recsz-num_sz) time1
+      END IF
+    END IF
+
+    IF (ios /= 0) THEN
+      PRINT*, 'Unable to open file en.dat for writing. This is ', &
+              'most commonly caused by the output directory not existing'
+      PRINT*
+      PRINT*
+      CALL MPI_ABORT(comm, errcode, ierr)
+    END IF
+
+    CALL setup_files
 
   END SUBROUTINE open_files
 
