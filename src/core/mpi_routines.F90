@@ -58,7 +58,7 @@ CONTAINS
         PRINT*,'Simulation domain is too small.'
         PRINT*,'There must be at least ', ng, ' cells in each direction.'
       ENDIF
-      CALL MPI_ABORT(MPI_COMM_WORLD, errcode, ierr)
+      CALL MPI_ABORT(MPI_COMM_WORLD, ierr, errcode)
     ENDIF
 
     reset = .FALSE.
@@ -132,7 +132,7 @@ CONTAINS
           PRINT*,'Cannot split the domain using the requested number of CPUs.'
           PRINT*,'Try reducing the number of CPUs to ', nproc
         ENDIF
-        CALL MPI_ABORT(MPI_COMM_WORLD, errcode, ierr)
+        CALL MPI_ABORT(MPI_COMM_WORLD, ierr, errcode)
         STOP
       ENDIF
       IF (rank == 0) THEN
