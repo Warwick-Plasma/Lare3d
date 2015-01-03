@@ -360,34 +360,34 @@ CONTAINS
     IF (dump_mask(14)) THEN
       varname = 'neutral_fraction'
       units = '%'
-      dims = global_dims + 1
+      dims = global_dims
 
       CALL sdf_write_plain_variable(sdf_handle, TRIM(varname), &
           'PIP/' // TRIM(varname), TRIM(units), dims, &
-          c_stagger_vertex, 'grid', xi_n, &
-          node_distribution, nodeng_subarray, convert)
+          c_stagger_cell_centre, 'grid', xi_n, &
+          cell_distribution, cell_subarray, convert)
     END IF
 
     IF (dump_mask(15)) THEN
       varname = 'eta_perp'
       units = ''
-      dims = global_dims + 1
+      dims = global_dims
 
       CALL sdf_write_plain_variable(sdf_handle, TRIM(varname), &
           'PIP/' // TRIM(varname), TRIM(units), dims, &
-          c_stagger_vertex, 'grid', eta_perp, &
-          node_distribution, nodeng_subarray, convert)
+          c_stagger_cell_centre, 'grid', eta_perp, &
+          cell_distribution, cell_subarray, convert)
     END IF
 
     IF (dump_mask(16)) THEN
       varname = 'eta'
       units = ''
-      dims = global_dims + 1
+      dims = global_dims
 
       CALL sdf_write_plain_variable(sdf_handle, TRIM(varname), &
           'PIP/' // TRIM(varname), TRIM(units), dims, &
-          c_stagger_vertex, 'grid', eta, &
-          node_distribution, nodeng_subarray, convert)
+          c_stagger_cell_centre, 'grid', eta, &
+          cell_distribution, cell_subarray, convert)
     END IF
 
     IF (dump_mask(17)) THEN
