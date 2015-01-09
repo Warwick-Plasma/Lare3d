@@ -124,6 +124,10 @@ ifeq ($(strip $(COMPILER)),hector)
   MPIF90 = ftn
 endif
 
+FFLAGS += -I$(SDF)/include
+FFLAGS += $(MODULEFLAG)
+LDFLAGS = $(FFLAGS) -L$(SDF)/lib -lsdf
+
 # Set some of the build parameters
 TARGET = lare3d
 
@@ -158,11 +162,8 @@ DEFINES := $(DEF)
 
 all: main
 
-COMMIT: FORCE
-	@./$(SRCDIR)/gen_commit_string || $(MAKE) $(MAKECMDGOALS)
--include COMMIT
-
-SDFDIR = SDF/FORTRAN/src
+SDF := SDF/FORTRAN
+SDFMOD = $(SDF)/include/sdf.mod
 SRCDIR = src
 OBJDIR = obj
 BINDIR = bin
@@ -174,20 +175,7 @@ PREPROFLAGS = $(DEFINES) $(D)_COMMIT='"$(COMMIT)"' $(D)_DATE=$(DATE) \
 
 SRCFILES = boundary.f90 conduct.f90 control.f90 diagnostics.F90 \
   initial_conditions.f90 lagran.F90 lare3d.f90 mpi_routines.F90 \
-  mpiboundary.f90 neutral.f90 normalise.f90 openboundary.f90 remap.f90 sdf.f90 \
-  sdf_common.f90 sdf_control.f90 sdf_input.f90 sdf_input_cartesian.f90 \
-  sdf_input_cartesian_r4.f90 sdf_input_cartesian_r8.f90 \
-  sdf_input_cartesian_ru.f90 sdf_input_point.f90 sdf_input_point_r4.f90 \
-  sdf_input_point_r8.f90 sdf_input_point_ru.f90 sdf_input_r4.f90 \
-  sdf_input_r8.f90 sdf_input_ru.f90 sdf_input_station.f90 \
-  sdf_input_station_r4.f90 sdf_input_station_r8.f90 sdf_input_station_ru.f90 \
-  sdf_input_util.f90 sdf_job_info.f90 sdf_output.f90 sdf_output_cartesian.f90 \
-  sdf_output_cartesian_r4.f90 sdf_output_cartesian_r8.f90 \
-  sdf_output_cartesian_ru.f90 sdf_output_point.f90 sdf_output_point_r4.f90 \
-  sdf_output_point_r8.f90 sdf_output_point_ru.f90 sdf_output_r4.f90 \
-  sdf_output_r8.f90 sdf_output_ru.f90 sdf_output_source.f90 \
-  sdf_output_station.f90 sdf_output_station_r4.f90 sdf_output_station_r8.f90 \
-  sdf_output_station_ru.f90 sdf_output_util.f90 sdf_source_info_dummy.f90 \
+  mpiboundary.f90 neutral.f90 normalise.f90 openboundary.f90 remap.f90 \
   setup.F90 shared_data.F90 version_data.F90 welcome.f90 xremap.f90 yremap.f90 \
   zremap.f90
 
@@ -196,29 +184,36 @@ OBJFILES := $(OBJFILES:.F90=.o)
 
 FULLTARGET = $(BINDIR)/$(TARGET)
 
-#vpath %.f90 $(SRCDIR)
-#vpath %.o $(OBJDIR)
-VPATH = $(SRCDIR):$(SRCDIR)/core:$(SRCDIR)/io:$(SDFDIR):$(OBJDIR)
+VPATH = $(SRCDIR):$(SRCDIR)/core:$(SDF)/src:$(OBJDIR)
 
+$(SRCDIR)/COMMIT: FORCE
+	@sh $(SRCDIR)/gen_commit_string.sh || $(MAKE) $(MAKECMDGOALS)
+-include $(SRCDIR)/COMMIT
 
 # Rule to build the fortran files
 
 %.o: %.f90
-	$(FC) -c $(FFLAGS) $(MODULEFLAG) -o $(OBJDIR)/$@ $<
+	$(FC) -c $(FFLAGS) -o $(OBJDIR)/$@ $<
 
 %.o: %.F90
-	$(FC) -c $(FFLAGS) $(MODULEFLAG) -o $(OBJDIR)/$@ $(PREPROFLAGS) $<
+	$(FC) -c $(FFLAGS) -o $(OBJDIR)/$@ $(PREPROFLAGS) $<
 
 main: $(FULLTARGET)
 $(FULLTARGET): $(OBJFILES)
 	@mkdir -p $(BINDIR)
-	$(FC) $(FFLAGS) $(MODULEFLAG) -o $@ $(addprefix $(OBJDIR)/,$(OBJFILES))
+	$(FC) -o $@ $(addprefix $(OBJDIR)/,$(OBJFILES)) $(LDFLAGS)
+
+$(SDFMOD):
+	$(MAKE) -C $(SDF)
 
 clean:
 	@rm -rf $(BINDIR) $(OBJDIR)
 
+cleanall: tidy
+
 tidy:
 	@rm -rf $(OBJDIR) *~ *.pbs.* *.sh.* $(SRCDIR)/*~ *.log
+	$(MAKE) -C $(SDF) cleanall
 
 datatidy:
 	@rm -rf Data/*
@@ -227,10 +222,10 @@ tarball:
 	@sh $(SRCDIR)/make_tarball.sh
 
 visit:
-	@cd SDF/VisIt; ./build
+	@cd $(SDF)/../VisIt; ./build
 
 visitclean:
-	@cd SDF/VisIt; make clean; ./build -c; \
+	@cd $(SDF)/../VisIt; make clean; ./build -c; \
 	  rm -rf .depend *.d *Info.C *Info.h CMake* cmake* Makefile
 
 $(OBJFILES): | $(OBJDIR)
@@ -238,15 +233,15 @@ $(OBJFILES): | $(OBJDIR)
 $(OBJDIR):
 	@mkdir -p $(OBJDIR)
 
-.PHONY: clean tidy visit visitclean datatidy FORCE
+.PHONY: clean cleanall tidy datatidy visit visitclean main FORCE
 
 # All the dependencies
 
 boundary.o: boundary.f90 mpiboundary.o shared_data.o
 conduct.o: conduct.f90 boundary.o shared_data.o
 control.o: control.f90 normalise.o shared_data.o
-diagnostics.o: diagnostics.F90 boundary.o conduct.o sdf.o shared_data.o \
-  version_data.o
+diagnostics.o: diagnostics.F90 boundary.o conduct.o shared_data.o \
+  version_data.o $(SDFMOD)
 initial_conditions.o: initial_conditions.f90 neutral.o shared_data.o
 lagran.o: lagran.F90 boundary.o conduct.o neutral.o shared_data.o
 lare3d.o: lare3d.f90 boundary.o control.o diagnostics.o initial_conditions.o \
@@ -258,62 +253,9 @@ neutral.o: neutral.f90 boundary.o shared_data.o
 normalise.o: normalise.f90 shared_data.o
 openboundary.o: openboundary.f90 shared_data.o
 remap.o: remap.f90 boundary.o shared_data.o xremap.o yremap.o zremap.o
-sdf.o: sdf.f90 sdf_control.o sdf_input.o sdf_input_cartesian.o \
-  sdf_input_point.o sdf_input_station.o sdf_input_util.o sdf_output.o \
-  sdf_output_cartesian.o sdf_output_point.o sdf_output_source.o \
-  sdf_output_station.o
-sdf_common.o: sdf_common.f90 sdf_job_info.o
-sdf_control.o: sdf_control.f90 sdf_output_util.o
-sdf_input.o: sdf_input.f90 sdf_input_r4.o sdf_input_r8.o
-sdf_input_cartesian.o: sdf_input_cartesian.f90 sdf_input_cartesian_r4.o \
-  sdf_input_cartesian_r8.o
-sdf_input_cartesian_r4.o: sdf_input_cartesian_r4.f90 sdf_input_cartesian_ru.o
-sdf_input_cartesian_r8.o: sdf_input_cartesian_r8.f90 sdf_input_cartesian_ru.o
-sdf_input_cartesian_ru.o: sdf_input_cartesian_ru.f90 sdf_input_ru.o
-sdf_input_point.o: sdf_input_point.f90 sdf_input_point_r4.o sdf_input_point_r8.o
-sdf_input_point_r4.o: sdf_input_point_r4.f90 sdf_common.o sdf_input_point_ru.o
-sdf_input_point_r8.o: sdf_input_point_r8.f90 sdf_common.o sdf_input_point_ru.o
-sdf_input_point_ru.o: sdf_input_point_ru.f90 sdf_common.o sdf_input_ru.o
-sdf_input_r4.o: sdf_input_r4.f90 sdf_input_ru.o
-sdf_input_r8.o: sdf_input_r8.f90 sdf_input_ru.o
-sdf_input_ru.o: sdf_input_ru.f90 sdf_common.o
-sdf_input_station.o: sdf_input_station.f90 sdf_input_station_r4.o \
-  sdf_input_station_r8.o sdf_input_station_ru.o
-sdf_input_station_r4.o: sdf_input_station_r4.f90 sdf_input_station_ru.o
-sdf_input_station_r8.o: sdf_input_station_r8.f90 sdf_input_station_ru.o
-sdf_input_station_ru.o: sdf_input_station_ru.f90 sdf_input_ru.o
-sdf_input_util.o: sdf_input_util.f90 sdf_input.o sdf_input_cartesian.o \
-  sdf_input_point.o sdf_input_station.o sdf_output_station_ru.o
-sdf_job_info.o: sdf_job_info.f90
-sdf_output.o: sdf_output.f90 sdf_output_r4.o sdf_output_r8.o sdf_output_ru.o
-sdf_output_cartesian.o: sdf_output_cartesian.f90 sdf_output_cartesian_r4.o \
-  sdf_output_cartesian_r8.o
-sdf_output_cartesian_r4.o: sdf_output_cartesian_r4.f90 sdf_output_cartesian_ru.o
-sdf_output_cartesian_r8.o: sdf_output_cartesian_r8.f90 sdf_output_cartesian_ru.o
-sdf_output_cartesian_ru.o: sdf_output_cartesian_ru.f90 sdf_output_ru.o
-sdf_output_point.o: sdf_output_point.f90 sdf_output_point_r4.o \
-  sdf_output_point_r8.o
-sdf_output_point_r4.o: sdf_output_point_r4.f90 sdf_common.o \
-  sdf_output_point_ru.o
-sdf_output_point_r8.o: sdf_output_point_r8.f90 sdf_common.o \
-  sdf_output_point_ru.o
-sdf_output_point_ru.o: sdf_output_point_ru.f90 sdf_common.o sdf_output_ru.o
-sdf_output_r4.o: sdf_output_r4.f90 sdf_output_ru.o
-sdf_output_r8.o: sdf_output_r8.f90 sdf_output_ru.o
-sdf_output_ru.o: sdf_output_ru.f90 sdf_common.o
-sdf_output_source.o: sdf_output_source.f90 sdf_common.o sdf_output.o \
-  sdf_source_info_dummy.o
-sdf_output_station.o: sdf_output_station.f90 sdf_output_station_r4.o \
-  sdf_output_station_r8.o
-sdf_output_station_r4.o: sdf_output_station_r4.f90 sdf_output_station_ru.o
-sdf_output_station_r8.o: sdf_output_station_r8.f90 sdf_output_station_ru.o
-sdf_output_station_ru.o: sdf_output_station_ru.f90 sdf_output_ru.o
-sdf_output_util.o: sdf_output_util.f90 sdf_output_cartesian_ru.o \
-  sdf_output_point_ru.o
-sdf_source_info_dummy.o: sdf_source_info_dummy.f90
-setup.o: setup.F90 diagnostics.o sdf_job_info.o shared_data.o version_data.o \
-  welcome.o
-shared_data.o: shared_data.F90 sdf.o sdf_job_info.o
+setup.o: setup.F90 diagnostics.o shared_data.o version_data.o welcome.o \
+  $(SDFMOD)
+shared_data.o: shared_data.F90 $(SDFMOD)
 version_data.o: version_data.F90 COMMIT
 welcome.o: welcome.f90 shared_data.o version_data.o
 xremap.o: xremap.f90 boundary.o
