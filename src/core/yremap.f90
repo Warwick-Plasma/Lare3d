@@ -559,8 +559,8 @@ CONTAINS
           ixm = ix - 1
           area = dxb(ix) * dzb(iz)
 
-          v_advect = (vy1(ix,iy,iz ) + vy1(ix,iym,iz ) &
-                    + vy1(ix,iy,izm) + vy1(ix,iym,izm)) * 0.25_num
+          v_advect = (vy1(ix,iy,iz ) + vy1(ixm,iy,iz ) &
+                    + vy1(ix,iy,izm) + vy1(ixm,iy,izm)) * 0.25_num
 
           fm  = energy(ix,iym ,iz)
           fi  = energy(ix,iy  ,iz)
