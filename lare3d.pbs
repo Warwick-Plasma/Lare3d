@@ -1,5 +1,5 @@
-#!/bin/bash 
-#PBS -l select=8:ncpus=1:mem=512mb,walltime=48:00:00,place=free         
+#!/bin/bash
+#PBS -l select=8:ncpus=1:mem=512mb,walltime=48:00:00,place=free
 #PBS -V
 
 cd $PBS_O_WORKDIR
