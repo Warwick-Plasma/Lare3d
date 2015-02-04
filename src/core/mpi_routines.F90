@@ -57,9 +57,9 @@ CONTAINS
         PRINT*,'*** ERROR ***'
         PRINT*,'Simulation domain is too small.'
         PRINT*,'There must be at least ', ng, ' cells in each direction.'
-      ENDIF
+      END IF
       CALL MPI_ABORT(MPI_COMM_WORLD, ierr, errcode)
-    ENDIF
+    END IF
 
     reset = .FALSE.
     IF (PRODUCT(MAX(dims,1)) > nproc) THEN
@@ -71,15 +71,15 @@ CONTAINS
       nzsplit = nz_global / nprocz
       IF (nxsplit < ng .OR. nysplit < ng .OR. nzsplit < ng) &
           reset = .TRUE.
-    ENDIF
+    END IF
 
     IF (reset) THEN
       IF (rank == 0) THEN
         PRINT *, 'Unable to use requested processor subdivision. Using ' &
             // 'default division.'
-      ENDIF
+      END IF
       dims = 0
-    ENDIF
+    END IF
 
     IF (PRODUCT(dims) == 0) THEN
       DO WHILE (nproc > 1)
@@ -112,9 +112,9 @@ CONTAINS
               dims(c_ndims-1) = iy
               dims(c_ndims-2) = iz
               minarea = area
-            ENDIF
-          ENDDO
-        ENDDO
+            END IF
+          END DO
+        END DO
 
         IF (dims(c_ndims) > 0) EXIT
 
@@ -122,8 +122,8 @@ CONTAINS
         ! number of processors and try again.
 
         nproc = nproc - 1
-      ENDDO
-    ENDIF
+      END DO
+    END IF
 
     IF (nproc_orig /= nproc) THEN
       IF (.NOT.allow_cpu_reduce) THEN
@@ -131,15 +131,15 @@ CONTAINS
           PRINT*,'*** ERROR ***'
           PRINT*,'Cannot split the domain using the requested number of CPUs.'
           PRINT*,'Try reducing the number of CPUs to ', nproc
-        ENDIF
+        END IF
         CALL MPI_ABORT(MPI_COMM_WORLD, ierr, errcode)
         STOP
-      ENDIF
+      END IF
       IF (rank == 0) THEN
         PRINT*,'*** WARNING ***'
         PRINT*,'Cannot split the domain using the requested number of CPUs.'
         PRINT*,'Reducing the number of CPUs to ', nproc
-      ENDIF
+      END IF
       ranges(1,1) = nproc
       ranges(2,1) = nproc_orig - 1
       ranges(3,1) = 1
@@ -150,11 +150,11 @@ CONTAINS
       IF (comm == MPI_COMM_NULL) THEN
         CALL MPI_FINALIZE(errcode)
         STOP
-      ENDIF
+      END IF
       CALL MPI_GROUP_FREE(oldgroup, errcode)
       CALL MPI_GROUP_FREE(newgroup, errcode)
       CALL MPI_COMM_FREE(old_comm, errcode)
-    ENDIF
+    END IF
 
     CALL MPI_DIMS_CREATE(nproc, c_ndims, dims, errcode)
 
