@@ -689,7 +689,7 @@ CONTAINS
                 - 0.5_num * ai  * (vx(ix,iy,iz ) - flux(ix,iy,iz)) &
                 + 0.5_num * aip * (vx(ix,iy,izp) - flux(ix,iy,iz))
 
-            dk = dk * dm(ix,iy,iz) * 0.25_num
+            dk = dk * dm(ix,iy,iz) * 0.5_num
             delta_ke(ix ,iy ,izp) = delta_ke(ix ,iy ,izp) + dk
             delta_ke(ixp,iy ,izp) = delta_ke(ixp,iy ,izp) + dk
             delta_ke(ix ,iyp,izp) = delta_ke(ix ,iyp,izp) + dk
@@ -787,7 +787,7 @@ CONTAINS
                 - 0.5_num * ai  * (vy(ix,iy,iz ) - flux(ix,iy,iz)) &
                 + 0.5_num * aip * (vy(ix,iy,izp) - flux(ix,iy,iz))
 
-            dk = dk * dm(ix,iy,iz) * 0.25_num
+            dk = dk * dm(ix,iy,iz) * 0.5_num
             delta_ke(ix ,iy ,izp) = delta_ke(ix ,iy ,izp) + dk
             delta_ke(ixp,iy ,izp) = delta_ke(ixp,iy ,izp) + dk
             delta_ke(ix ,iyp,izp) = delta_ke(ix ,iyp,izp) + dk
@@ -885,7 +885,7 @@ CONTAINS
                 - 0.5_num * ai  * (vz(ix,iy,iz ) - flux(ix,iy,iz)) &
                 + 0.5_num * aip * (vz(ix,iy,izp) - flux(ix,iy,iz))
 
-            dk = dk * dm(ix,iy,iz) * 0.25_num
+            dk = dk * dm(ix,iy,iz) * 0.5_num
             delta_ke(ix ,iy ,izp) = delta_ke(ix ,iy ,izp) + dk
             delta_ke(ixp,iy ,izp) = delta_ke(ixp,iy ,izp) + dk
             delta_ke(ix ,iyp,izp) = delta_ke(ix ,iyp,izp) + dk
