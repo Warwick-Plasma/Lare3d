@@ -1,0 +1,5 @@
+This directory contains old code that may prove useful as examples etc.
+Check in anything you think may be useful but be sure to comment it!
+
+1. Arber: added example initial_conditions.f90 to file from old setups that may be
+useful skeletons for future work and to recover old setups easily.

@@ -1,0 +1,5 @@
+*.[od]
+bin
+obj
+Data/
+COMMIT

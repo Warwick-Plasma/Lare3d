@@ -1,0 +1,60 @@
+Lare3D main code directory
+--------------------------
+Contains
+  boundary.f90
+  control.f90
+  diagnostics.f90
+  initial_conditions.f90
+
+-----------------------------------------------------------------
+control.f90
+
+control.f90 contains all the code parameters, such as the number of gridpoints, the length of the domain, the physics packages used, parameters for the packages etc.
+
+It is subdivided into three subroutines
+user_normalisation - User sets the parameters used in the code normalisation
+control_variables - User sets the basic code parameters. See the comments in the code for a full description
+set_output_dumps - User sets the information to be included in the output dumps from the code.
+-----------------------------------------------------------------
+initial_conditions.f90
+
+initial_conditions.f90 controls the initial conditions for the simulation. It contains only a single subroutine, called "set_initial_conditions", where the user must set the initial conditions for the variables
+
+rho - density
+energy - specific internal energy
+v{x,y,z} - Velocity in all three directions
+b{x,y,z} - Magnetic field in all three directions
+-----------------------------------------------------------------
+boundary.f90
+
+boundary.f90 controls the boundary conditions for the code. Details on the boundary conditions and how to change them are given in the LARE manual
+-----------------------------------------------------------------
+diagnostics.f90
+
+diagnostics.f90 performs the output of data to the output dump files, and must be changed by the user if additional output data is required. Changing the output dumps is described in the LARE manual
+-----------------------------------------------------------------
+
+
+
+
+************************************************************************************
+CHANGELOG **************************************************************************
+
+New in v2.8
+-----------
+1. Fixed error in calculating temperature and specific internal energy density when using
+eos_number = EOS_ION
+
+2. Changed names of boundaries in control.f90. This means old control.f90 files will fail.
+This was needed to simplify maintenance of the code. Names are now
+  xbc_min = BC_PERIODIC
+  xbc_max = BC_PERIODIC
+  ybc_min = BC_OTHER
+  ybc_max = BC_OTHER
+  zbc_min = BC_OTHER
+  zbc_max = BC_OTHER
+Hopefully these names need no explaining.
+
+3. The neutral fraction based on modified Saha uses the local temperature, without a
+dilution factor, below a height of 0. Therefore the photosphere must be defined at z=0
+for this to work.
