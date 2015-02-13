@@ -1,5 +1,7 @@
 # Specify a particular compiler with "make COMPILER=pgi", etc.
 # Specify debugging flags with "make MODE=debug"
+# Alternatively, these options can be specified as environment variables
+# eg. "export COMPILER=gfortran" can be added to $HOME/.bashrc
 
 
 # Compiler specific flags
@@ -22,7 +24,6 @@ ifeq ($(strip $(MODE)),debug)
   endif
 endif
 
-MPIF90 ?= mpif90
 D = -D
 
 # PGI
@@ -57,8 +58,8 @@ ifeq ($(strip $(COMPILER)),gfortran)
   FFLAGS = -O3
   ifeq ($(strip $(MODE)),debug)
     FFLAGS = -O0 -g -Wall -Wextra -pedantic -fbounds-check \
-             -ffpe-trap=invalid,zero,overflow -Wno-unused-parameter \
-             -ffpe-trap=underflow,denormal
+             -ffpe-trap=invalid,zero,overflow -Wno-unused-parameter
+    #FFLAGS += -ffpe-trap=underflow,denormal
 
     GNUVER := $(shell gfortran -dumpversion | head -1 \
         | sed 's/[^0-9\.]*\([0-9\.]\+\).*/\1/')
@@ -107,7 +108,7 @@ ifeq ($(strip $(COMPILER)),ibm)
     #FFLAGS = -qthreaded -qsmp=noauto -qsmp=omp # Hybrid stuff
   endif
   MODULEFLAG = -I$(OBJDIR) -qmoddir=$(OBJDIR)
-  MPIF90 = mpixlf90_r
+  MPIF90 ?= mpixlf90_r
 
   # IBM compiler needs a -WF to recognise preprocessor directives
   D = -WF,-D
@@ -121,9 +122,11 @@ ifeq ($(strip $(COMPILER)),hector)
     FFLAGS = -O0 -g -ea -ec -eC -eD -eI -en -hfp_trap -Ktrap=fp -m0 -M1438,7413
   endif
   MODULEFLAG = -em -I/usr/include -I$(OBJDIR) -J$(OBJDIR)
-  MPIF90 = ftn
+  MPIF90 ?= ftn
 endif
 
+
+MPIF90 ?= mpif90
 FFLAGS += -I$(SDF)/include
 FFLAGS += $(MODULEFLAG)
 LDFLAGS = $(FFLAGS) -L$(SDF)/lib -lsdf
@@ -132,7 +135,7 @@ LDFLAGS = $(FFLAGS) -L$(SDF)/lib -lsdf
 TARGET = lare3d
 
 # Set pre-processor defines
-DEFINES := $(DEF)
+DEFINES := $(DEFINE)
 
 # The following are a list of pre-processor defines which can be added to
 # the above line modifying the code behaviour at compile time.
@@ -149,7 +152,7 @@ DEFINES := $(DEF)
 # Uncomment to add the 'nfs' file prefix required by some filesystems
 #DEFINES += $(D)FILEPREFIX
 
-# Uncomment to turn off all I/O. Useful for benchmarking.
+# Don't generate any output at all. Useful for benchmarking.
 #DEFINES += $(D)NO_IO
 
 # Uncomment to enable the MPI error handler which is useful for debugging
@@ -186,9 +189,13 @@ FULLTARGET = $(BINDIR)/$(TARGET)
 
 VPATH = $(SRCDIR):$(SRCDIR)/core:$(SDF)/src:$(OBJDIR)
 
-$(SRCDIR)/COMMIT: FORCE
-	@sh $(SRCDIR)/gen_commit_string.sh || $(MAKE) $(MAKECMDGOALS)
 -include $(SRCDIR)/COMMIT
+
+ifeq ($(DONE_COMMIT),)
+main: commit
+else
+main: $(FULLTARGET)
+endif
 
 # Rule to build the fortran files
 
@@ -198,7 +205,6 @@ $(SRCDIR)/COMMIT: FORCE
 %.o: %.F90
 	$(FC) -c $(FFLAGS) -o $(OBJDIR)/$@ $(PREPROFLAGS) $<
 
-main: $(FULLTARGET)
 $(FULLTARGET): $(OBJFILES)
 	@mkdir -p $(BINDIR)
 	$(FC) -o $@ $(addprefix $(OBJDIR)/,$(OBJFILES)) $(LDFLAGS)
@@ -233,7 +239,12 @@ $(OBJFILES): | $(OBJDIR)
 $(OBJDIR):
 	@mkdir -p $(OBJDIR)
 
-.PHONY: clean cleanall tidy datatidy visit visitclean main FORCE
+commit: FORCE
+	@sh $(SRCDIR)/gen_commit_string.sh && $(MAKE) $(MAKECMDGOALS) DONE_COMMIT=1
+
+FORCE:
+
+.PHONY: commit clean cleanall tidy datatidy visit visitclean main FORCE
 
 # All the dependencies
 

@@ -23,8 +23,10 @@ if [ "$cstring"x != "$fullstring"x ]; then
 fi
 
 (cd SDF/VisIt
-/bin/sh gen_commit_string)
-/bin/sh src/gen_commit_string
+/bin/sh gen_commit_string.sh)
+(cd SDF/FORTRAN
+/bin/sh src/gen_commit_string.sh)
+/bin/sh src/gen_commit_string.sh
 rm -rf .git
 cd $dir
 mv $repo $repo-$cstring
