@@ -195,9 +195,9 @@ MODULE shared_data
   INTEGER, PARAMETER :: c_history_revision = 0
   INTEGER, PARAMETER :: c_endianness = 16911887
 
-  INTEGER, PARAMETER :: c_stagger_bx = c_stagger_edge_x
-  INTEGER, PARAMETER :: c_stagger_by = c_stagger_edge_y
-  INTEGER, PARAMETER :: c_stagger_bz = c_stagger_edge_z
+  INTEGER, PARAMETER :: c_stagger_bx = c_stagger_face_x
+  INTEGER, PARAMETER :: c_stagger_by = c_stagger_face_y
+  INTEGER, PARAMETER :: c_stagger_bz = c_stagger_face_z
 
   ! Number of variables to dump
   LOGICAL, DIMENSION(20) :: dump_mask
