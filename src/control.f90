@@ -123,9 +123,11 @@ CONTAINS
     ! Fraction of free streaming heat flux used in limiter
     flux_limiter = 0.05_num
 
-    ! Use radiation as specified in SUBROUTINE rad_losses in src/core/conduct.f90
+    ! Use radiation as specified in SUBROUTINE rad_losses
+    ! in src/core/conduct.f90
     radiation = .FALSE.
-    ! Use coronal heating as specified in SUBROUTINE heating in src/core/conduct.f90
+    ! Use coronal heating as specified in SUBROUTINE heating
+    ! in src/core/conduct.f90
     coronal_heating = .FALSE.
 
     ! Remap kinetic energy correction. LARE does not perfectly conserve kinetic
