@@ -355,8 +355,8 @@ CONTAINS
     CHARACTER(LEN=11+data_dir_max_length) :: file2
     CHARACTER(LEN=7+data_dir_max_length) :: file3
     CHARACTER(LEN=3) :: magic
-    REAL(num) :: time0, time1, dt_en
-    INTEGER :: ios, num_sz_in, en_nvars_in, p1, p2, nrecs, nrec, recsz
+    REAL(num) :: time1
+    INTEGER :: ios, num_sz_in, en_nvars_in, p1, nrec, recsz
     INTEGER :: version, revision, endianness, header_length, ierr
     LOGICAL :: exists
 
@@ -412,20 +412,12 @@ CONTAINS
                 'File will be overwritten.'
         REWIND(en_unit)
       ELSE
-        INQUIRE(en_unit, SIZE=p2)
-        p1 = header_length
+        p1 = header_length + 1
 
         recsz = num_sz * en_nvars
-        nrecs = (p2 + 1 - p1) / recsz
+        nrec = 0
 
-        READ(en_unit) time0
-        READ(en_unit,POS=p1+(nrecs-1)*recsz) time1
-
-        ! Guess location of current time position and read it
-        dt_en = (time1 - time0) / nrecs
-        nrec = FLOOR((time - time0) / dt_en)
-
-        READ(en_unit,POS=p1+nrec*recsz) time1
+        READ(en_unit,POS=p1) time1
 
         ! Search forwards until we reach the first en.dat time after
         ! the current simulation time
