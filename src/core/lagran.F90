@@ -1139,7 +1139,7 @@ CONTAINS
 
   SUBROUTINE bstep(kx, ky, kz, dt)
 
-    REAL(num), DIMENSION(:,:,:), INTENT(IN) :: kx, ky, kz
+    REAL(num), DIMENSION(0:,0:,0:), INTENT(IN) :: kx, ky, kz
     REAL(num), INTENT(IN) :: dt
     REAL(num) :: area
 
