@@ -2,13 +2,29 @@
 
 repo=lare3d
 cur=`pwd`
-dir=$(mktemp -d -t$repo)
+dir=$(mktemp -d -t $repo.XXXXX)
 
 git init -q $dir/$repo
 git push -q --tags $dir/$repo HEAD:tmp
 cd $dir/$repo
 git checkout -q tmp
-git submodule update --init --recursive
+
+# Update two levels of submodules
+git submodule init
+for sub1 in $(git config --local --get-regexp submodule | cut -f2 -d\.); do
+  git config --local --replace-all submodule.$sub1.url $cur/$sub1
+done
+git submodule update
+
+for sub1 in $(git config --local --get-regexp submodule | cut -f2 -d\.); do
+  git submodule foreach \
+    "git submodule init; \
+    for sub2 in \$(git config --local --get-regexp submodule|cut -f2 -d\.); do \
+      git config --local --replace-all submodule.\$sub2.url $cur/$sub1/\$sub2; \
+    done; \
+    git submodule update"
+done
+
 cstring=$(git describe --abbrev=0 --match v[0-9]* HEAD | cut -c2-)
 fullstring=$(git describe --match v[0-9]* HEAD | cut -c2-)
 
@@ -27,7 +43,7 @@ fi
 (cd SDF/FORTRAN
 /bin/sh src/gen_commit_string.sh)
 /bin/sh src/gen_commit_string.sh
-rm -rf .git
+rm -rf .git*
 cd $dir
 mv $repo $repo-$cstring
 tar -cf - $repo-$cstring | gzip -c > $repo-$cstring.tar.gz
