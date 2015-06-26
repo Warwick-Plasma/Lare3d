@@ -1,6 +1,7 @@
 #! /bin/sh
 
-repo=lare3d
+repo=$(git rev-parse --show-toplevel)
+repo=$(basename $repo)
 cur=`pwd`
 dir=$(mktemp -d -t $repo.XXXXX)
 
@@ -42,6 +43,10 @@ fi
 /bin/sh gen_commit_string.sh)
 (cd SDF/FORTRAN
 /bin/sh src/gen_commit_string.sh)
+(cd SDF/C/src
+/bin/sh gen_commit_string.sh)
+(cd SDF/utilities
+/bin/sh gen_commit_string.sh)
 /bin/sh src/gen_commit_string.sh
 rm -rf .git*
 cd $dir
