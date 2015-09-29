@@ -48,7 +48,7 @@ fi
 (cd SDF/utilities
 /bin/sh gen_commit_string.sh)
 /bin/sh src/gen_commit_string.sh
-rm -rf .git*
+find . -name ".git*" -exec rm -rf {} \;
 cd $dir
 mv $repo $repo-$cstring
 tar -cf - $repo-$cstring | gzip -c > $repo-$cstring.tar.gz
