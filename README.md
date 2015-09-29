@@ -1,4 +1,5 @@
-## DOWNLOADING AND BUILDING THE CODE
+DOWNLOADING AND BUILDING THE CODE
+---------------------------------
 
 The easiest method of downloading the code is to grab a copy of the latest
 release package, located in the "Releases" section of the CCPForge site.
@@ -74,7 +75,8 @@ single-precision version with Qmono viscosity you would type:
 ```
 
 
-## COMPILING SDF AND THE VISIT READER
+COMPILING SDF AND THE VISIT READER
+----------------------------------
 
 The LareXd codes use a self-describing file format called SDF. The routines
 used in reading and writing such files, along with reader plugins for Matlab,
@@ -119,7 +121,8 @@ co-exist with the SDF plugin and issuing `make visitclean` will not remove
 such plugins.
 
 
-## WORKING WITH THE GIT REPOSITORY
+WORKING WITH THE GIT REPOSITORY
+-------------------------------
 
 For more advanced users, the code is also hosted on a git repository. Details
 can be found in the "Git" section on the CCPForge site. There is quite a
