@@ -175,7 +175,7 @@ CONTAINS
     END DO
 
     ! Fill in all the final arrays from the ref arrays
-    iz1 = coordinates(1) * nz - 1
+    iz1 = n_global_min(3) - 1
 
     DO iz = -1, nz + 2
       grav(iz) = grav_ref(iz1)
