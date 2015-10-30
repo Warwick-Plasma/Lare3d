@@ -299,9 +299,9 @@ CONTAINS
     ALLOCATE(yc(-1:ny+2), yb(-2:ny+2), dyc(-1:ny+1), dyb(-1:ny+2))
     ALLOCATE(zc(-1:nz+2), zb(-2:nz+2), dzc(-1:nz+1), dzb(-1:nz+2))
     ALLOCATE(grav(-1:nz+2))
-    ALLOCATE(jx_r(0:nx+1, 0:ny+1, 0:nz+1))
-    ALLOCATE(jy_r(0:nx+1, 0:ny+1, 0:nz+1))
-    ALLOCATE(jz_r(0:nx+1, 0:ny+1, 0:nz+1))
+    ALLOCATE(jx_r(0:nx, 0:ny, 0:nz))
+    ALLOCATE(jy_r(0:nx, 0:ny, 0:nz))
+    ALLOCATE(jz_r(0:nx, 0:ny, 0:nz))
 
     ALLOCATE(xb_global(-2:nx_global+2))
     ALLOCATE(yb_global(-2:ny_global+2))
