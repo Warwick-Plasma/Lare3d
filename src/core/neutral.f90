@@ -134,12 +134,12 @@ CONTAINS
     ! Set plasma below photosphere to be neutral so same sub-photospheric
     ! initial conditions can be used for ideal gas and partially ionized
     ! simulations.
-    IF (height <= 0.0_num) THEN
-      get_neutral = 1.0_num
-      RETURN
+!    IF (height <= 0.0_num) THEN
+!      get_neutral = 1.0_num
+!      RETURN
 !      t_rad = t_v
 !      dilution = 1.0_num
-    END IF
+!    END IF
 
     bof = 1.0_num / (dilution * f_bar * t_rad * SQRT(t_v)) &
         * EXP((0.25_num * (t_v / t_rad - 1.0_num) + 1.0_num) * T_bar / t_v)
