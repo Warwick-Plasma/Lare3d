@@ -57,7 +57,7 @@ CONTAINS
     ! temperature.
 
     REAL(num) :: f, xi_v, bxv, byv, bzv, bfieldsq, rho_v, t_v
-    INTEGER :: ixp, iyp, izp
+    INTEGER :: ixp, iyp, izp, ix2, iy2, iz2
 
     DO iz = 0, nz
       izp = iz + 1
@@ -92,12 +92,12 @@ CONTAINS
 
           ! Get the vertex temperature
           t_v = 0.0_num
-          DO izp = iz, iz + 1
-            DO iyp = iy, iy + 1
-              DO ixp = ix, ix + 1
-                t_v = t_v + (energy(ixp,iyp,izp) &
-                    - (1.0_num - xi_n(ixp,iyp,izp)) * ionise_pot) &
-                    / (2.0_num - xi_n(ixp,iyp,izp))
+          DO iz2 = iz, iz + 1
+            DO iy2 = iy, iy + 1
+              DO ix2 = ix, ix + 1
+                t_v = t_v + (energy(ix2,iy2,iz2) &
+                    - (1.0_num - xi_n(ix2,iy2,iz2)) * ionise_pot) &
+                    / (2.0_num - xi_n(ix2,iy2,iz2))
               END DO
             END DO
           END DO
