@@ -12,7 +12,7 @@ MODULE conduct
 
   INTEGER :: n_s_stages
   REAL(num),PARAMETER :: pow=5.0_num/2.0_num
-  REAL(num),PARAMETER :: min_b=1.0e-6_num
+  REAL(num),PARAMETER :: min_b=1.0e-10_num
   REAL(num) :: mult_local
 
 
@@ -22,25 +22,25 @@ CONTAINS
   ! Function calculating the number of stages needed for the RKL2
   !****************************************************************************
   FUNCTION calc_s_stages()
-    REAL (num)  ::  stages, dt_parab, dt1, dt2, dt3, temp
+    REAL(num)  ::  stages, dt_parab, dt1, dt2, dt3, temp
+    REAL(num) :: gm1
     INTEGER :: n_s_stages_local, nstages
     INTEGER :: calc_s_stages
 
     dt_parab = 1.e10_num
+    gm1 = 0.5_num * (gamma-1.0_num)
     DO iz = 1 , nz
       DO iy = 1 , ny
         DO ix = 1 , nx
           ! explicit TC time-step
-          temp = (gamma - 1.0_num) / (2.0_num - xi_n(ix,iy,iz)) &
-              * (energy(ix,iy,iz) - (1.0_num - xi_n(ix,iy,iz)) * ionise_pot)
+          temp = gm1 * energy(ix,iy,iz)
           dt1 = rho(ix,iy,iz)*dxb(ix)**2 / (2.0_num * kappa_0 * &
               temp**pow)
           dt2 = rho(ix,iy,iz)*dyb(iy)**2 / (2.0_num * kappa_0 * &
               temp**pow)
           dt3 = rho(ix,iy,iz)*dzb(iz)**2 / (2.0_num * kappa_0 * &
               temp**pow)
-          dt_parab = MIN(dt_parab, 1.0_num/(1.0_num/dt1 + 1.0_num/dt2 &
-              + 1.0_num/dt3))
+          dt_parab = MIN(dt_parab, dt1, dt2, dt3)
         END DO
       END DO
     END DO
@@ -69,14 +69,10 @@ CONTAINS
     INTEGER :: ix, ixp, ixm
     INTEGER :: iy, iyp, iym
     INTEGER :: iz, izp, izm
-    REAL(num) :: rho_b1, rho_b2
-    REAL(num) :: tg_a1, tg_a2, tg_b1, tg_b2, tb_m
-    REAL(num) :: fc_sp1, fc_sp2, fc_sa1, fc_sa2, fc1, fc2
-    REAL(num) :: byf1, byf2, bxf1, bxf2, bzf1, bzf2
-	REAL(num) :: modb1, modb2, tb1, tb2
-	REAL(num) :: tb_ap1, tb_ap2, tb_am1, tb_am2
-	REAL(num) :: tb_bp1, tb_bp2, tb_bm1, tb_bm2	
-	REAL(num) :: tg1, tg2
+    REAL(num) :: tb, tg, fc_sp, rho_b
+    REAL(num) :: tg_a1, tg_a2, tb_p, tb_m
+    REAL(num) :: fc_sa, fc, modb
+    REAL(num) :: byf, bxf, bzf
     REAL(num), DIMENSION(:,:), ALLOCATABLE :: temp
 
     flux=0.0_num
@@ -91,184 +87,134 @@ CONTAINS
           izm = iz - 1
 
           !X flux
-          byf1=0.25_num*(by(ixm,iy,iz)+by(ix,iy,iz)+&
-              by(ixm,iym,iz)+by(ix,iym,iz))		  
-          byf2=0.25_num*(by(ix,iy,iz)+by(ixp,iy,iz)+&
+          byf=0.25_num*(by(ix,iy,iz)+by(ixp,iy,iz)+&
               by(ix,iym,iz)+by(ixp,iym,iz))
-	      bzf1=0.25_num*(bz(ix,iy,iz)+bz(ixp,iy,iz)+&
-	              bz(ix,iy,izm)+by(ixp,iy,izm))			  			  
-          bzf2=0.25_num*(bz(ixm,iy,iz)+bz(ix,iy,iz)+&
-              bz(ixm,iy,izm)+by(ix,iy,izm))
+          bzf=0.25_num*(bz(ix,iy,iz)+bz(ixp,iy,iz)+&
+              bz(ix,iy,izm)+by(ixp,iy,izm))
 
-          modb1=SQRT(bx(ixm,iy,iz)**2+byf1**2+bzf1**2)
-          modb2=SQRT(bx(ix,iy,iz)**2+byf2**2+bzf2**2)
+          modb=SQRT(bx(ix,iy,iz)**2+byf**2+bzf**2)
 
           !Braginskii Conductive Flux in X
           !Temperature at the x boundaries in the current cell
-          tb1 = (temperature(ix,iy,iz) + temperature(ixm,iy,iz))/2.0_num		  
-          tb2 = (temperature(ixp,iy,iz) + temperature(ix,iy,iz))/2.0_num
-          !Temperature at the x boundaries in the cell y+
-          tb_ap1 = (temperature(ix,iyp,iz)+temperature(ixm,iyp,iz))/2.0_num
-          tb_ap2 = (temperature(ixp,iyp,iz)+temperature(ix,iyp,iz))/2.0_num
-          !Temperature at the x boundaries in the cell y-
-          tb_am1 = (temperature(ix,iym,iz)+temperature(ixm,iym,iz))/2.0_num
-          tb_am2 = (temperature(ixp,iym,iz)+temperature(ix,iym,iz))/2.0_num
-          !Temperature at the x boundaries in the cell z+
-          tb_bp1 = (temperature(ix,iy,izp)+temperature(ixm,iy,izp))/2.0_num
-          tb_bp2 = (temperature(ixp,iy,izp)+temperature(ix,iy,izp))/2.0_num
-          !Temperature at the x boundaries in the cell z-
-          tb_bm1 = (temperature(ix,iy,izm)+temperature(ixm,iy,izm))/2.0_num
-          tb_bm2 = (temperature(ixp,iy,izm)+temperature(ix,iy,izm))/2.0_num		  
-          !X temperature gradient at the x boundaries of the current cell
-          tg1 = (temperature(ix,iy,iz) - temperature(ixm,iy,iz))/dxc(ixm)		  
-          tg2 = (temperature(ixp,iy,iz) - temperature(ix,iy,iz))/dxc(ix)
+          tb = (temperature(ixp,iy,iz) + temperature(ix,iy,iz))/2.0_num
+          !Temperature at the x boundaries in the cell above
+          tb_p = (temperature(ixp,iyp,iz)+temperature(ix,iyp,iz))/2.0_num
+          !Temperature at the x boundaries in the cell below
+          tb_m = (temperature(ixp,iym,iz)+temperature(ix,iym,iz))/2.0_num
           !Y temperature gradient at the x boundaries of the current cell
           !Uses centred difference on averaged values, so likely very smoothed
-          tg_a1 = (tb_ap1-tb_am1)/(dyc(iym)+dyc(iy))		  
-          tg_a2 = (tb_ap2-tb_am2)/(dyc(iym)+dyc(iy))
+          tg_a1 = (tb_p-tb_m)/(dyc(iy)+dyc(iym))
+          !Temperature at the x boundaries in the cell front
+          tb_p = (temperature(ixp,iy,izp)+temperature(ix,iy,izp))/2.0_num
+          !Temperature at the x boundaries in the cell back
+          tb_m = (temperature(ixp,iy,izm)+temperature(ix,iy,izm))/2.0_num
           !Z temperature gradient at the x boundaries of the current cell
           !Uses centred difference on averaged values, so likely very smoothed
-          tg_b1 = (tb_bp1-tb_bm1)/(dzc(izm)+dzc(iz))		  
-          tg_b2 = (tb_bp2-tb_bm2)/(dzc(izm)+dzc(iz))
-		  
-          fc_sp1 = kappa_0 * tb1**pow * (bx(ixm,iy,iz) * (tg1 * bx(ixm,iy,iz) + &
-              tg_a1 * byf1 + tg_b1 * bzf1)+tg1*min_b)/(modb1**2+min_b)
-			  
-          fc_sp2 = kappa_0 * tb2**pow * (bx(ix,iy,iz) * (tg2 * bx(ix,iy,iz) + &
-	          tg_a2 * byf2 + tg_b2 * bzf2)+tg2*min_b)/(modb2**2+min_b)
-			  
+          tg_a2 = (tb_p - tb_m)/(dzc(iz)+dzc(izm))
+
+          !X temperature gradient at the x boundaries of the current cell
+          tg = (temperature(ixp,iy,iz) - temperature(ix,iy,iz))/dxc(ix)
+
+          fc_sp = kappa_0 * tb**pow * (bx(ix,iy,iz) * (tg * bx(ix,iy,iz) + &
+              tg_a1 * byf + tg_a2 * bzf)+tg*min_b)/(modb**2+min_b)
+
           ! Saturated Conductive Flux
-          rho_b1 = (rho(ix,iy,iz)+rho(ixm,iy,iz))/2.0_num		  
-          rho_b2 = (rho(ixp,iy,iz)+rho(ix,iy,iz))/2.0_num
-          fc_sa1 = 42.85_num * rho_b1 * tb1**(1.5_num)  !42.85 = SRQT(m_p/m_e)
-          fc_sa2 = 42.85_num * rho_b2 * tb2**(1.5_num)
+          rho_b = (rho(ixp,iy,iz)+rho(ix,iy,iz))/2.0_num
+          fc_sa =  42.85_num * rho_b * tb**(3.0_num/2.0_num)  !42.85 = SRQT(m_p/m_e)
 
           ! Conductive Flux Limiter
-		  fc1 = 1.0_num / (1.0_num/fc_sp1 + flux_limiter/fc_sa1)
-		  fc2 = 1.0_num / (1.0_num/fc_sp2 + flux_limiter/fc_sa2)
-		  
-		  flux(ix,iy,iz) = (fc2-fc1)/dxb(ix)
+          fc = 1.0_num/(1.0_num/fc_sp + flux_limiter/fc_sa)
+
+          flux(ix,iy,iz) = flux(ix,iy,iz) +fc/dxb(ix)
+          flux(ixp,iy,iz) = flux(ixp,iy,iz) - fc/dxb(ix)
 
 
           !Y flux
-          bxf1=0.25_num*(bx(ixm,iym,iz)+bx(ix,iym,iz)+&
-              bx(ix,iy,iz)+bx(ixm,iy,iz))		  
-          bxf2=0.25_num*(bx(ixm,iy,iz)+bx(ix,iy,iz)+&
-              bx(ix,iyp,iz)+bx(ixm,iyp,iz))
-	      bzf1=0.25_num*(bz(ix,iy,iz)+bz(ix,iyp,iz)+&
-	              bz(ix,iyp,izm)+by(ix,iy,iz))
-	      bzf2=0.25_num*(bz(ix,iym,iz)+bz(ix,iy,iz)+&
-	              bz(ix,iy,izm)+by(ix,iym,iz))
+          bxf=0.25_num*(bx(ix,iy,iz)+bx(ix,iyp,iz)+&
+              bx(ixm,iy,iz)+bx(ixm,iyp,iz))
+          bzf=0.25_num*(bz(ix,iy,iz)+bz(ix,iyp,iz)+&
+              bz(ix,iy,izm)+bz(ix,iyp,izm))
 
-          modb1=SQRT(bxf1**2+by(ix,iym,iz)**2+bzf1**2)
-          modb2=SQRT(bxf2**2+by(ix,iy,iz)**2+bzf2**2)
+          modb=SQRT(bxf**2+by(ix,iy,iz)**2+bzf**2)
 
           !Braginskii Conductive Flux in Y
           !Temperature at the y boundaries in the current cell
-          tb1 = (temperature(ix,iy,iz) + temperature(ix,iym,iz))/2.0_num		  
-          tb2 = (temperature(ix,iyp,iz) + temperature(ix,iy,iz))/2.0_num
-          !Temperature at the y boundaries in the cell x+
-          tb_ap1 = (temperature(ixp,iy,iz)+temperature(ixp,iym,iz))/2.0_num
-          tb_ap2 = (temperature(ixp,iyp,iz)+temperature(ixp,iy,iz))/2.0_num
-          !Temperature at the y boundaries in the cell x-
-          tb_am1 = (temperature(ixm,iy,iz)+temperature(ixm,iym,iz))/2.0_num
-          tb_am2 = (temperature(ixm,iyp,iz)+temperature(ixm,iy,iz))/2.0_num
-          !Temperature at the y boundaries in the cell z+
-          tb_bp1 = (temperature(ix,iy,izp)+temperature(ix,iym,izp))/2.0_num
-          tb_bp2 = (temperature(ix,iyp,izp)+temperature(ix,iy,izp))/2.0_num
-          !Temperature at the y boundaries in the cell z-
-          tb_bm1 = (temperature(ix,iy,izm)+temperature(ix,iym,izm))/2.0_num
-          tb_bm2 = (temperature(ix,iyp,izm)+temperature(ix,iy,izm))/2.0_num		  
-          !Y temperature gradient at the y boundaries of the current cell
-          tg1 = (temperature(ix,iy,iz) - temperature(ix,iym,iz))/dyc(iym)
-          tg2 = (temperature(ix,iyp,iz) - temperature(ix,iy,iz))/dyc(iy)
+          tb = (temperature(ix,iyp,iz) + temperature(ix,iy,iz))/2.0_num
+          !Temperature at the y boundaries in the cell right
+          tb_p = (temperature(ixp,iy,iz)+temperature(ixp,iyp,iz))/2.0_num
+          !Temperature at the y boundaries in the cell left
+          tb_m = (temperature(ixm,iyp,iz)+temperature(ixm,iy,iz))/2.0_num
           !X temperature gradient at the y boundaries of the current cell
           !Uses centred difference on averaged values, so likely very smoothed
-          tg_a1 = (tb_ap1-tb_am1)/(dxc(ixm)+dxc(ix))		  
-          tg_a2 = (tb_ap2-tb_am2)/(dxc(ixm)+dxc(ix))
+          tg_a1 = (tb_p-tb_m)/(dxc(ix)+dxc(ixm))
+
+          !Temperature at the y boundaries in the cell front
+          tb_p = (temperature(ix,iyp,izp)+temperature(ix,iy,izp))/2.0_num
+          !Temperature at the x boundaries in the cell back
+          tb_m = (temperature(ix,iyp,izm)+temperature(ix,iy,izm))/2.0_num
           !Z temperature gradient at the y boundaries of the current cell
           !Uses centred difference on averaged values, so likely very smoothed
-          tg_b1 = (tb_bp1-tb_bm1)/(dzc(izm)+dzc(iz))		  
-          tg_b2 = (tb_bp2-tb_bm2)/(dzc(izm)+dzc(iz))
-		  
-          fc_sp1 = kappa_0 * tb1**pow * (by(ix,iym,iz) * (tg1 * by(ix,iym,iz) + &
-              tg_a1 * bxf1 + tg_b1 * bzf1)+tg1*min_b)/(modb1**2+min_b)
-			  
-          fc_sp2 = kappa_0 * tb2**pow * (by(ix,iy,iz) * (tg2 * by(ix,iy,iz) + &
-	          tg_a2 * bxf2 + tg_b2 * bzf2)+tg2*min_b)/(modb2**2+min_b)
-			  
+          tg_a2 = (tb_p-tb_m)/(dzc(iz)+dzc(izm))
+
+          !X temperature gradient at the y boundaries of the current cell
+          tg = (temperature(ix,iyp,iz) - temperature(ix,iy,iz))/dyc(iy)
+
+
+          fc_sp = kappa_0 * tb**pow * (by(ix,iy,iz) * (tg * by(ix,iy,iz) + &
+              tg_a1 * bxf + tg_a2 * bzf)+tg*min_b)/(modb**2+min_b)
+
           ! Saturated Conductive Flux
-          rho_b1 = (rho(ix,iy,iz)+rho(ix,iym,iz))/2.0_num		  
-          rho_b2 = (rho(ix,iyp,iz)+rho(ix,iy,iz))/2.0_num
-          fc_sa1 = 42.85_num * rho_b1 * tb1**(1.5_num)  !42.85 = SRQT(m_p/m_e)
-          fc_sa2 = 42.85_num * rho_b2 * tb2**(1.5_num)
+          rho_b = (rho(ix,iyp,iz)+rho(ix,iy,iz))/2.0_num
+          fc_sa = 42.85_num * rho_b * tb**(3.0_num/2.0_num)  !42.85 = SRQT(m_p/m_e)
 
           ! Conductive Flux Limiter
-		  fc1 = 1.0_num / (1.0_num/fc_sp1 + flux_limiter/fc_sa1)
-		  fc2 = 1.0_num / (1.0_num/fc_sp2 + flux_limiter/fc_sa2)
-		  
-		  flux(ix,iy,iz) = (fc2-fc1)/dyb(iy)
-		  
-		  
-		  
-          !Z flux
-          bxf1=0.25_num*(bx(ix,iy,izm)+bx(ix,iy,iz)+&
-              bx(ixm,iy,iz)+bx(ixm,iy,izm))
-          bxf2=0.25_num*(bx(ix,iy,iz)+bx(ix,iy,izp)+&
-              bx(ixm,iy,izp)+bx(ixm,iy,iz))
-	      byf2=0.25_num*(by(ix,iy,iz)+by(ix,iy,izp)+&
-              by(ix,iym,izp)+by(ix,iym,iz))
-	      byf2=0.25_num*(by(ix,iy,izm)+by(ix,iy,iz)+&
-                  by(ix,iym,iz)+by(ix,iym,izm))
+          fc = 1.0_num/(1.0_num/fc_sp + flux_limiter/fc_sa)
 
-          modb1=SQRT(bxf1**2+byf1**2+bz(ix,iy,izm)**2)
-          modb2=SQRT(bxf2**2+byf2**2+bz(ix,iy,iz)**2)
+          flux(ix,iy,iz) = flux(ix,iy,iz) +fc/dyb(iy)
+          flux(ix,iyp,iz) = flux(ix,iyp,iz) - fc/dyb(iy)
+
+          !Z flux
+          bxf=0.25_num*(bx(ix,iy,iz)+bx(ix,iy,izp)+&
+              bx(ixm,iy,iz)+bx(ixm,iy,izp))
+          byf=0.25_num*(by(ix,iy,iz)+by(ix,iy,izp)+&
+              by(ix,iym,iz)+by(ix,iym,izp))
+
+          modb=SQRT(bxf**2+byf**2+bz(ix,iy,iz)**2)
 
           !Braginskii Conductive Flux in Z
           !Temperature at the z boundaries in the current cell
-          tb1 = (temperature(ix,iy,iz) + temperature(ix,iy,izm))/2.0_num		  
-          tb2 = (temperature(ix,iy,izp) + temperature(ix,iy,iz))/2.0_num
-          !Temperature at the z boundaries in the cell x+
-          tb_ap1 = (temperature(ixp,iy,iz)+temperature(ixp,iy,izm))/2.0_num
-          tb_ap2 = (temperature(ixp,iy,izp)+temperature(ixp,iy,iz))/2.0_num
-          !Temperature at the z boundaries in the cell x-
-          tb_am1 = (temperature(ixm,iy,iz)+temperature(ixm,iy,izm))/2.0_num
-          tb_am2 = (temperature(ixm,iy,izp)+temperature(ixm,iy,iz))/2.0_num
-          !Temperature at the z boundaries in the cell y+
-          tb_bp1 = (temperature(ix,iyp,iz)+temperature(ix,iyp,izm))/2.0_num
-          tb_bp2 = (temperature(ix,iyp,izp)+temperature(ix,iyp,iz))/2.0_num
-          !Temperature at the z boundaries in the cell y-
-          tb_bm1 = (temperature(ix,iym,iz)+temperature(ix,iym,izm))/2.0_num
-          tb_bm2 = (temperature(ix,iym,izp)+temperature(ix,iym,iz))/2.0_num		  
-          !Z temperature gradient at the z boundaries of the current cell
-          tg1 = (temperature(ix,iy,iz) - temperature(ix,iy,izm))/dzc(izm)
-          tg2 = (temperature(ix,iy,izp) - temperature(ix,iy,iz))/dzc(iz)
+          tb = (temperature(ix,iy,izp) + temperature(ix,iy,iz))/2.0_num
+          !Temperature at the z boundaries in the cell right
+          tb_p = (temperature(ixp,iy,izp)+temperature(ixp,iy,iz))/2.0_num
+          !Temperature at the z boundaries in the cell left
+          tb_m = (temperature(ixm,iy,izp)+temperature(ixm,iy,iz))/2.0_num
           !X temperature gradient at the z boundaries of the current cell
           !Uses centred difference on averaged values, so likely very smoothed
-          tg_a1 = (tb_ap1-tb_am1)/(dxc(ixm)+dxc(ix))		  
-          tg_a2 = (tb_ap2-tb_am2)/(dxc(ixm)+dxc(ix))
-          !Y temperature gradient at the y boundaries of the current cell
+          tg_a1 = (tb_p-tb_m)/(dxc(ix)+dxc(ixm))
+
+          !Temperature at the z boundaries in the cell up
+          tb_p = (temperature(ix,iyp,izp)+temperature(ix,iyp,iz))/2.0_num
+          !Temperature at the z boundaries in the cell down
+          tb_m = (temperature(ix,iym,izp)+temperature(ix,iym,iz))/2.0_num
+          !Y temperature gradient at the z boundaries of the current cell
           !Uses centred difference on averaged values, so likely very smoothed
-          tg_b1 = (tb_bp1-tb_bm1)/(dyc(iym)+dyc(iy))		  
-          tg_b2 = (tb_bp2-tb_bm2)/(dyc(iym)+dyc(iy))
-		  
-          fc_sp1 = kappa_0 * tb1**pow * (bz(ix,iy,izm) * (tg1 * bz(ix,iy,izm) + &
-              tg_a1 * bxf1 + tg_b1 * byf1)+tg1*min_b)/(modb1**2+min_b)
-			  
-          fc_sp2 = kappa_0 * tb2**pow * (bz(ix,iy,iz) * (tg2 * bz(ix,iy,iz) + &
-	          tg_a2 * bxf2 + tg_b2 * byf2)+tg2*min_b)/(modb2**2+min_b)
-			  
+          tg_a2 = (tb_p-tb_m)/(dyc(iy)+dyc(iym))
+
+          !X temperature gradient at the x boundaries of the current cell
+          tg = (temperature(ix,iy,izp) - temperature(ix,iy,iz))/dzc(iz)
+
+          fc_sp = kappa_0 * tb**pow * (bz(ix,iy,iz) * (tg * bz(ix,iy,iz) + &
+              tg_a1 * bxf + tg_a2 * byf)+tg*min_b)/(modb**2+min_b)
+
           ! Saturated Conductive Flux
-          rho_b1 = (rho(ix,iy,iz)+rho(ix,iy,izm))/2.0_num		  
-          rho_b2 = (rho(ix,iy,izp)+rho(ix,iy,iz))/2.0_num
-          fc_sa1 = 42.85_num * rho_b1 * tb1**(1.5_num)  !42.85 = SRQT(m_p/m_e)
-          fc_sa2 = 42.85_num * rho_b2 * tb2**(1.5_num)
+          rho_b = (rho(ix,iy,izp)+rho(ix,iy,iz))/2.0_num
+          fc_sa = 42.85_num * rho_b * tb**(3.0_num/2.0_num)  !42.85 = SRQT(m_p/m_e)
 
           ! Conductive Flux Limiter
-		  fc1 = 1.0_num / (1.0_num/fc_sp1 + flux_limiter/fc_sa1)
-		  fc2 = 1.0_num / (1.0_num/fc_sp2 + flux_limiter/fc_sa2)
-		  
-		  flux(ix,iy,iz) = (fc2-fc1)/dzb(iz)
+          fc = 1.0_num/(1.0_num/fc_sp + flux_limiter/fc_sa)
+
+          flux(ix,iy,iz) = flux(ix,iy,iz) + fc/dzb(iz)
+          flux(ix,iy,izp) = flux(ix,iy,izp) - fc/dzb(iz)
         END DO
       END DO
     END DO
@@ -315,7 +261,6 @@ CONTAINS
     REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: en_windback, nf_windback
     LOGICAL :: windback, woundback
 
-    !3D seems to be a bit more sensitive on multiplier, so implement a windback mechanism
     windback=.TRUE.
     woundback=.FALSE.
     ALLOCATE(en_windback(-1:nx+2,-1:ny+2,-1:nz+2))
@@ -327,6 +272,7 @@ CONTAINS
       windback=.FALSE.
       n_s_stages = calc_s_stages()
       CALL heat_conduct_sts2(windback)
+!      windback=.FALSE.
       IF(.NOT. windback) EXIT
       woundback=.TRUE.
       mult_local=mult_local*0.9_num
