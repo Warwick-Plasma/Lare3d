@@ -225,7 +225,7 @@ CONTAINS
     CALL MPI_SENDRECV(flux(nx+1,:,:),(ny+4)*(nz+4),mpireal,&
         proc_x_max,tag,temp,(ny+4)*(nz+4),mpireal, &
         proc_x_min,tag, comm, status, errcode)
-    flux(:,1,:)=flux(:,1,:)+temp
+    flux(1,:,:)=flux(1,:,:)+temp
     DEALLOCATE(temp)
 
     !Send and add the flux on the y face
