@@ -242,7 +242,7 @@ FORCE:
 # All the dependencies
 
 boundary.o: boundary.f90 mpiboundary.o shared_data.o
-conduct.o: conduct.f90 boundary.o shared_data.o
+conduct.o: conduct.f90 boundary.o neutral.o shared_data.o
 control.o: control.f90 normalise.o shared_data.o
 diagnostics.o: diagnostics.F90 boundary.o conduct.o shared_data.o \
   version_data.o $(SDFMOD)
