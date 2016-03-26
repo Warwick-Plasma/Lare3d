@@ -155,7 +155,7 @@ CONTAINS
 
       IF (eos_number /= EOS_IDEAL) THEN
         DO iz = 0, nz_global
-          xi_v = get_neutral(temp_ref(iz), rho_ref(iz), zb(iz))
+          xi_v = get_neutral(temp_ref(iz), rho_ref(iz), zb_global(iz))
           r1 = mu_m(iz)
           mu_m(iz) = 1.0_num / (2.0_num - xi_v)
           maxerr = MAX(maxerr, ABS(mu_m(iz) - r1))
