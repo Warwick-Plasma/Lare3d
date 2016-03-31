@@ -169,6 +169,7 @@ CONTAINS
     END IF
 
     CALL sdf_open(sdf_handle, full_filename, comm, c_sdf_write)
+    CALL sdf_set_string_length(sdf_handle, c_max_string_length)
     CALL sdf_write_header(sdf_handle, TRIM(c_code_name), 1, step, time, &
         restart_flag, jobid)
     CALL sdf_write_run_info(sdf_handle, c_version, c_revision, c_minor_rev, &
