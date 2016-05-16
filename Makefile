@@ -77,7 +77,7 @@ ifeq ($(strip $(COMPILER)),gfortran)
       endif
     endif
   endif
-  MODULEFLAG = -I/usr/include -I$(OBJDIR) -J$(OBJDIR)
+  MODULEFLAG = -I/usr/local/include -I$(OBJDIR) -J$(OBJDIR)
 endif
 
 # g95
@@ -134,7 +134,10 @@ DEFINES := $(DEFINE)
 # the above line modifying the code behaviour at compile time.
 
 # Uncomment the following line to use Qmono viscosity
-#DEFINES += $(D)QMONO
+#DEFINES += $(D)SHOCKLIMITER
+
+# Uncomment the following line to allow shock viscosity in expanding shocks
+#DEFINES += $(D)EXPANDINGSHOCK
 
 # Uncomment the following line to run in single precision
 #DEFINES += $(D)SINGLE
