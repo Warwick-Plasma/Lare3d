@@ -656,7 +656,6 @@ CONTAINS
 #endif
     WRITE(stat_unit,*) 'linear viscosity coeff = ', visc1
     WRITE(stat_unit,*) 'quadratic viscosity coeff = ', visc2
-    WRITE(stat_unit,*) 'uniform tensor viscosity coeff = ', visc3
     WRITE(stat_unit,*) 'j_max = ', j_max
     WRITE(stat_unit,*) 'eta0 = ', eta0
     WRITE(stat_unit,*) 'eta_background = ', eta_background
