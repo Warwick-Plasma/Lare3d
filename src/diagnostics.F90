@@ -15,7 +15,7 @@ MODULE diagnostics
 
   PRIVATE
 
-  PUBLIC :: set_dt, output_routines, energy_correction, write_file, setup_files
+  PUBLIC :: output_routines, energy_correction, write_file, setup_files
 
   REAL(dbl) :: visc_heating
   LOGICAL, SAVE :: visc_heating_updated = .FALSE.
@@ -473,120 +473,6 @@ CONTAINS
 
   END SUBROUTINE io_test
 
-
-
-  !****************************************************************************
-  ! Sets CFL limited step
-  !****************************************************************************
-
-  SUBROUTINE set_dt
-
-    ! Assumes all variables are defined at the same point. Be careful with
-    ! setting 'dt_multiplier' if you expect massive changes across cells.
-
-    REAL(num) :: vxbm, vxbp, avxm, avxp, dvx, ax
-    REAL(num) :: vybm, vybp, avym, avyp, dvy, ay
-    REAL(num) :: vzbm, vzbp, avzm, avzp, dvz, az
-    REAL(num) :: cons, cs, volume
-    REAL(num) :: dxlocal, dt_local, dtr_local, dt1, dt2, dt3
-    REAL(num) :: dt_locals(2), dt_min(2)
-    LOGICAL, SAVE :: first = .TRUE.
-
-    IF (first) THEN
-      first = .FALSE.
-      IF (restart) THEN
-        dt = dt_from_restart
-        RETURN
-      END IF
-    END IF
-
-    dt_local = largest_number
-    dtr_local = largest_number
-    cons = gamma * (gamma - 1.0_num)
-
-    DO iz = 0, nz
-      izm = iz - 1
-      DO iy = 0, ny
-        iym = iy - 1
-        DO ix = 0, nx
-          ixm = ix - 1
-
-          ! Fix dt for Lagrangian step
-          w1 = bx(ix,iy,iz)**2 + by(ix,iy,iz)**2 + bz(ix,iy,iz)**2
-          ! Sound speed squared
-          cs = cons * energy(ix,iy,iz)
-
-          w2 = SQRT(cs + w1 / MAX(rho(ix,iy,iz), none_zero) &
-              + 2.0_num * p_visc(ix,iy,iz) / MAX(rho(ix,iy,iz), none_zero))
-
-          ! Find ideal MHD CFL limit for Lagrangian step
-          dt1 = MIN(dxb(ix), dyb(iy), dzb(iz)) / w2
-          dt_local = MIN(dt_local, dt1)
-
-          ! Now find dt for remap step
-          ax = 0.25_num * dyb(iy) * dzb(iz)
-          ay = 0.25_num * dxb(ix) * dzb(iz)
-          az = 0.25_num * dxb(ix) * dyb(iy)
-          vxbm = (vx(ixm,iy ,iz ) + vx(ixm,iym,iz ) &
-              +   vx(ixm,iy ,izm) + vx(ixm,iym,izm)) * ax
-          vxbp = (vx(ix ,iy ,iz ) + vx(ix ,iym,iz ) &
-              +   vx(ix ,iy ,izm) + vx(ix ,iym,izm)) * ax
-          vybm = (vy(ix ,iym,iz ) + vy(ixm,iym,iz ) &
-              +   vy(ix ,iym,izm) + vy(ixm,iym,izm)) * ay
-          vybp = (vy(ix ,iy ,iz ) + vy(ixm,iy ,iz ) &
-              +   vy(ix ,iy ,izm) + vy(ixm,iy ,izm)) * ay
-          vzbm = (vz(ix ,iy ,izm) + vz(ixm,iy ,izm) &
-              +   vz(ix ,iym,izm) + vz(ixm,iym,izm)) * az
-          vzbp = (vz(ix ,iy ,iz ) + vz(ixm,iy ,iz ) &
-              +   vz(ix ,iym,iz ) + vz(ixm,iym,iz )) * az
-
-          dvx = ABS(vxbp - vxbm)
-          dvy = ABS(vybp - vybm)
-          dvz = ABS(vzbp - vzbm)
-          avxm = ABS(vxbm)
-          avxp = ABS(vxbp)
-          avym = ABS(vybm)
-          avyp = ABS(vybp)
-          avzm = ABS(vzbm)
-          avzp = ABS(vzbp)
-
-          volume = ax * dxb(ix)
-          dt1 = volume / MAX(avxm, avxp, dvx, 1.e-10_num * volume)
-          dt2 = volume / MAX(avym, avyp, dvy, 1.e-10_num * volume)
-          dt3 = volume / MAX(avzm, avzp, dvz, 1.e-10_num * volume)
-
-          ! Fix dt for remap step
-          dt_local = MIN(dt_local, dt1, dt2, dt3)
-
-          ! Note resistive limits assumes uniform resistivity hence cautious
-          ! factor 0.2
-          dxlocal = 1.0_num / (1.0_num / dxb(ix)**2 &
-              + 1.0_num / dyb(iy)**2 + 1.0_num / dzb(iz)**2)
-
-          IF (cowling_resistivity) THEN
-            dt1 = 0.2_num * dxlocal &
-                / MAX(MAX(eta(ix,iy,iz), eta_perp(ix,iy,iz)), none_zero)
-          ELSE
-            dt1 = 0.2_num * dxlocal / MAX(eta(ix,iy,iz), none_zero)
-          END IF
-
-          ! Adjust to accomodate resistive effects
-          dtr_local = MIN(dtr_local, dt1)
-        END DO
-      END DO
-    END DO
-
-    dt_locals(1) = dt_local
-    dt_locals(2) = dtr_local
-
-    CALL MPI_ALLREDUCE(dt_locals, dt_min, 2, mpireal, MPI_MIN, comm, errcode)
-
-    dt  = dt_multiplier * dt_min(1)
-    dtr = dt_multiplier * dt_min(2)
-
-    time = time + dt
-
-  END SUBROUTINE set_dt
 
 
 
