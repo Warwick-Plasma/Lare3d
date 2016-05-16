@@ -39,7 +39,7 @@ CONTAINS
     REAL(num) :: betafs = 0.25_num, yfsl = -10.0_num, yfsu = -1.0_num
     REAL(num) :: wtr = 0.6_num, wfsl = 0.5_num, wfsu = 0.5_num
     REAL(num) :: r1, maxerr, xi_v
-    REAL(num) :: amp, wptb, fac, theta
+    REAL(num) :: amp, wptb
     REAL(num), DIMENSION(:), ALLOCATABLE :: zc_global, dzb_global, dzc_global
     REAL(num), DIMENSION(:), ALLOCATABLE :: grav_ref, temp_ref, rho_ref
     REAL(num), DIMENSION(:), ALLOCATABLE :: beta_ref, mag_ref, mu_m
@@ -155,7 +155,7 @@ CONTAINS
 
       IF (eos_number /= EOS_IDEAL) THEN
         DO iz = 0, nz_global
-          xi_v = get_neutral(temp_ref(iz), rho_ref(iz), zb_global(iz))
+          xi_v = get_neutral(temp_ref(iz), rho_ref(iz))
           r1 = mu_m(iz)
           mu_m(iz) = 1.0_num / (2.0_num - xi_v)
           maxerr = MAX(maxerr, ABS(mu_m(iz) - r1))
@@ -186,7 +186,7 @@ CONTAINS
           bx(ix,iy,iz) = mag_ref(iz1)
 
           IF (eos_number /= EOS_IDEAL) THEN
-            xi_v = get_neutral(energy(ix,iy,iz), rho(ix,iy,iz), zb(iz))
+            xi_v = get_neutral(energy(ix,iy,iz), rho(ix,iy,iz))
           ELSE
             IF (neutral_gas) THEN
               xi_v = 1.0_num

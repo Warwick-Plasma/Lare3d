@@ -296,7 +296,6 @@ CONTAINS
     !2nd order Runge-Kutta-Lagrange (RKL2) scheme
     !Based on Meyer at al. 2012 variables named as in that paper
     LOGICAL, INTENT(INOUT) :: windback
-    REAL(num) :: pow=5.0_num/2.0_num
     REAL(num), DIMENSION(:,:,:), ALLOCATABLE  :: flux
     REAL(num)  ::  omega_1
     REAL(num), DIMENSION(0:n_s_stages)  :: a, b
@@ -304,8 +303,6 @@ CONTAINS
     REAL(num), DIMENSION(2:n_s_stages)  :: mu, nu, gamma_tilde
     REAL(num), DIMENSION(:,:,:,:), ALLOCATABLE  :: Y             ! intermediate solutions Y=[Y_0, Y_j-2, Y_j-1 , Y_j]
     REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: temperature
-    REAL(num)  ::  tb1, tb2, tg1, tg2                  ! temperature gradient and temperature on the boundary
-    REAL(num)  ::  rho_b1, rho_b2                      ! density on the boundary
     REAL(num)  ::  c0, c1
     REAL(num)  ::  Lc_Yj_1                  ! L^c(Y_j-1)
     REAL(num), DIMENSION(:,:,:), ALLOCATABLE  :: Lc_Y0    ! L^c(Y_0)
@@ -454,7 +451,7 @@ CONTAINS
     IF (.NOT. radiation) RETURN
     IF (height < 1.0_num) RETURN
 
-!    tmk = temperature * t2tmk
+    tmk = temperature * t2tmk
     IF (tmk < trange(1) .OR. tmk > trange(7)) RETURN
 
     DO i = 1, 6
@@ -480,36 +477,9 @@ CONTAINS
 
     REAL(num), INTENT(IN) :: density, t0
     REAL(num) :: heating
-    REAL(num) :: tmk, a1, a2, rad, alf, height
-    LOGICAL, SAVE :: first_call = .TRUE.
+    REAL(num) :: tmk
     REAL(num) :: heat0 = 0.0_num
     REAL(num) :: rho_coronal = 0.0_num
-    LOGICAL :: store_state
-    INTEGER :: loop
-
-    IF (first_call) THEN
-      a1 = 0.0_num
-      IF (proc_y_max == MPI_PROC_NULL) THEN
-        store_state = radiation
-        radiation = .TRUE.
-!        CALL rad_losses(rho(1,1,nz), temperature(1,1,nz), &
-!                        xi_n(1,1,nz), zc(nz), rad, alf)
-        radiation = store_state
-        a1 = rad / rho(1,1,nz)**2
-      END IF
-
-      CALL MPI_ALLREDUCE(a1, heat0, 1, mpireal, MPI_MAX, comm, errcode)
-
-      ! Choose a reference density based on height
-      height = 15.0_num
-      a2 = 0.0_num
-      DO loop = 1, nz
-        IF (zb(loop) >= height .AND. zb(loop-1) < height) a2 = rho(1,1,loop)
-      END DO
-      CALL MPI_ALLREDUCE(a2, rho_coronal, 1, mpireal, MPI_MAX, comm, errcode)
-
-      first_call = .FALSE.
-    END IF
 
     heating = 0.0_num
     IF (.NOT. coronal_heating) RETURN

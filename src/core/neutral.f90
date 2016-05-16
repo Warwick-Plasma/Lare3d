@@ -104,7 +104,7 @@ CONTAINS
 
           t_v = t_v * (gamma - 1.0_num) / 8.0_num
 
-          xi_v = get_neutral(t_v, rho_v, yb(iy))
+          xi_v = get_neutral(t_v, rho_v)
 
           f = MAX(1.0_num - xi_v, none_zero)
           IF (f > 0) THEN
@@ -123,23 +123,14 @@ CONTAINS
 
 
 
-  FUNCTION get_neutral(t_v, rho_v, height)
+  FUNCTION get_neutral(t_v, rho_v)
 
-    REAL(num), INTENT(IN) :: t_v, rho_v, height
+    REAL(num), INTENT(IN) :: t_v, rho_v
     REAL(num) :: get_neutral
     REAL(num) :: bof, r, t_rad, dilution
 
     t_rad = tr
     dilution = 0.5_num
-    ! Set plasma below photosphere to be neutral so same sub-photospheric
-    ! initial conditions can be used for ideal gas and partially ionized
-    ! simulations.
-!    IF (height <= 0.0_num) THEN
-!      get_neutral = 1.0_num
-!      RETURN
-!      t_rad = t_v
-!      dilution = 1.0_num
-!    END IF
 
     bof = 1.0_num / (dilution * f_bar * t_rad * SQRT(t_v)) &
         * EXP((0.25_num * (t_v / t_rad - 1.0_num) + 1.0_num) * T_bar / t_v)
@@ -175,14 +166,14 @@ CONTAINS
           DO loop = 1, 100
             dx = dx / 2.0_num
             x = t  + dx
-            xi_a = get_neutral(x, rho0, zb(iz))
+            xi_a = get_neutral(x, rho0)
             fa = x - (gamma - 1.0_num) &
                 * (e0 - (1.0_num - xi_a) * ionise_pot) / (2.0_num - xi_a)
             IF (fa <= 0.0_num) t = x
             IF (ABS(dx) < 1.e-8_num .OR. ABS(fa) < 1.e-8_num) EXIT
           END DO
 
-          xi_n(ix,iy,iz) = get_neutral(x, rho0, zb(iz))
+          xi_n(ix,iy,iz) = get_neutral(x, rho0)
         END DO
       END DO
     END DO
