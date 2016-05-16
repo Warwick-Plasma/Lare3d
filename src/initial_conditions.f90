@@ -206,18 +206,13 @@ CONTAINS
     amp = 0.01_num
     wptb = 20.0_num
 
-    DO iz = 1, nz
-      IF (zc_global(iz) > -10.0_num .AND. zc_global(iz) < -1.0_num) THEN
-        fac = 0.25_num * amp
-        theta = 2.0_num * pi / wptb
-        DO iy = 1, ny
-          DO ix = 1,nx
-            vz(ix,iy,iz) = fac * COS(theta * xb(ix)) * COS(theta * yb(iy)) &
-              * (TANH(2.0_num * (zb(iz) - yfsl)) &
-              -  TANH(2.0_num * (zb(iz) - yfsu)))
+    DO iz = -2, nz + 2
+        DO iy = -2, ny + 2
+          DO ix = -2,nx + 2
+            vz(ix,iy,iz) = 10.0_num * EXP(-((xb(ix)-50.0_num)**2+(yb(iy)-50.0_num)**2 &
+                +(zb(iz)-30.0_num)**2) / 20.0_num)
           END DO
         END DO
-      END IF
     END DO
 
     DEALLOCATE(zc_global, dzb_global, dzc_global, mu_m)
