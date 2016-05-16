@@ -74,23 +74,23 @@ CONTAINS
         iyp = iy + 1
         DO ix = -1, nx + 1
           ixp = ix + 1
-           rho_v(ix,iy,iz) = rho(ix ,iy ,iz ) * cv(ix ,iy ,iz ) &
-               +   rho(ixp,iy ,iz ) * cv(ixp,iy ,iz ) &
-               +   rho(ix ,iyp,iz ) * cv(ix ,iyp,iz ) &
-               +   rho(ixp,iyp,iz ) * cv(ixp,iyp,iz ) &
-               +   rho(ix ,iy ,izp) * cv(ix ,iy ,izp) &
-               +   rho(ixp,iy ,izp) * cv(ixp,iy ,izp) &
-               +   rho(ix ,iyp,izp) * cv(ix ,iyp,izp) &
-               +   rho(ixp,iyp,izp) * cv(ixp,iyp,izp)
+          rho_v(ix,iy,iz) = rho(ix ,iy ,iz ) * cv(ix ,iy ,iz ) &
+              +   rho(ixp,iy ,iz ) * cv(ixp,iy ,iz ) &
+              +   rho(ix ,iyp,iz ) * cv(ix ,iyp,iz ) &
+              +   rho(ixp,iyp,iz ) * cv(ixp,iyp,iz ) &
+              +   rho(ix ,iy ,izp) * cv(ix ,iy ,izp) &
+              +   rho(ixp,iy ,izp) * cv(ixp,iy ,izp) &
+              +   rho(ix ,iyp,izp) * cv(ix ,iyp,izp) &
+              +   rho(ixp,iyp,izp) * cv(ixp,iyp,izp)
 
-          cv_v(ix,iy,iz) = cv(ix,iy ,iz ) + cv(ixp,iy ,iz ) &
-               + cv(ix,iyp,iz ) + cv(ixp,iyp,iz ) &
-               + cv(ix,iy ,izp) + cv(ixp,iy ,izp) &
-               + cv(ix,iyp,izp) + cv(ixp,iyp,izp)
+         cv_v(ix,iy,iz) = cv(ix,iy ,iz ) + cv(ixp,iy ,iz ) &
+              + cv(ix,iyp,iz ) + cv(ixp,iyp,iz ) &
+              + cv(ix,iy ,izp) + cv(ixp,iy ,izp) &
+              + cv(ix,iyp,izp) + cv(ixp,iyp,izp)
 
-          rho_v(ix,iy,iz) = rho(ix ,iy ,iz ) / cv_v(ix ,iy ,iz ) 
+         rho_v(ix,iy,iz) = rho(ix ,iy ,iz ) / cv_v(ix ,iy ,iz ) 
 
-          cv_v(ix,iy,iz) = 0.125_num * cv_v(ix,iy,iz) 
+         cv_v(ix,iy,iz) = 0.125_num * cv_v(ix,iy,iz) 
 
         END DO
       END DO
@@ -380,10 +380,10 @@ CONTAINS
     REAL(num) :: b2, rmin
     REAL(num) :: a1, a2, a3, a4
     REAL(num), DIMENSION(:,:), ALLOCATABLE :: cs, cs_v
-    INTEGER :: i0, i1, i2, i3, j0, j1, j2, j3
+    INTEGER :: i0, i1, i2, i3, j0, j1, j2, j3, k0, k1, k2, k3
     LOGICAL, SAVE :: first_call = .TRUE.
 
-    ALLOCATE(cs(-1:nx+2,-1:ny+2), cs_v(-1:nx+1,-1:ny+1))
+    ALLOCATE(cs(-1:nx+2,-1:ny+2,-1:nz+2), cs_v(-1:nx+1,-1:ny+1,-1:nz+2))
 
     IF (first_call) THEN
       first_call = .FALSE.
@@ -393,106 +393,153 @@ CONTAINS
     p_visc = 0.0_num
     visc_heat = 0.0_num
 
-    DO ix = -1, nx + 2
-      DO iy = -1, ny + 2
-        rmin = MAX(rho(ix,iy), none_zero)
-        b2 = bx1(ix,iy)**2 + by1(ix,iy)**2 + bz1(ix,iy)**2
-        cs(ix,iy) = SQRT((gamma * pressure(ix,iy) + b2) / rmin)
+    DO iz = -1, nz + 2
+      DO ix = -1, nx + 2
+        DO iy = -1, ny + 2
+          rmin = MAX(rho(ix,iy,iz), none_zero)
+          b2 = bx1(ix,iy,iz)**2 + by1(ix,iy,iz)**2 + bz1(ix,iy,iz)**2
+          cs(ix,iy,iz) = SQRT((gamma * pressure(ix,iy,iz) + b2) / rmin)
+        END DO
       END DO
     END DO
 
-    DO iy = -1, ny + 1
-      iyp = iy + 1
-      DO ix = -1, nx + 1
-        ixp = ix + 1
+    DO iz = -1, nz + 1
+      izp = iz + 1
+      DO iy = -1, ny + 1
+        iyp = iy + 1
+        DO ix = -1, nx + 1
+          ixp = ix + 1
 
-        cs_v(ix,iy) = cs(ix,iy) * cv(ix,iy) + cs(ixp,iy) * cv(ixp,iy) &
-            +   cs(ix,iyp) * cv(ix,iyp) + cs(ixp,iyp) * cv(ixp,iyp)
-        cs_v(ix,iy) = 0.25_num * cs_v(ix,iy) / cv_v(ix,iy)
+          cs_v(ix,iy,iz) = cs_v(ix ,iy ,iz ) * cv(ix ,iy ,iz ) &
+              +   cs_v(ixp,iy ,iz ) * cv(ixp,iy ,iz ) &
+              +   cs_v(ix ,iyp,iz ) * cv(ix ,iyp,iz ) &
+              +   cs_v(ixp,iyp,iz ) * cv(ixp,iyp,iz ) &
+              +   cs_v(ix ,iy ,izp) * cv(ix ,iy ,izp) &
+              +   cs_v(ixp,iy ,izp) * cv(ixp,iy ,izp) &
+              +   cs_v(ix ,iyp,izp) * cv(ix ,iyp,izp) &
+              +   cs_v(ixp,iyp,izp) * cv(ixp,iyp,izp)
+         
+          cs_v(ix,iy,iz) = 0.125_num * cs_v(ix,iy,iz) / cv_v(ix,iy,iz)
 
+        END DO
       END DO
     END DO
 
-    DO iy = 0, ny + 2
-      iym = iy - 1
-      iyp = iy + 1
-      DO ix = 0, nx + 1
-        ixm = ix - 1
-        ixp = ix + 1
+    DO iz = 0, nz + 2
+      izm = iz - 1
+      izp = iz + 1
+      DO iy = 0, ny + 2
+        iym = iy - 1
+        iyp = iy + 1
+        DO ix = 0, nx + 1
+          ixm = ix - 1
+          ixp = ix + 1
 
-        ! Edge viscosities from Caramana
-        ! Triangles numbered as in Goffrey thesis
-
-        ! Edge viscosity for triangle 1
-        i1 = ixm
-        j1 = iym
-        i2 = ix
-        j2 = iym
-        i0 = i1 - 1
-        j0 = j1
-        i3 = i2 + 1
-        j3 = j1
-        dx = dxb(ix)
-        dxp = dxb(ixp)
-        dxm = dxb(ixm)
-        ! dv in direction of dS, i.e. dv.dS / abs(dS)
-        dvdots = - (vx(i1,j1) - vx(i2,j2))
-        ! Force on node is alpha*dv*ds but store only alpha and convert to force
-        ! when needed.  
-        alpha1(ix,iy) = edge_viscosity()
+          ! Edge viscosities from Caramana
+          i1 = ixm
+          j1 = iym
+          i2 = ix
+          j2 = iym
+          i0 = i1 - 1
+          j0 = j1
+          i3 = i2 + 1
+          j3 = j1
+          dx = dxb(ix)
+          dxp = dxb(ixp)
+          dxm = dxb(ixm)
+          ! dv in direction of dS, i.e. dv.dS / abs(dS)
+          dvdots = - (vx(i1,j1,k1) - vx(i2,j2,k2))
+          ! Force on node is alpha*dv*ds but store only alpha and convert to force
+          ! when needed.  
+          alpha1(ix,iy,iz) = edge_viscosity()
+        END DO
       END DO
     END DO
 
-      ! Edge viscosity for triangle 2
-    DO iy = 0, ny + 1
-      iym = iy - 1
-      iyp = iy + 1
-      DO ix = -1, nx + 1
-        ixm = ix - 1
-        ixp = ix + 1
+    DO iz = 0, nz + 2
+      izm = iz - 1
+      izp = iz + 1
+        DO iy = 0, ny + 1
+        iym = iy - 1
+        iyp = iy + 1
+        DO ix = -1, nx + 1
+          ixm = ix - 1
+          ixp = ix + 1
 
-        i1 = ix
-        j1 = iym
-        i2 = ix
-        j2 = iy
-        i0 = i1
-        j0 = j1 - 1
-        i3 = i2
-        j3 = j1 + 1
-        dx = dyb(iy)
-        dxp = dyb(iyp)
-        dxm = dyb(iym)
-        dvdots = - (vy(i1,j1) - vy(i2,j2))
-        alpha2(ix,iy) = edge_viscosity()
+          i1 = ix
+          j1 = iym
+          i2 = ix
+          j2 = iy
+          i0 = i1
+          j0 = j1 - 1
+          i3 = i2
+          j3 = j1 + 1
+          dx = dyb(iy)
+          dxp = dyb(iyp)
+          dxm = dyb(iym)
+          dvdots = - (vy(i1,j1,k1) - vy(i2,j2,k2))
+          alpha2(ix,iy,iz) = edge_viscosity()
+        END DO
+      END DO
+    END DO
+
+    DO iz = 0, nz + 2
+      izm = iz - 1
+      izp = iz + 1
+        DO iy = 0, ny + 1
+        iym = iy - 1
+        iyp = iy + 1
+        DO ix = -1, nx + 1
+          ixm = ix - 1
+          ixp = ix + 1
+
+          i1 = ix
+          j1 = iym
+          i2 = ix
+          j2 = iy
+          i0 = i1
+          j0 = j1 - 1
+          i3 = i2
+          j3 = j1 + 1
+          dx = dzb(iz)
+          dxp = dzb(izp)
+          dxm = dzb(izm)
+          dvdots = - (vz(i1,j1,k1) - vz(i2,j2,k2))
+          alpha3(ix,iy,iz) = edge_viscosity()
+        END DO
       END DO
     END DO
 
     DO iy = 0, ny + 1 
       iym = iy - 1
       iyp = iy + 1
-      DO ix = 0, nx + 1 
-        ixm = ix - 1
-        ixp = ix + 1
-        ! Estimate p_visc based on alpha * dv, for timestep control
-        a1 = ((vx(ixm,iym) - vx(ix ,iym))**2  &
-              + (vy(ixm,iym) - vy(ix ,iym))**2 + (vz(ixm,iym) - vz(ix ,iym))**2) 
-        a2 = ((vx(ix ,iym) - vx(ix ,iy ))**2  &
-              + (vy(ix ,iym) - vy(ix ,iy ))**2 + (vz(ix ,iym) - vz(ix ,iy ))**2)
-        a3 = ((vx(ix ,iy ) - vx(ixm,iy ))**2  &
-              + (vy(ix ,iy ) - vy(ixm,iy ))**2 + (vz(ix ,iy ) - vz(ixm,iy ))**2) 
-        a4 = ((vx(ixm,iy ) - vx(ixm,iym))**2  &
-              + (vy(ixm,iy ) - vy(ixm,iym))**2 + (vz(ixm,iy ) - vz(ixm,iym))**2)
-
-        p_visc(ix,iy) = - alpha1(ix,iy)*SQRT(a1) - alpha2(ix,iy)*SQRT(a2)
-        p_visc(ix,iy) = p_visc(ix,iy) - alpha1(ix,iyp)*SQRT(a3) - alpha2(ixm,iy)*SQRT(a4)
-
-        visc_heat(ix,iy) = &
-            - 0.5_num * dyb(iy) * alpha1(ix ,iy ) * a1 &
-            - 0.5_num * dxb(ix) * alpha2(ix ,iy ) * a2 &
-            - 0.5_num * dyb(iy) * alpha1(ix ,iyp) * a3 &
-            - 0.5_num * dxb(ix) * alpha2(ixm,iy ) * a4
-
-        visc_heat(ix,iy) = visc_heat(ix,iy) / cv(ix,iy)
+      DO iy = 0, ny + 1 
+        iym = iy - 1
+        iyp = iy + 1
+        DO ix = 0, nx + 1 
+          ixm = ix - 1
+          ixp = ix + 1
+          ! Estimate p_visc based on alpha * dv, for timestep control
+          a1 = ((vx(ixm,iym) - vx(ix ,iym))**2  &
+                + (vy(ixm,iym) - vy(ix ,iym))**2 + (vz(ixm,iym) - vz(ix ,iym))**2) 
+          a2 = ((vx(ix ,iym) - vx(ix ,iy ))**2  &
+                + (vy(ix ,iym) - vy(ix ,iy ))**2 + (vz(ix ,iym) - vz(ix ,iy ))**2)
+          a3 = ((vx(ix ,iy ) - vx(ixm,iy ))**2  &
+                + (vy(ix ,iy ) - vy(ixm,iy ))**2 + (vz(ix ,iy ) - vz(ixm,iy ))**2) 
+          a4 = ((vx(ixm,iy ) - vx(ixm,iym))**2  &
+                + (vy(ixm,iy ) - vy(ixm,iym))**2 + (vz(ixm,iy ) - vz(ixm,iym))**2)
+  
+          p_visc(ix,iy) = - alpha1(ix,iy)*SQRT(a1) - alpha2(ix,iy)*SQRT(a2)
+          p_visc(ix,iy) = p_visc(ix,iy) - alpha1(ix,iyp)*SQRT(a3) - alpha2(ixm,iy)*SQRT(a4)
+  
+          visc_heat(ix,iy) = &
+              - 0.5_num * dyb(iy) * alpha1(ix ,iy ) * a1 &
+              - 0.5_num * dxb(ix) * alpha2(ix ,iy ) * a2 &
+              - 0.5_num * dyb(iy) * alpha1(ix ,iyp) * a3 &
+              - 0.5_num * dxb(ix) * alpha2(ixm,iy ) * a4
+  
+          visc_heat(ix,iy) = visc_heat(ix,iy) / cv(ix,iy)
+        END DO
       END DO
     END DO
 
@@ -502,30 +549,34 @@ CONTAINS
     DO iy = 0, ny
       iym = iy - 1
       iyp = iy + 1
-      DO ix = 0, nx
-        ixm = ix - 1
-        ixp = ix + 1
-
-        a1 = alpha1(ix ,iyp) * dyc(iy)
-        a2 = alpha1(ixp,iyp) * dyc(iy)
-        a3 = alpha2(ix ,iy ) * dxc(ix)
-        a4 = alpha2(ix ,iyp) * dxc(ix)
-
-        fx_visc(ix,iy) = (a1 * (vx(ix,iy) - vx(ixm,iy )) &
-                        + a2 * (vx(ix,iy) - vx(ixp,iy )) &
-                        + a3 * (vx(ix,iy) - vx(ix ,iym)) &
-                        + a4 * (vx(ix,iy) - vx(ix ,iyp)) ) / cv_v(ix,iy)
-
-        fy_visc(ix,iy) = (a1 * (vy(ix,iy) - vy(ixm,iy )) &
-                        + a2 * (vy(ix,iy) - vy(ixp,iy )) &
-                        + a3 * (vy(ix,iy) - vy(ix ,iym)) &
-                        + a4 * (vy(ix,iy) - vy(ix ,iyp)) ) / cv_v(ix,iy)
-
-        fz_visc(ix,iy) = (a1 * (vz(ix,iy) - vz(ixm,iy )) &
-                        + a2 * (vz(ix,iy) - vz(ixp,iy )) &
-                        + a3 * (vz(ix,iy) - vz(ix ,iym)) &
-                        + a4 * (vz(ix,iy) - vz(ix ,iyp)) ) / cv_v(ix,iy)
-
+      DO iy = 0, ny
+        iym = iy - 1
+        iyp = iy + 1
+        DO ix = 0, nx
+          ixm = ix - 1
+          ixp = ix + 1
+  
+          a1 = alpha1(ix ,iyp) * dyc(iy)
+          a2 = alpha1(ixp,iyp) * dyc(iy)
+          a3 = alpha2(ix ,iy ) * dxc(ix)
+          a4 = alpha2(ix ,iyp) * dxc(ix)
+  
+          fx_visc(ix,iy) = (a1 * (vx(ix,iy) - vx(ixm,iy )) &
+                          + a2 * (vx(ix,iy) - vx(ixp,iy )) &
+                          + a3 * (vx(ix,iy) - vx(ix ,iym)) &
+                          + a4 * (vx(ix,iy) - vx(ix ,iyp)) ) / cv_v(ix,iy)
+  
+          fy_visc(ix,iy) = (a1 * (vy(ix,iy) - vy(ixm,iy )) &
+                          + a2 * (vy(ix,iy) - vy(ixp,iy )) &
+                          + a3 * (vy(ix,iy) - vy(ix ,iym)) &
+                          + a4 * (vy(ix,iy) - vy(ix ,iyp)) ) / cv_v(ix,iy)
+  
+          fz_visc(ix,iy) = (a1 * (vz(ix,iy) - vz(ixm,iy )) &
+                          + a2 * (vz(ix,iy) - vz(ixp,iy )) &
+                          + a3 * (vz(ix,iy) - vz(ix ,iym)) &
+                          + a4 * (vz(ix,iy) - vz(ix ,iyp)) ) / cv_v(ix,iy)
+  
+        END DO
       END DO
     END DO
 
@@ -551,13 +602,13 @@ CONTAINS
       dvdots = MIN(0.0_num, dvdots)
 #endif
 
-      rho_edge = 2.0_num * rho_v(i1,j1) * rho_v(i2,j2) &
-          / (rho_v(i1,j1) + rho_v(i2,j2))
-      cs_edge = MIN(cs_v(i1,j1), cs_v(i2,j2))
+      rho_edge = 2.0_num * rho_v(i1,j1,k1) * rho_v(i2,j2,k2) &
+          / (rho_v(i1,j1,k1) + rho_v(i2,j2,k2))
+      cs_edge = MIN(cs_v(i1,j1,k1), cs_v(i2,j2,k2))
 
-      dvx = vx(i1,j1) - vx(i2,j2)
-      dvy = vy(i1,j1) - vy(i2,j2)
-      dvz = vz(i1,j1) - vz(i2,j2)
+      dvx = vx(i1,j1,k1) - vx(i2,j2,k2)
+      dvy = vy(i1,j1,k1) - vy(i2,j2,k2)
+      dvz = vz(i1,j1,k1) - vz(i2,j2,k2)
       dv2 = dvx**2 + dvy**2 + dvz**2
       dv = SQRT(dv2)
       psi = 0.0_num
@@ -568,12 +619,12 @@ CONTAINS
       END IF
 
 #ifdef SHOCKLIMITER
-      dvxm = vx(i0,j0) - vx(i1,j1)
-      dvxp = vx(i2,j2) - vx(i3,j3)
-      dvym = vy(i0,j0) - vy(i1,j1)
-      dvyp = vy(i2,j2) - vy(i3,j3)
-      dvzm = vz(i0,j0) - vz(i1,j1)
-      dvzp = vz(i2,j2) - vz(i3,j3)
+      dvxm = vx(i0,j0,k0) - vx(i1,j1,k1)
+      dvxp = vx(i2,j2,k2) - vx(i3,j3,k3)
+      dvym = vy(i0,j0,k0) - vy(i1,j1,k1)
+      dvyp = vy(i2,j2,k2) - vy(i3,j3,k3)
+      dvzm = vz(i0,j0,k0) - vz(i1,j1,k1)
+      dvzp = vz(i2,j2,k2) - vz(i3,j3,k3)
       IF (dv * dt / dx < 1.e-14_num) THEN
         rl = 1.0_num
         rr = 1.0_num
