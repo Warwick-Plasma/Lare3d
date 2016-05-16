@@ -123,20 +123,14 @@ CONTAINS
         DO ix = 0, nx + 1
           dv = cv1(ix,iy,iz) / cv(ix,iy,iz) - 1.0_num
           ! Predictor energy
-#ifdef QMONO
-          ! Add shock viscosity
-          pressure(ix,iy,iz) = pressure(ix,iy,iz) + p_visc(ix,iy,iz)
-#endif
+
           e1 = energy(ix,iy,iz) - pressure(ix,iy,iz) * dv / rho(ix,iy,iz)
           e1 = e1 + visc_heat(ix,iy,iz) * dt2 / rho(ix,iy,iz)
 
           ! Now define the predictor step pressures
           pressure(ix,iy,iz) = (e1 - (1.0_num - xi_n(ix,iy,iz)) * ionise_pot) &
               * (gamma - 1.0_num) * rho(ix,iy,iz) * cv(ix,iy,iz) / cv1(ix,iy,iz)
-#ifdef QMONO
-          ! Add shock viscosity
-          pressure(ix,iy,iz) = pressure(ix,iy,iz) + p_visc(ix,iy,iz)
-#endif
+
         END DO
       END DO
     END DO
@@ -366,8 +360,6 @@ CONTAINS
               + (vzb - vzbm) / dzb(iz)) * dt
           ! It is possible that dv has changed sign since the predictor step.
           ! In this case p_visc * dv ought to be removed from the heating
-          ! if QMONO is set - not done for simplicity since this is a rare
-          ! combination
 
           cv1(ix,iy,iz) = cv(ix,iy,iz) * (1.0_num + dv)
 
@@ -381,10 +373,6 @@ CONTAINS
           total_visc_heating = total_visc_heating &
               + dt * visc_heat(ix,iy,iz) * cv(ix,iy,iz)
 
-#ifdef QMONO
-          total_visc_heating = total_visc_heating &
-              - p_visc(ix,iy,iz) * dv * cv(ix,iy,iz)
-#endif
         END DO
       END DO
     END DO
@@ -601,7 +589,7 @@ CONTAINS
           qxy(ix,iy,iz) = 0.0_num
           qxz(ix,iy,iz) = 0.0_num
           qyz(ix,iy,iz) = 0.0_num
-#ifndef QMONO
+
           qxx(ix,iy,iz) = sxx * (L2 * rho(ix,iy,iz) &
               * (visc1 * cf + L2 * visc2 * ABS(sxx)))
           qyy(ix,iy,iz) = syy * (L2 * rho(ix,iy,iz) &
@@ -614,7 +602,7 @@ CONTAINS
               * (visc1 * cf + L2 * visc2 * ABS(sxz)))
           qyz(ix,iy,iz) = syz * (L2 * rho(ix,iy,iz) &
               * (visc1 * cf + L2 * visc2 * ABS(syz)))
-#endif
+
           qxx(ix,iy,iz) = qxx(ix,iy,iz) + 2.0_num * sxx * rho(ix,iy,iz) * visc3
           qyy(ix,iy,iz) = qyy(ix,iy,iz) + 2.0_num * syy * rho(ix,iy,iz) * visc3
           qzz(ix,iy,iz) = qzz(ix,iy,iz) + 2.0_num * szz * rho(ix,iy,iz) * visc3
