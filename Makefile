@@ -136,8 +136,8 @@ DEFINES := $(DEFINE)
 # Uncomment the following line to use Qmono viscosity
 #DEFINES += $(D)SHOCKLIMITER
 
-# Uncomment the following line to allow shock viscosity in expanding shocks
-#DEFINES += $(D)EXPANDINGSHOCK
+# Uncomment the following line to turn off shock viscosity in expanding shocks
+#DEFINES += $(D)SHOCKCOMPRESSION
 
 # Uncomment the following line to run in single precision
 #DEFINES += $(D)SINGLE

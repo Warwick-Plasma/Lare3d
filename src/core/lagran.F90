@@ -651,12 +651,12 @@ CONTAINS
 #endif
       REAL(num) :: psi, rho_edge, cs_edge, q_k_bar
 
-#ifdef EXPANDINGSHOCK 
-      ! Allow shock viscoity on expanding edge
-      dvdots = -ABS(dvdots)
-#else
+#ifdef SHOCKCOMPRESSION 
       ! Turn off shock viscoity if cell edge expanding
       dvdots = MIN(0.0_num, dvdots)
+#else
+      ! Allow shock viscoity on expanding edge
+      dvdots = -ABS(dvdots)
 #endif
 
       rho_edge = 2.0_num * rho_v(i1,j1,k1) * rho_v(i2,j2,k2) &
