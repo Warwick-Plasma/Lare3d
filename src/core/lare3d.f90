@@ -62,7 +62,6 @@ PROGRAM lare3d
 
   IF (rank == 0) PRINT*, 'Initial conditions setup OK. Running Code'
 
-  CALL set_dt                    ! diagnostics.f90
   CALL output_routines(step)     ! diagnostics.f90
 
   DO
@@ -76,7 +75,6 @@ PROGRAM lare3d
       CALL open_bcs                  ! openboundary.f90
     END IF
     CALL eta_calc                    ! lagran.f90
-    CALL set_dt                      ! diagnostics.f90
     CALL output_routines(step)       ! diagnostics.f90
   END DO
 
