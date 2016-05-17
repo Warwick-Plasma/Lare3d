@@ -33,11 +33,11 @@ CONTAINS
     INTEGER :: substeps, subcycle
     REAL(num) :: actual_dt, dt_sub
 
-    ALLOCATE(bx1(0:nx+1,0:ny+1,0:nz+1))
-    ALLOCATE(by1(0:nx+1,0:ny+1,0:nz+1))
-    ALLOCATE(bz1(0:nx+1,0:ny+1,0:nz+1))
+    ALLOCATE(bx1(-1:nx+2,-1:ny+2,-1:nz+2))
+    ALLOCATE(by1(-1:nx+2,-1:ny+2,-1:nz+2))
+    ALLOCATE(bz1(-1:nx+2,-1:ny+2,-1:nz+2))
     ALLOCATE(alpha1(0:nx+1,0:ny+2,0:nz+2))
-    ALLOCATE(alpha2(-1:nx+1,0:ny+1,0:nz+1))
+    ALLOCATE(alpha2(-1:nx+1,0:ny+1,0:nz+2))
     ALLOCATE(alpha3(-1:nx+1,-1:ny+1,0:nz+1))
     ALLOCATE(visc_heat(0:nx+1,0:ny+1,0:nz+1))
     ALLOCATE(pressure(-1:nx+2,-1:ny+2,-1:nz+2))
@@ -128,7 +128,7 @@ CONTAINS
     CALL predictor_corrector_step
 
     DEALLOCATE(bx1, by1, bz1, alpha1, alpha2, alpha3)
-    DEALLOCATE(visc_heat, pressure, rho_v, cv_v, flux_x, flux_y, flux_z, curlb)
+    DEALLOCATE(visc_heat, pressure, rho_v, cv_v)
     DEALLOCATE(fx_visc, fy_visc, fz_visc)
     DEALLOCATE(fx, fy, fz)
     DEALLOCATE(flux_x, flux_y, flux_z)
@@ -319,7 +319,7 @@ CONTAINS
 
     CALL velocity_bcs
 
-    ! Finally correct density and energy to final values
+    !Finally correct density and energy to final values
     DO iz = 1, nz
       izm = iz - 1
       DO iy = 1, ny
@@ -385,7 +385,7 @@ CONTAINS
     INTEGER :: i0, i1, i2, i3, j0, j1, j2, j3, k0, k1, k2, k3
     LOGICAL, SAVE :: first_call = .TRUE.
 
-    ALLOCATE(cs(-1:nx+2,-1:ny+2,-1:nz+2), cs_v(-1:nx+1,-1:ny+1,-1:nz+2))
+    ALLOCATE(cs(-1:nx+2,-1:ny+2,-1:nz+2), cs_v(-1:nx+1,-1:ny+1,-1:nz+1))
 
     IF (first_call) THEN
       first_call = .FALSE.
@@ -412,14 +412,14 @@ CONTAINS
         DO ix = -1, nx + 1
           ixp = ix + 1
 
-          cs_v(ix,iy,iz) = cs_v(ix ,iy ,iz ) * cv(ix ,iy ,iz ) &
-              +   cs_v(ixp,iy ,iz ) * cv(ixp,iy ,iz ) &
-              +   cs_v(ix ,iyp,iz ) * cv(ix ,iyp,iz ) &
-              +   cs_v(ixp,iyp,iz ) * cv(ixp,iyp,iz ) &
-              +   cs_v(ix ,iy ,izp) * cv(ix ,iy ,izp) &
-              +   cs_v(ixp,iy ,izp) * cv(ixp,iy ,izp) &
-              +   cs_v(ix ,iyp,izp) * cv(ix ,iyp,izp) &
-              +   cs_v(ixp,iyp,izp) * cv(ixp,iyp,izp)
+          cs_v(ix,iy,iz) = cs(ix ,iy ,iz ) * cv(ix ,iy ,iz ) &
+              +   cs(ixp,iy ,iz ) * cv(ixp,iy ,iz ) &
+              +   cs(ix ,iyp,iz ) * cv(ix ,iyp,iz ) &
+              +   cs(ixp,iyp,iz ) * cv(ixp,iyp,iz ) &
+              +   cs(ix ,iy ,izp) * cv(ix ,iy ,izp) &
+              +   cs(ixp,iy ,izp) * cv(ixp,iy ,izp) &
+              +   cs(ix ,iyp,izp) * cv(ix ,iyp,izp) &
+              +   cs(ixp,iyp,izp) * cv(ixp,iyp,izp)
          
           cs_v(ix,iy,iz) = 0.125_num * cs_v(ix,iy,iz) / cv_v(ix,iy,iz)
 
@@ -793,15 +793,12 @@ CONTAINS
     REAL(num) :: dvxdz, dvydz, dvzdz
     REAL(num) :: dv
 
-    DO iz = 0, nz + 1
+    DO iz = -1, nz + 2
       izm = iz - 1
-      izp = iz + 1
-      DO iy = 0, ny + 1
+      DO iy = -1, ny + 2
         iym = iy - 1
-        iyp = iy + 1
-        DO ix = 0, nx + 1
+        DO ix = -1, nx + 2
           ixm = ix - 1
-          ixp = ix + 1
 
           ! vx at Bx(i,j,k)
           vxb  = (vx(ix ,iy ,iz ) + vx(ix ,iym,iz ) &
