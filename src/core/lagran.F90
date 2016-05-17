@@ -90,7 +90,7 @@ CONTAINS
               + cv(ix,iy ,izp) + cv(ixp,iy ,izp) &
               + cv(ix,iyp,izp) + cv(ixp,iyp,izp)
 
-         rho_v(ix,iy,iz) = rho(ix ,iy ,iz ) / cv_v(ix ,iy ,iz ) 
+         rho_v(ix,iy,iz) = rho_v(ix ,iy ,iz ) / cv_v(ix ,iy ,iz ) 
 
          cv_v(ix,iy,iz) = 0.125_num * cv_v(ix,iy,iz) 
 
