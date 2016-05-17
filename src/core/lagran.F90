@@ -13,12 +13,14 @@ MODULE lagran
 
   PRIVATE
 
-  PUBLIC :: lagrangian_step, eta_calc
+  PUBLIC :: lagrangian_step, eta_calc, set_dt
 
   ! Only used inside lagran.f90
-  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: qxy, qxz, qyz
-  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: qxx, qyy, qzz, visc_heat, pressure
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: alpha1, alpha2, alpha3
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: visc_heat, pressure, rho_v, cv_v
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: flux_x, flux_y, flux_z, curlb
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: fx_visc, fy_visc, fz_visc
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: fx, fy, fz
 
 CONTAINS
 
@@ -36,7 +38,7 @@ CONTAINS
     ALLOCATE(bz1(0:nx+1,0:ny+1,0:nz+1))
     ALLOCATE(alpha1(0:nx+1,0:ny+2,0:nz+2))
     ALLOCATE(alpha2(-1:nx+1,0:ny+1,0:nz+1))
-    ALLOCATE(alpha3(0:nx+1,0:ny+2,0:nz+2))
+    ALLOCATE(alpha3(-1:nx+1,-1:ny+1,0:nz+1))
     ALLOCATE(visc_heat(0:nx+1,0:ny+1,0:nz+1))
     ALLOCATE(pressure(-1:nx+2,-1:ny+2,-1:nz+2))
     ALLOCATE(rho_v(-1:nx+1,-1:ny+1,-1:nz+1))
@@ -96,7 +98,7 @@ CONTAINS
       END DO
     END DO
 
-    CALL shock_voscosity
+    CALL shock_viscosity
     CALL set_dt
     dt2 = 0.5_num * dt
 
@@ -126,9 +128,11 @@ CONTAINS
     CALL predictor_corrector_step
 
     DEALLOCATE(bx1, by1, bz1, alpha1, alpha2, alpha3)
-    DEALLOCATE(visc_heat, pressure, tho_v, cv_v, flux_x, flux_y, flux_z, curlb)
+    DEALLOCATE(visc_heat, pressure, rho_v, cv_v, flux_x, flux_y, flux_z, curlb)
     DEALLOCATE(fx_visc, fy_visc, fz_visc)
     DEALLOCATE(fx, fy, fz)
+    DEALLOCATE(flux_x, flux_y, flux_z)
+    DEALLOCATE(curlb)
 
     CALL energy_bcs
     CALL density_bcs
@@ -146,8 +150,7 @@ CONTAINS
 
     REAL(num) :: pp, ppx, ppy, ppxy
     REAL(num) :: ppz, ppxz, ppyz, ppxyz
-    REAL(num) :: e1, rho_v
-    REAL(num) :: fx, fy, fz
+    REAL(num) :: e1
     REAL(num) :: vxb, vxbm, vyb, vybm, vzb, vzbm
     REAL(num) :: bxv, byv, bzv, jx, jy, jz
     REAL(num) :: cvx, cvxp, cvy, cvyp, cvz, cvzp
@@ -196,19 +199,19 @@ CONTAINS
           w1 = (pp + ppy + ppz + ppyz) * 0.25_num
           ! P total at Ex(i+1,j,k)
           w2 = (ppx + ppxy + ppxz + ppxyz) * 0.25_num
-          fx = -(w2 - w1) / dxc(ix)
+          fx(ix,iy,iz) = -(w2 - w1) / dxc(ix)
 
           ! P total at Ey(i,j,k)
           w1 = (pp + ppx + ppz + ppxz) * 0.25_num
           ! P total at Ey(i,j+1,k)
           w2 = (ppy + ppxy + ppyz + ppxyz) * 0.25_num
-          fy = -(w2 - w1) / dyc(iy)
+          fy(ix,iy,iz) = -(w2 - w1) / dyc(iy)
 
           ! P total at Ez(i,j,k)
           w1 = (pp + ppx + ppy + ppxy) * 0.25_num
           ! P total at Ez(i,j,k+1)
           w2 = (ppz + ppxz + ppyz + ppxyz) * 0.25_num
-          fz = -(w2 - w1) / dzc(iz)
+          fz(ix,iy,iz) = -(w2 - w1) / dzc(iz)
 
           cvx  = cv1(ix ,iy ,iz ) + cv1(ix ,iyp,iz ) &
               +  cv1(ix ,iy ,izp) + cv1(ix ,iyp,izp)
@@ -277,11 +280,11 @@ CONTAINS
               +  bz1(ix,iyp,izp) + bz1(ixp,iyp,izp)) &
               / (cvx + cvxp)
 
-          fx = fx + (jy * bzv - jz * byv)
-          fy = fy + (jz * bxv - jx * bzv)
-          fz = fz + (jx * byv - jy * bxv)
+          fx(ix,iy,iz) = fx(ix,iy,iz) + (jy * bzv - jz * byv)
+          fy(ix,iy,iz) = fy(ix,iy,iz) + (jz * bxv - jx * bzv)
+          fz(ix,iy,iz) = fz(ix,iy,iz) + (jx * byv - jy * bxv)
 
-          fz = fz - rho_v * grav(iz)
+          fz(ix,iy,iz) = fz(ix,iy,iz) - rho_v(ix,iy,iz) * grav(iz)
 
           ! Find half step velocity needed for remap
           vx1(ix,iy,iz) = vx(ix,iy,iz) + dt2 * (fx_visc(ix,iy,iz) &
@@ -299,7 +302,6 @@ CONTAINS
     bx1 = bx1 / cv1
     by1 = by1 / cv1
     bz1 = bz1 / cv1
-
     CALL shock_heating
 
     DO iz = 0, nz
@@ -378,8 +380,8 @@ CONTAINS
 
     REAL(num) :: dvdots, dx, dxm, dxp
     REAL(num) :: b2, rmin
-    REAL(num) :: a1, a2, a3, a4
-    REAL(num), DIMENSION(:,:), ALLOCATABLE :: cs, cs_v
+    REAL(num) :: a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12
+    REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: cs, cs_v
     INTEGER :: i0, i1, i2, i3, j0, j1, j2, j3, k0, k1, k2, k3
     LOGICAL, SAVE :: first_call = .TRUE.
 
@@ -438,12 +440,16 @@ CONTAINS
           ! Edge viscosities from Caramana
           i1 = ixm
           j1 = iym
+          k1 = izm
           i2 = ix
           j2 = iym
+          k2 = izm
           i0 = i1 - 1
           j0 = j1
+          k0 = k1
           i3 = i2 + 1
           j3 = j1
+          k3 = k1
           dx = dxb(ix)
           dxp = dxb(ixp)
           dxm = dxb(ixm)
@@ -468,12 +474,16 @@ CONTAINS
 
           i1 = ix
           j1 = iym
+          k1 = izm
           i2 = ix
           j2 = iy
+          k2 = izm
           i0 = i1
           j0 = j1 - 1
+          k0 = k1
           i3 = i2
           j3 = j1 + 1
+          k3 = k1
           dx = dyb(iy)
           dxp = dyb(iyp)
           dxm = dyb(iym)
@@ -483,10 +493,10 @@ CONTAINS
       END DO
     END DO
 
-    DO iz = 0, nz + 2
+    DO iz = 0, nz + 1
       izm = iz - 1
       izp = iz + 1
-        DO iy = 0, ny + 1
+        DO iy = -1, ny + 1
         iym = iy - 1
         iyp = iy + 1
         DO ix = -1, nx + 1
@@ -494,13 +504,17 @@ CONTAINS
           ixp = ix + 1
 
           i1 = ix
-          j1 = iym
+          j1 = iy
+          k1 = izm
           i2 = ix
           j2 = iy
+          k2 = iz
           i0 = i1
-          j0 = j1 - 1
+          j0 = j1 
+          k0 = k1 - 1
           i3 = i2
-          j3 = j1 + 1
+          j3 = j1 
+          k3 = k1 + 1
           dx = dzb(iz)
           dxp = dzb(izp)
           dxm = dzb(izm)
@@ -510,9 +524,9 @@ CONTAINS
       END DO
     END DO
 
-    DO iy = 0, ny + 1 
-      iym = iy - 1
-      iyp = iy + 1
+    DO iz = 0, nz + 1 
+      izm = iz - 1
+      izp = iz + 1
       DO iy = 0, ny + 1 
         iym = iy - 1
         iyp = iy + 1
@@ -520,25 +534,53 @@ CONTAINS
           ixm = ix - 1
           ixp = ix + 1
           ! Estimate p_visc based on alpha * dv, for timestep control
-          a1 = ((vx(ixm,iym) - vx(ix ,iym))**2  &
-                + (vy(ixm,iym) - vy(ix ,iym))**2 + (vz(ixm,iym) - vz(ix ,iym))**2) 
-          a2 = ((vx(ix ,iym) - vx(ix ,iy ))**2  &
-                + (vy(ix ,iym) - vy(ix ,iy ))**2 + (vz(ix ,iym) - vz(ix ,iy ))**2)
-          a3 = ((vx(ix ,iy ) - vx(ixm,iy ))**2  &
-                + (vy(ix ,iy ) - vy(ixm,iy ))**2 + (vz(ix ,iy ) - vz(ixm,iy ))**2) 
-          a4 = ((vx(ixm,iy ) - vx(ixm,iym))**2  &
-                + (vy(ixm,iy ) - vy(ixm,iym))**2 + (vz(ixm,iy ) - vz(ixm,iym))**2)
+          a1 = ((vx(ixm,iym,iz ) - vx(ix ,iym,iz ))**2  &
+                + (vy(ixm,iym,iz ) - vy(ix ,iym,iz ))**2 + (vz(ixm,iym,iz ) - vz(ix ,iym,iz ))**2) 
+          a2 = ((vx(ix ,iym,iz ) - vx(ix ,iy, iz ))**2  &
+                + (vy(ix ,iym,iz ) - vy(ix ,iy ,iz ))**2 + (vz(ix ,iym,iz ) - vz(ix ,iy ,iz ))**2)
+          a3 = ((vx(ix ,iy ,iz ) - vx(ixm,iy ,iz ))**2  &
+                + (vy(ix ,iy ,iz ) - vy(ixm,iy ,iz ))**2 + (vz(ix ,iy ,iz ) - vz(ixm,iy ,iz ))**2) 
+          a4 = ((vx(ixm,iy ,iz ) - vx(ixm,iym,iz ))**2  &
+                + (vy(ixm,iy ,iz ) - vy(ixm,iym,iz ))**2 + (vz(ixm,iy ,iz ) - vz(ixm,iym,iz ))**2)
+
+          a5 = ((vx(ixm,iym,izp) - vx(ix ,iym,izp))**2  &
+                + (vy(ixm,iym,izp) - vy(ix ,iym,izp))**2 + (vz(ixm,iym,izp) - vz(ix ,iym,izp))**2) 
+          a6 = ((vx(ix ,iym,izp) - vx(ix ,iy, izp))**2  &
+                + (vy(ix ,iym,izp) - vy(ix ,iy ,izp))**2 + (vz(ix ,iym,izp) - vz(ix ,iy ,izp))**2)
+          a7 = ((vx(ix ,iy ,izp) - vx(ixm,iy ,izp))**2  &
+                + (vy(ix ,iy ,izp) - vy(ixm,iy ,izp))**2 + (vz(ix ,iy ,izp) - vz(ixm,iy ,izp))**2) 
+          a8 = ((vx(ixm,iy ,izp) - vx(ixm,iym,izp))**2  &
+                + (vy(ixm,iy ,izp) - vy(ixm,iym,izp))**2 + (vz(ixm,iy ,izp) - vz(ixm,iym,izp))**2)
+
+          a9 = ((vx(ix ,iy ,izm) - vx(ix ,iy ,iz ))**2  &
+                + (vy(ix ,iy ,izm) - vy(ix ,iy ,iz))**2 + (vz(ix ,iy ,izm) - vz(ix ,iy ,iz))**2) 
+          a10= ((vx(ixm,iy ,izm) - vx(ixm,iy ,iz ))**2  &
+                + (vy(ixm,iy ,izm) - vy(ixm,iy ,iz))**2 + (vz(ixm,iy ,izm) - vz(ixm,iy ,iz))**2) 
+          a11= ((vx(ixm,iym,izm) - vx(ixm,iym,iz ))**2  &
+                + (vy(ixm,iym,izm) - vy(ixm,iym,iz))**2 + (vz(ixm,iym,izm) - vz(ixm,iym,iz))**2) 
+          a12= ((vx(ix ,iym,izm) - vx(ix ,iym,iz ))**2  &
+                + (vy(ix ,iym,izm) - vy(ix ,iym,iz))**2 + (vz(ix ,iym,izm) - vz(ix ,iym,iz))**2) 
+
   
-          p_visc(ix,iy) = - alpha1(ix,iy)*SQRT(a1) - alpha2(ix,iy)*SQRT(a2)
-          p_visc(ix,iy) = p_visc(ix,iy) - alpha1(ix,iyp)*SQRT(a3) - alpha2(ixm,iy)*SQRT(a4)
+          p_visc(ix,iy,iz) = MAX(p_visc(ix,iy,iz), - alpha1(ix,iy,iz)*SQRT(a1)) 
+          p_visc(ix,iy,iz) = MAX(p_visc(ix,iy,iz), - alpha2(ix,iy,iz)*SQRT(a2)) 
+          p_visc(ix,iy,iz) = MAX(p_visc(ix,iy,iz), - alpha3(ix,iy,iz)*SQRT(a9)) 
+
+          visc_heat(ix,iy,iz) = &
+              - 0.25_num * dyb(iy) * dzb(iz) * alpha1(ix ,iy ,iz ) * a1  &
+              - 0.25_num * dxb(ix) * dzb(iz) * alpha2(ix ,iy ,iz ) * a2  &
+              - 0.25_num * dyb(iy) * dzb(iz) * alpha1(ix ,iyp,iz ) * a3  &
+              - 0.25_num * dxb(ix) * dzb(iz) * alpha2(ixm,iy ,iz ) * a4  &
+              - 0.25_num * dyb(iy) * dzb(iz) * alpha1(ix ,iy ,izp) * a5  &
+              - 0.25_num * dxb(ix) * dzb(iz) * alpha2(ix ,iy ,izp) * a6  &
+              - 0.25_num * dyb(iy) * dzb(iz) * alpha1(ix ,iyp,izp) * a7  &
+              - 0.25_num * dxb(ix) * dzb(iz) * alpha2(ixm,iy ,izp) * a8  &
+              - 0.25_num * dyb(iy) * dyb(iy) * alpha3(ix ,iy ,iz ) * a9  &
+              - 0.25_num * dxb(ix) * dyb(iy) * alpha3(ixm,iy ,iz ) * a10 &
+              - 0.25_num * dyb(iy) * dyb(iy) * alpha3(ixm,iym,iz ) * a11 &
+              - 0.25_num * dxb(ix) * dyb(iy) * alpha3(ix ,iym,iz ) * a12 
   
-          visc_heat(ix,iy) = &
-              - 0.5_num * dyb(iy) * alpha1(ix ,iy ) * a1 &
-              - 0.5_num * dxb(ix) * alpha2(ix ,iy ) * a2 &
-              - 0.5_num * dyb(iy) * alpha1(ix ,iyp) * a3 &
-              - 0.5_num * dxb(ix) * alpha2(ixm,iy ) * a4
-  
-          visc_heat(ix,iy) = visc_heat(ix,iy) / cv(ix,iy)
+          visc_heat(ix,iy,iz) = visc_heat(ix,iy,iz) / cv(ix,iy,iz)
         END DO
       END DO
     END DO
@@ -546,9 +588,10 @@ CONTAINS
     fx_visc = 0.0_num
     fy_visc = 0.0_num
     fz_visc = 0.0_num
-    DO iy = 0, ny
-      iym = iy - 1
-      iyp = iy + 1
+
+    DO iz = 0, nz
+      izm = iz - 1
+      izp = iz + 1
       DO iy = 0, ny
         iym = iy - 1
         iyp = iy + 1
@@ -556,25 +599,37 @@ CONTAINS
           ixm = ix - 1
           ixp = ix + 1
   
-          a1 = alpha1(ix ,iyp) * dyc(iy)
-          a2 = alpha1(ixp,iyp) * dyc(iy)
-          a3 = alpha2(ix ,iy ) * dxc(ix)
-          a4 = alpha2(ix ,iyp) * dxc(ix)
+          a1 = alpha1(ix ,iyp,izp) * dyc(iy) * dzc(iz)
+          a2 = alpha1(ixp,iyp,izp) * dyc(iy) * dzc(iz)
+          a3 = alpha2(ix ,iy ,izp) * dxc(ix) * dzc(iz)
+          a4 = alpha2(ix ,iyp,izp) * dxc(ix) * dzc(iz)         
+          a5 = alpha3(ix ,iy , iz) * dxc(ix) * dyc(iy)
+          a6 = alpha3(ix ,iy ,izp) * dxc(ix) * dyc(iy)
+
+
+          fx_visc(ix,iy,iz) = &
+                          +(a1 * (vx(ix,iy,iz) - vx(ixm,iy , iz)) &
+                          + a2 * (vx(ix,iy,iz) - vx(ixp,iy , iz)) &
+                          + a3 * (vx(ix,iy,iz) - vx(ix ,iym, iz)) &
+                          + a4 * (vx(ix,iy,iz) - vx(ix ,iyp, iz)) &
+                          + a5 * (vx(ix,iy,iz) - vx(ix , iy,izm)) &
+                          + a6 * (vx(ix,iy,iz) - vx(ix , iy,izp)) ) / cv_v(ix,iy,iz)
   
-          fx_visc(ix,iy) = (a1 * (vx(ix,iy) - vx(ixm,iy )) &
-                          + a2 * (vx(ix,iy) - vx(ixp,iy )) &
-                          + a3 * (vx(ix,iy) - vx(ix ,iym)) &
-                          + a4 * (vx(ix,iy) - vx(ix ,iyp)) ) / cv_v(ix,iy)
+          fy_visc(ix,iy,iz) = &
+                          +(a1 * (vy(ix,iy,iz) - vy(ixm,iy , iz)) &
+                          + a2 * (vy(ix,iy,iz) - vy(ixp,iy , iz)) &
+                          + a3 * (vy(ix,iy,iz) - vy(ix ,iym, iz)) &
+                          + a4 * (vy(ix,iy,iz) - vy(ix ,iyp, iz)) &
+                          + a5 * (vy(ix,iy,iz) - vy(ix , iy,izm)) &
+                          + a6 * (vy(ix,iy,iz) - vy(ix , iy,izp)) ) / cv_v(ix,iy,iz)
   
-          fy_visc(ix,iy) = (a1 * (vy(ix,iy) - vy(ixm,iy )) &
-                          + a2 * (vy(ix,iy) - vy(ixp,iy )) &
-                          + a3 * (vy(ix,iy) - vy(ix ,iym)) &
-                          + a4 * (vy(ix,iy) - vy(ix ,iyp)) ) / cv_v(ix,iy)
-  
-          fz_visc(ix,iy) = (a1 * (vz(ix,iy) - vz(ixm,iy )) &
-                          + a2 * (vz(ix,iy) - vz(ixp,iy )) &
-                          + a3 * (vz(ix,iy) - vz(ix ,iym)) &
-                          + a4 * (vz(ix,iy) - vz(ix ,iyp)) ) / cv_v(ix,iy)
+          fz_visc(ix,iy,iz) = &
+                          +(a1 * (vz(ix,iy,iz) - vz(ixm,iy , iz)) &
+                          + a2 * (vz(ix,iy,iz) - vz(ixp,iy , iz)) &
+                          + a3 * (vz(ix,iy,iz) - vz(ix ,iym, iz)) &
+                          + a4 * (vz(ix,iy,iz) - vz(ix ,iyp, iz)) &
+                          + a5 * (vz(ix,iy,iz) - vz(ix , iy,izm)) &
+                          + a6 * (vz(ix,iy,iz) - vz(ix , iy,izp)) ) / cv_v(ix,iy,iz)
   
         END DO
       END DO
@@ -590,9 +645,11 @@ CONTAINS
       ! Other symbols follow notation in Caramana
 
       REAL(num) :: dvx, dvy, dvz, dv, dv2
+#ifdef SHOCKLIMITER
       REAL(num) :: dvxm, dvxp, dvym, dvyp, dvzm, dvzp
-      REAL(num) :: rl, rr, psi
-      REAL(num) :: rho_edge, cs_edge, q_k_bar
+      REAL(num) :: rl, rr
+#endif
+      REAL(num) :: psi, rho_edge, cs_edge, q_k_bar
 
 #ifdef EXPANDINGSHOCK 
       ! Allow shock viscoity on expanding edge
@@ -650,12 +707,7 @@ CONTAINS
 
   SUBROUTINE shock_heating
 
-    REAL(num) :: dvdots, dx, dxm, dxp
-    REAL(num) :: b2, rmin
-    REAL(num) :: a1, a2, a3, a4
-    REAL(num), DIMENSION(:,:), ALLOCATABLE :: cs, cs_v
-    INTEGER :: i0, i1, i2, i3, j0, j1, j2, j3
-    LOGICAL, SAVE :: first_call = .TRUE.
+    REAL(num) :: a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12
 
     visc_heat = 0.0_num
 
@@ -665,27 +717,61 @@ CONTAINS
       DO ix = 0, nx + 1 
         ixm = ix - 1
         ixp = ix + 1
-        ! Estimate p_visc based on alpha * dv, for timestep control
-        a1 =  (vx(ixm,iym) - vx(ix ,iym))*(vx1(ixm,iym) - vx1(ix ,iym)) &
-            + (vy(ixm,iym) - vy(ix ,iym))*(vy1(ixm,iym) - vy1(ix ,iym)) &
-            + (vz(ixm,iym) - vz(ix ,iym))*(vz1(ixm,iym) - vz1(ix ,iym)) 
-        a2 =  (vx(ix ,iym) - vx(ix ,iy ))*(vx1(ix ,iym) - vx1(ix ,iy )) &
-            + (vy(ix ,iym) - vy(ix ,iy ))*(vy1(ix ,iym) - vy1(ix ,iy )) &
-            + (vz(ix ,iym) - vz(ix ,iy ))*(vz1(ix ,iym) - vz1(ix ,iy ))
-        a3 =  (vx(ix ,iy ) - vx(ixm,iy ))*(vx1(ix ,iy ) - vx1(ixm,iy )) &
-            + (vy(ix ,iy ) - vy(ixm,iy ))*(vy1(ix ,iy ) - vy1(ixm,iy )) &
-            + (vz(ix ,iy ) - vz(ixm,iy ))*(vz1(ix ,iy ) - vz1(ixm,iy ))
-        a4 =  (vx(ixm,iy ) - vx(ixm,iym))*(vx1(ixm,iy ) - vx1(ixm,iym)) &
-            + (vy(ixm,iy ) - vy(ixm,iym))*(vy1(ixm,iy ) - vy1(ixm,iym)) &
-            + (vz(ixm,iy ) - vz(ixm,iym))*(vz1(ixm,iy ) - vz1(ixm,iym))
 
-        visc_heat(ix,iy) = &
-            - 0.5_num * dyb(iy) * alpha1(ix,iy) * a1 &
-            - 0.5_num * dxb(ix) * alpha2(ix,iy) * a2 &
-            - 0.5_num * dyb(iy) * alpha1(ix,iyp) * a3 &
-            - 0.5_num * dxb(ix) * alpha2(ixm,iy) * a4
+        a1 =  (vx(ixm,iym, iz) - vx(ix ,iym, iz))*(vx1(ixm,iym, iz) - vx1(ix ,iym, iz)) &
+            + (vy(ixm,iym, iz) - vy(ix ,iym, iz))*(vy1(ixm,iym, iz) - vy1(ix ,iym, iz)) &
+            + (vz(ixm,iym, iz) - vz(ix ,iym, iz))*(vz1(ixm,iym, iz) - vz1(ix ,iym, iz)) 
+        a2 =  (vx(ix ,iym, iz) - vx(ix ,iy , iz))*(vx1(ix ,iym, iz) - vx1(ix ,iy , iz)) &
+            + (vy(ix ,iym, iz) - vy(ix ,iy , iz))*(vy1(ix ,iym, iz) - vy1(ix ,iy , iz)) &
+            + (vz(ix ,iym, iz) - vz(ix ,iy , iz))*(vz1(ix ,iym, iz) - vz1(ix ,iy , iz))
+        a3 =  (vx(ix ,iy , iz) - vx(ixm,iy , iz))*(vx1(ix ,iy , iz) - vx1(ixm,iy , iz)) &
+            + (vy(ix ,iy , iz) - vy(ixm,iy , iz))*(vy1(ix ,iy , iz) - vy1(ixm,iy , iz)) &
+            + (vz(ix ,iy , iz) - vz(ixm,iy , iz))*(vz1(ix ,iy , iz) - vz1(ixm,iy , iz))
+        a4 =  (vx(ixm,iy , iz) - vx(ixm,iym, iz))*(vx1(ixm,iy , iz) - vx1(ixm,iym, iz)) &
+            + (vy(ixm,iy , iz) - vy(ixm,iym, iz))*(vy1(ixm,iy , iz) - vy1(ixm,iym, iz)) &
+            + (vz(ixm,iy , iz) - vz(ixm,iym, iz))*(vz1(ixm,iy , iz) - vz1(ixm,iym, iz))
 
-        visc_heat(ix,iy) = visc_heat(ix,iy) / cv(ix,iy)
+        a5 =  (vx(ixm,iym,izp) - vx(ix ,iym,izp))*(vx1(ixm,iym,izp) - vx1(ix ,iym,izp)) &
+            + (vy(ixm,iym,izp) - vy(ix ,iym,izp))*(vy1(ixm,iym,izp) - vy1(ix ,iym,izp)) &
+            + (vz(ixm,iym,izp) - vz(ix ,iym,izp))*(vz1(ixm,iym,izp) - vz1(ix ,iym,izp)) 
+        a6 =  (vx(ix ,iym,izp) - vx(ix ,iy ,izp))*(vx1(ix ,iym,izp) - vx1(ix ,iy ,izp)) &
+            + (vy(ix ,iym,izp) - vy(ix ,iy ,izp))*(vy1(ix ,iym,izp) - vy1(ix ,iy ,izp)) &
+            + (vz(ix ,iym,izp) - vz(ix ,iy ,izp))*(vz1(ix ,iym,izp) - vz1(ix ,iy ,izp))
+        a7 =  (vx(ix ,iy ,izp) - vx(ixm,iy ,izp))*(vx1(ix ,iy ,izp) - vx1(ixm,iy ,izp)) &
+            + (vy(ix ,iy ,izp) - vy(ixm,iy ,izp))*(vy1(ix ,iy ,izp) - vy1(ixm,iy ,izp)) &
+            + (vz(ix ,iy ,izp) - vz(ixm,iy ,izp))*(vz1(ix ,iy ,izp) - vz1(ixm,iy ,izp))
+        a8 =  (vx(ixm,iy ,izp) - vx(ixm,iym,izp))*(vx1(ixm,iy ,izp) - vx1(ixm,iym,izp)) &
+            + (vy(ixm,iy ,izp) - vy(ixm,iym,izp))*(vy1(ixm,iy ,izp) - vy1(ixm,iym,izp)) &
+            + (vz(ixm,iy ,izp) - vz(ixm,iym,izp))*(vz1(ixm,iy ,izp) - vz1(ixm,iym,izp))
+
+        a9 =  (vx(ix ,iy ,izm) - vx(ix ,iy , iz))*(vx1(ix ,iy ,izm) - vx1(ix ,iy , iz)) &
+            + (vy(ix ,iy ,izm) - vy(ix ,iy , iz))*(vy1(ix ,iy ,izm) - vy1(ix ,iy , iz)) &
+            + (vz(ix ,iy ,izm) - vz(ix ,iy , iz))*(vz1(ix ,iy ,izm) - vz1(ix ,iy , iz)) 
+        a10=  (vx(ixm,iy ,izm) - vx(ixm,iy , iz))*(vx1(ixm,iy ,izm) - vx1(ixm,iy , iz)) &
+            + (vy(ixm,iy ,izm) - vy(ixm,iy , iz))*(vy1(ixm,iy ,izm) - vy1(ixm,iy , iz)) &
+            + (vz(ixm,iy ,izm) - vz(ixm,iy , iz))*(vz1(ixm,iy ,izm) - vz1(ixm,iy , iz)) 
+        a11=  (vx(ixm,iym,izm) - vx(ixm,iym, iz))*(vx1(ixm,iym,izm) - vx1(ixm,iym, iz)) &
+            + (vy(ixm,iym,izm) - vy(ixm,iym, iz))*(vy1(ixm,iym,izm) - vy1(ixm,iym, iz)) &
+            + (vz(ixm,iym,izm) - vz(ixm,iym, iz))*(vz1(ixm,iym,izm) - vz1(ixm,iym, iz))
+        a12=  (vx(ix ,iym,izm) - vx(ix ,iym, iz))*(vx1(ix ,iym,izm) - vx1(ix ,iym, iz)) &
+            + (vy(ix ,iym,izm) - vy(ix ,iym, iz))*(vy1(ix ,iym,izm) - vy1(ix ,iym, iz)) &
+            + (vz(ix ,iym,izm) - vz(ix ,iym, iz))*(vz1(ix ,iym,izm) - vz1(ix ,iym, iz))
+
+        visc_heat(ix,iy,iz) = &
+            - 0.25_num * dyb(iy) * dzb(iz) * alpha1(ix ,iy ,iz ) * a1  &
+            - 0.25_num * dxb(ix) * dzb(iz) * alpha2(ix ,iy ,iz ) * a2  &
+            - 0.25_num * dyb(iy) * dzb(iz) * alpha1(ix ,iyp,iz ) * a3  &
+            - 0.25_num * dxb(ix) * dzb(iz) * alpha2(ixm,iy ,iz ) * a4  &
+            - 0.25_num * dyb(iy) * dzb(iz) * alpha1(ix ,iy ,izp) * a5  &
+            - 0.25_num * dxb(ix) * dzb(iz) * alpha2(ix ,iy ,izp) * a6  &
+            - 0.25_num * dyb(iy) * dzb(iz) * alpha1(ix ,iyp,izp) * a7  &
+            - 0.25_num * dxb(ix) * dzb(iz) * alpha2(ixm,iy ,izp) * a8  &
+            - 0.25_num * dyb(iy) * dyb(iy) * alpha3(ix ,iy ,iz ) * a9  &
+            - 0.25_num * dxb(ix) * dyb(iy) * alpha3(ixm,iy ,iz ) * a10 &
+            - 0.25_num * dyb(iy) * dyb(iy) * alpha3(ixm,iym,iz ) * a11 &
+            - 0.25_num * dxb(ix) * dyb(iy) * alpha3(ix ,iym,iz ) * a12 
+
+        visc_heat(ix,iy,iz) = visc_heat(ix,iy,iz) / cv(ix,iy,iz)
       END DO
     END DO
 
@@ -808,106 +894,7 @@ CONTAINS
 
   END SUBROUTINE b_field_and_cv1_update
 
-
-
-  !****************************************************************************
-  ! Calculate the viscous heating
-  !****************************************************************************
-
-  SUBROUTINE visc_heating
-
-    REAL(num) :: vxb, vxbm, vyb, vybm, vzb, vzbm
-    REAL(num) :: dvxdx, dvydy, dvzdz, dvxy, dvxz, dvyz
-
-    DO iz = 0, nz + 1
-      izm = iz - 1
-      izp = iz + 1
-      DO iy = 0, ny + 1
-        iym = iy - 1
-        iyp = iy + 1
-        DO ix = 0, nx + 1
-          ixm = ix - 1
-          ixp = ix + 1
-
-          ! vx at Bx(i,j,k)
-          vxb  = (vx1(ix ,iy ,iz ) + vx1(ix ,iym,iz ) &
-              +   vx1(ix ,iy ,izm) + vx1(ix ,iym,izm)) * 0.25_num
-          ! vx at Bx(i-1,j,k)
-          vxbm = (vx1(ixm,iy ,iz ) + vx1(ixm,iym,iz ) &
-              +   vx1(ixm,iy ,izm) + vx1(ixm,iym,izm)) * 0.25_num
-          ! vy at By(i,j,k)
-          vyb  = (vy1(ix ,iy ,iz ) + vy1(ixm,iy ,iz ) &
-              +   vy1(ix ,iy ,izm) + vy1(ixm,iy ,izm)) * 0.25_num
-          ! vy at By(i,j-1,k)
-          vybm = (vy1(ix ,iym,iz ) + vy1(ixm,iym,iz ) &
-              +   vy1(ix ,iym,izm) + vy1(ixm,iym,izm)) * 0.25_num
-          ! vz at Bz(i,j,k)
-          vzb  = (vz1(ix ,iy ,iz ) + vz1(ixm,iy ,iz ) &
-              +   vz1(ix ,iym,iz ) + vz1(ixm,iym,iz )) * 0.25_num
-          ! vz at Bz(i,j,k-1)
-          vzbm = (vz1(ix ,iy ,izm) + vz1(ixm,iy ,izm) &
-              +   vz1(ix ,iym,izm) + vz1(ixm,iym,izm)) * 0.25_num
-
-          dvxdx = (vxb - vxbm) / dxb(ix)
-          dvydy = (vyb - vybm) / dyb(iy)
-          dvzdz = (vzb - vzbm) / dzb(iz)
-
-          ! vx at By(i,j,k)
-          vxb  = (vx1(ix ,iy ,iz ) + vx1(ixm,iy ,iz ) &
-              +   vx1(ix ,iy ,izm) + vx1(ixm,iy ,izm)) * 0.25_num
-          ! vx at By(i,j-1,k)
-          vxbm = (vx1(ix ,iym,iz ) + vx1(ixm,iym,iz ) &
-              +   vx1(ix ,iym,izm) + vx1(ixm,iym,izm)) * 0.25_num
-          ! vy at Bx(i,j,k)
-          vyb  = (vy1(ix ,iy ,iz ) + vy1(ix ,iym,iz ) &
-              +   vy1(ix ,iy ,izm) + vy1(ix ,iym,izm)) * 0.25_num
-          ! vy at Bx(i-1,j,k)
-          vybm = (vy1(ixm,iy ,iz ) + vy1(ixm,iym,iz ) &
-              +   vy1(ixm,iy ,izm) + vy1(ixm,iym,izm)) * 0.25_num
-
-          dvxy = (vxb - vxbm) / dyb(iy) + (vyb - vybm) / dxb(ix)
-
-          ! vx at Bz(i,j,k)
-          vxb  = (vx1(ix ,iy ,iz ) + vx1(ixm,iy ,iz ) &
-              +   vx1(ix ,iym,iz ) + vx1(ixm,iym,iz )) * 0.25_num
-          ! vx at Bz(i,j,k-1)
-          vxbm = (vx1(ix ,iy ,izm) + vx1(ixm,iy ,izm) &
-              +   vx1(ix ,iym,izm) + vx1(ixm,iym,izm)) * 0.25_num
-          ! vz at Bx(i,j,k)
-          vzb  = (vz1(ix ,iy ,iz ) + vz1(ix ,iym,iz ) &
-              +   vz1(ix ,iy ,izm) + vz1(ix ,iym,izm)) * 0.25_num
-          ! vz at Bx(i-1,j,k)
-          vzbm = (vz1(ixm,iy ,iz ) + vz1(ixm,iym,iz ) &
-              +   vz1(ixm,iy ,izm) + vz1(ixm,iym,izm)) * 0.25_num
-
-          dvxz = (vzb - vzbm) / dxb(ix) + (vxb - vxbm) / dzb(iz)
-
-          ! vy at Bz(i,j,k)
-          vyb  = (vy1(ix ,iy ,iz ) + vy1(ixm,iy ,iz ) &
-              +   vy1(ix ,iym,iz ) + vy1(ixm,iym,iz )) * 0.25_num
-          ! vy at Bz(i,j,k-1)
-          vybm = (vy1(ix ,iy ,izm) + vy1(ixm,iy ,izm) &
-              +   vy1(ix ,iym,izm) + vy1(ixm,iym,izm)) * 0.25_num
-          ! vz at By(i,j,k)
-          vzb  = (vz1(ix ,iy ,iz ) + vz1(ixm,iy ,iz ) &
-              +   vz1(ix ,iy ,izm) + vz1(ixm,iy ,izm)) * 0.25_num
-          ! vz at By(i,j-1,k)
-          vzbm = (vz1(ix ,iym,iz ) + vz1(ixm,iym,iz ) &
-              +   vz1(ix ,iym,izm) + vz1(ixm,iym,izm)) * 0.25_num
-
-          dvyz = (vzb - vzbm) / dyb(iy) + (vyb - vybm) / dzb(iz)
-
-          visc_heat(ix,iy,iz) = &
-                qxy(ix,iy,iz) * dvxy  + qxz(ix,iy,iz) * dvxz  &
-              + qyz(ix,iy,iz) * dvyz  + qxx(ix,iy,iz) * dvxdx &
-              + qyy(ix,iy,iz) * dvydy + qzz(ix,iy,iz) * dvzdz
-        END DO
-      END DO
-    END DO
-
-    visc_heat = MAX(visc_heat, 0.0_num)
-
-  END SUBROUTINE visc_heating
+ 
 
   !****************************************************************************
   ! Sets CFL limited step
@@ -951,20 +938,13 @@ CONTAINS
           cs2 = (gamma * pressure(ix,iy,iz) + w1) / rho0
 
           !effective speed from viscous pressure
-          c_visc2 = p_visc(ix,iy) / rho0
+          c_visc2 = p_visc(ix,iy,iz) / rho0
 
           ! length estimates - could be smoother as in DYNA3D
           length = MIN(dxb(ix), dyb(iy), dzb(iz))
 
           ! Find ideal MHD CFL limit for Lagrangian step
           dt1 = length / (SQRT(c_visc2) + SQRT(cs2 + c_visc2))
-          dt_local = MIN(dt_local, dt1)
-
-          w2 = SQRT(cs + w1 / MAX(rho(ix,iy,iz), none_zero) &
-              + 2.0_num * p_visc(ix,iy,iz) / MAX(rho(ix,iy,iz), none_zero))
-
-          ! Find ideal MHD CFL limit for Lagrangian step
-          dt1 = MIN(dxb(ix), dyb(iy), dzb(iz)) / w2
           dt_local = MIN(dt_local, dt1)
 
           ! Now find dt for remap step
