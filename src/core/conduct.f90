@@ -21,6 +21,7 @@ CONTAINS
   !****************************************************************************
   ! Function calculating the number of stages needed for the RKL2
   !****************************************************************************
+
   FUNCTION calc_s_stages()
     REAL(num)  ::  stages, dt_parab, dt1, dt2, dt3, temp
     REAL(num) :: gm1
@@ -303,7 +304,8 @@ CONTAINS
     REAL(num), DIMENSION(0:n_s_stages)  :: a, b
     REAL(num), DIMENSION(1:n_s_stages)  :: mu_tilde
     REAL(num), DIMENSION(2:n_s_stages)  :: mu, nu, gamma_tilde
-    REAL(num), DIMENSION(:,:,:,:), ALLOCATABLE  :: Y             ! intermediate solutions Y=[Y_0, Y_j-2, Y_j-1 , Y_j]
+    ! intermediate solutions Y=[Y_0, Y_j-2, Y_j-1 , Y_j]
+    REAL(num), DIMENSION(:,:,:,:), ALLOCATABLE  :: Y             
     REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: temperature
     REAL(num)  ::  c0, c1
     REAL(num)  ::  Lc_Yj_1                  ! L^c(Y_j-1)
