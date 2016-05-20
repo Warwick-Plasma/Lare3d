@@ -124,7 +124,7 @@ CONTAINS
           rho_b = (rho(ixp,iy,iz)+rho(ix,iy,iz))/2.0_num
           fc_sa =  42.85_num * rho_b * tb**(3.0_num/2.0_num)  !42.85 = SRQT(m_p/m_e)
 
-          ! Conductive Flux Limiter
+          ! Conductive Flux Limiter. Note flux_limiter is inverse of usual
           fc = 1.0_num/(1.0_num/fc_sp + flux_limiter/fc_sa)
 
           flux(ix,iy,iz) = flux(ix,iy,iz) +fc/dxb(ix)
@@ -165,11 +165,11 @@ CONTAINS
           fc_sp = kappa_0 * tb**pow * (by(ix,iy,iz) * (tg * by(ix,iy,iz) + &
               tg_a1 * bxf + tg_a2 * bzf)+tg*min_b)/(modb**2+min_b)
 
-          ! Saturated Conductive Flux
+          ! Saturated Conductive Flux. 
           rho_b = (rho(ix,iyp,iz)+rho(ix,iy,iz))/2.0_num
           fc_sa = 42.85_num * rho_b * tb**(3.0_num/2.0_num)  !42.85 = SRQT(m_p/m_e)
 
-          ! Conductive Flux Limiter
+          ! Conductive Flux Limiter. Note flux_limiter is inverse of usual
           fc = 1.0_num/(1.0_num/fc_sp + flux_limiter/fc_sa)
 
           flux(ix,iy,iz) = flux(ix,iy,iz) +fc/dyb(iy)

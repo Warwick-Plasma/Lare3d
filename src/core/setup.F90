@@ -63,6 +63,13 @@ CONTAINS
     vy = 0.0_num
     vz = 0.0_num
 
+    !inverse flux-limiter (or turn off) to simplify conduction routine
+    IF (flux_limiter >= 10.0_num) THEN
+      flux_limiter = 0.0_num
+    ELSE
+      flux_limiter = 1.0_num / flux_limiter
+    END IF
+
     CALL get_job_id(jobid)
 
   END SUBROUTINE after_control
