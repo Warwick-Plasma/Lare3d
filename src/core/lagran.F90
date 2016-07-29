@@ -120,6 +120,19 @@ CONTAINS
         IF (resistive_mhd) CALL resistive_effects
       END DO
 
+      DO iz = -1, nz + 2
+        izm = iz - 1
+        DO iy = -1, ny + 2
+          iym = iy - 1
+          DO ix = -1, nx + 2
+            ixm = ix - 1
+            bx1(ix,iy,iz) = (bx(ix,iy,iz) + bx(ixm,iy ,iz )) * 0.5_num
+            by1(ix,iy,iz) = (by(ix,iy,iz) + by(ix ,iym,iz )) * 0.5_num
+            bz1(ix,iy,iz) = (bz(ix,iy,iz) + bz(ix ,iy ,izm)) * 0.5_num
+          END DO
+        END DO
+      END DO
+
       dt = actual_dt
     END IF
 
@@ -1100,9 +1113,9 @@ CONTAINS
     ALLOCATE( c3(0:nx,0:ny,0:nz),  c4(0:nx,0:ny,0:nz))
 #endif
 
-    bx1 = bx(0:nx+1,0:ny+1,0:nz+1)
-    by1 = by(0:nx+1,0:ny+1,0:nz+1)
-    bz1 = bz(0:nx+1,0:ny+1,0:nz+1)
+    bx1 = bx(-1:nx+2,-1:ny+2,-1:nz+2)
+    by1 = by(-1:nx+2,-1:ny+2,-1:nz+2)
+    bz1 = bz(-1:nx+2,-1:ny+2,-1:nz+2)
 
     ! Step 1
     CALL rkstep
