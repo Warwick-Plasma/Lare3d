@@ -117,7 +117,7 @@ CONTAINS
           !X temperature gradient at the x boundaries of the current cell
           tg = (temperature(ixp,iy,iz) - temperature(ix,iy,iz))/dxc(ix)
 
-          fc_sp = kappa_0 * tb**pow * (bx(ix,iy,iz) * (tg * bx(ix,iy,iz) + &
+          fc_sp = - kappa_0 * tb**pow * (bx(ix,iy,iz) * (tg * bx(ix,iy,iz) + &
               tg_a1 * byf + tg_a2 * bzf)+tg*min_b)/(modb**2+min_b)
 
           ! Saturated Conductive Flux
@@ -125,10 +125,10 @@ CONTAINS
           fc_sa =  42.85_num * rho_b * tb**(3.0_num/2.0_num)  !42.85 = SRQT(m_p/m_e)
 
           ! Conductive Flux Limiter. Note flux_limiter is inverse of usual
-          fc = 1.0_num/(1.0_num/fc_sp + flux_limiter/fc_sa)
+          fc = fc_sp * fc_sa / MAX(ABS(fc_sp) + fc_sa, none_zero)
 
-          flux(ix,iy,iz) = flux(ix,iy,iz) +fc/dxb(ix)
-          flux(ixp,iy,iz) = flux(ixp,iy,iz) - fc/dxb(ix)
+          flux(ix,iy,iz) = flux(ix,iy,iz) - fc/dxb(ix)
+          flux(ixp,iy,iz) = flux(ixp,iy,iz) + fc/dxb(ix)
 
 
           !Y flux
@@ -162,7 +162,7 @@ CONTAINS
           tg = (temperature(ix,iyp,iz) - temperature(ix,iy,iz))/dyc(iy)
 
 
-          fc_sp = kappa_0 * tb**pow * (by(ix,iy,iz) * (tg * by(ix,iy,iz) + &
+          fc_sp = - kappa_0 * tb**pow * (by(ix,iy,iz) * (tg * by(ix,iy,iz) + &
               tg_a1 * bxf + tg_a2 * bzf)+tg*min_b)/(modb**2+min_b)
 
           ! Saturated Conductive Flux. 
@@ -170,10 +170,10 @@ CONTAINS
           fc_sa = 42.85_num * rho_b * tb**(3.0_num/2.0_num)  !42.85 = SRQT(m_p/m_e)
 
           ! Conductive Flux Limiter. Note flux_limiter is inverse of usual
-          fc = 1.0_num/(1.0_num/fc_sp + flux_limiter/fc_sa)
+          fc = fc_sp * fc_sa / MAX(ABS(fc_sp) + fc_sa, none_zero)
 
-          flux(ix,iy,iz) = flux(ix,iy,iz) +fc/dyb(iy)
-          flux(ix,iyp,iz) = flux(ix,iyp,iz) - fc/dyb(iy)
+          flux(ix,iy,iz) = flux(ix,iy,iz) - fc/dyb(iy)
+          flux(ix,iyp,iz) = flux(ix,iyp,iz) + fc/dyb(iy)
 
           !Z flux
           bxf=0.25_num*(bx(ix,iy,iz)+bx(ix,iy,izp)+&
@@ -205,7 +205,7 @@ CONTAINS
           !X temperature gradient at the x boundaries of the current cell
           tg = (temperature(ix,iy,izp) - temperature(ix,iy,iz))/dzc(iz)
 
-          fc_sp = kappa_0 * tb**pow * (bz(ix,iy,iz) * (tg * bz(ix,iy,iz) + &
+          fc_sp = - kappa_0 * tb**pow * (bz(ix,iy,iz) * (tg * bz(ix,iy,iz) + &
               tg_a1 * bxf + tg_a2 * byf)+tg*min_b)/(modb**2+min_b)
 
           ! Saturated Conductive Flux
@@ -213,10 +213,10 @@ CONTAINS
           fc_sa = 42.85_num * rho_b * tb**(3.0_num/2.0_num)  !42.85 = SRQT(m_p/m_e)
 
           ! Conductive Flux Limiter
-          fc = 1.0_num/(1.0_num/fc_sp + flux_limiter/fc_sa)
+          fc = fc_sp * fc_sa / MAX(ABS(fc_sp) + fc_sa, none_zero)
 
-          flux(ix,iy,iz) = flux(ix,iy,iz) + fc/dzb(iz)
-          flux(ix,iy,izp) = flux(ix,iy,izp) - fc/dzb(iz)
+          flux(ix,iy,iz) = flux(ix,iy,iz) - fc/dzb(iz)
+          flux(ix,iy,izp) = flux(ix,iy,izp) + fc/dzb(iz)
         END DO
       END DO
     END DO
