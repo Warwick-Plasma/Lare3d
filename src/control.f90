@@ -62,7 +62,7 @@ CONTAINS
 
     ! Set the maximum number of iterations of the core solver before the code
     ! terminates. If nsteps < 0 then the code will run until t = t_end
-    nsteps = 100
+    nsteps = 3
 
     ! The maximum runtime of the code
     t_end = 10.0_num
@@ -110,7 +110,7 @@ CONTAINS
 
     ! Turn on or off the Braginskii thermal conduction term in
     ! the MHD equations
-    conduction = .FALSE.
+    conduction = .TRUE.
     ! Turn on heat flux limiter
     heat_flux_limiter = .FALSE.
     ! Limiter used if on
