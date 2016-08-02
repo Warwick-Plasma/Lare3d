@@ -110,13 +110,10 @@ CONTAINS
 
     ! Turn on or off the Braginskii thermal conduction term in
     ! the MHD equations
-    ! WARNING: this is not robust. It is known to have problems
-    ! with steep temperature gradients and very hot regions with
-    ! large thermal conductivity. For many problems it is however
-    ! fine.
     conduction = .FALSE.
-    ! Set to any number larger than 10 to turn off limiter
-    ! See after_control in setup.F90
+    ! Turn on heat flux limiter
+    heat_flux_limiter = .FALSE.
+    ! Limiter used if on
     flux_limiter = 0.05_num
 
     ! Use radiation as specified in SUBROUTINE rad_losses
