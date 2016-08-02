@@ -13,8 +13,6 @@ MODULE conduct
   INTEGER :: n_s_stages
   REAL(num),PARAMETER :: pow=5.0_num/2.0_num
   REAL(num),PARAMETER :: min_b=1.0e-10_num
-  REAL(num) :: mult_local
-
 
 CONTAINS
 
@@ -23,6 +21,7 @@ CONTAINS
   !****************************************************************************
 
   FUNCTION calc_s_stages()
+
     REAL(num)  ::  stages, dt_parab, dt1, dt2, dt3, temp
     REAL(num) :: gm1
     INTEGER :: n_s_stages_local, nstages
@@ -46,9 +45,10 @@ CONTAINS
       END DO
     END DO
 
-    dt_parab = mult_local * dt_parab / SQRT(3.0_num)
+    dt_parab = dt_multiplier * dt_parab / SQRT(3.0_num)
 
     stages = 0.5_num*(SQRT(9.0_num + 16.0_num * (dt/dt_parab))-1.0_num)
+
     n_s_stages_local = CEILING(stages)
     IF (MODULO(n_s_stages,2) .EQ. 0) THEN
       n_s_stages_local = n_s_stages_local + 1
@@ -56,6 +56,7 @@ CONTAINS
     CALL MPI_ALLREDUCE(n_s_stages_local, nstages, 1, &
         MPI_INTEGER, MPI_MAX, comm, errcode)
     calc_s_stages=nstages
+
   END FUNCTION calc_s_stages
 
 
@@ -66,6 +67,7 @@ CONTAINS
   !****************************************************************************
 
   SUBROUTINE heat_flux(temperature, flux)
+
     REAL(num),INTENT(IN),DIMENSION(-1:,-1:,-1:) :: temperature
     REAL(num),INTENT(OUT),DIMENSION(-1:,-1:,-1:) :: flux
     INTEGER :: ix, ixp, ixm
@@ -251,7 +253,6 @@ CONTAINS
     flux(:,:,1)=flux(:,:,1)+temp
     DEALLOCATE(temp)
 
-
   END SUBROUTINE heat_flux
 
 
@@ -263,31 +264,8 @@ CONTAINS
 
   SUBROUTINE conduct_heat
 
-    REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: en_windback, nf_windback
-    LOGICAL :: windback, woundback
-
-    windback=.TRUE.
-    woundback=.FALSE.
-    ALLOCATE(en_windback(-1:nx+2,-1:ny+2,-1:nz+2))
-    ALLOCATE(nf_windback(-1:nx+2,-1:ny+2,-1:nz+2))
-    en_windback=energy
-    nf_windback=xi_n
-    mult_local=dt_multiplier
-    DO
-      windback=.FALSE.
-      n_s_stages = calc_s_stages()
-      CALL heat_conduct_sts2(windback)
-!      windback=.FALSE.
-      IF(.NOT. windback) EXIT
-      woundback=.TRUE.
-      mult_local=mult_local*0.9_num
-      energy=en_windback
-      xi_n=nf_windback
-    ENDDO
-    IF (woundback .AND. rank .EQ. 0) &
-        PRINT *,"Conduction finally completed with multiplier of ", mult_local
-    DEALLOCATE(en_windback)
-    DEALLOCATE(nf_windback)
+    n_s_stages = calc_s_stages()
+    CALL heat_conduct_sts2
 
   END SUBROUTINE conduct_heat
 
@@ -296,12 +274,11 @@ CONTAINS
   ! Implementation of the RKL2 scheme
   !****************************************************************************
   
-  SUBROUTINE heat_conduct_sts2(windback)
+  SUBROUTINE heat_conduct_sts2
 
     !Superstepping based conduction code
     !2nd order Runge-Kutta-Lagrange (RKL2) scheme
     !Based on Meyer at al. 2012 variables named as in that paper
-    LOGICAL, INTENT(INOUT) :: windback
     REAL(num), DIMENSION(:,:,:), ALLOCATABLE  :: flux
     REAL(num)  ::  omega_1
     REAL(num), DIMENSION(0:n_s_stages)  :: a, b
@@ -313,7 +290,7 @@ CONTAINS
     REAL(num)  ::  c0, c1
     REAL(num)  ::  Lc_Yj_1                  ! L^c(Y_j-1)
     REAL(num), DIMENSION(:,:,:), ALLOCATABLE  :: Lc_Y0    ! L^c(Y_0)
-    INTEGER :: j, newstages
+    INTEGER :: j
 
     ALLOCATE(flux(-1:nx+2,-1:ny+2,-1:nz+2))
     ALLOCATE(Y(0:3,-1:nx+2,-1:ny+2,-1:nz+2))
@@ -344,7 +321,6 @@ CONTAINS
     DO j=0,3
       Y(j,:,:,:) = energy
     END DO
-
 
     !! First STS stage
     DO iz=-1,nz+2
@@ -406,20 +382,6 @@ CONTAINS
         energy = Y(3,:,:,:)
         CALL energy_bcs
         IF (eos_number /= EOS_IDEAL) CALL neutral_fraction
-        newstages = calc_s_stages()
-        IF (newstages .GT. n_s_stages) THEN
-          IF (rank .EQ. 0) THEN
-            PRINT *,&
-                "Stability bounds of superstepping have been exceeded during iteration"
-            PRINT *, "Retrying with multiplier of ",mult_local
-          ENDIF
-          DEALLOCATE(temperature)
-          DEALLOCATE(Y)
-          DEALLOCATE(flux)
-          windback=.TRUE.
-          RETURN
-        ENDIF
-
         Y(2,:,:,:) = energy
         Y(3,1:nx,1:ny,1:nz) = 0.0_num
       END IF
