@@ -33,7 +33,9 @@ CONTAINS
       DO iy = 1 , ny
         DO ix = 1 , nx
           ! explicit TC time-step
-          temp = gm1 * energy(ix,iy,iz)
+          temp = gm1 * (2.0_num - xi_n(ix,iy,iz)) &
+            *(energy(ix,iy,iz)-(1.0_num - xi_n(ix,iy,iz))&
+            *ionise_pot)
           dt1 = rho(ix,iy,iz)*dxb(ix)**2 / (2.0_num * kappa_0 * &
               temp**pow)
           dt2 = rho(ix,iy,iz)*dyb(iy)**2 / (2.0_num * kappa_0 * &
@@ -77,15 +79,14 @@ CONTAINS
     REAL(num) :: tg_a1, tg_a2, tb_p, tb_m
     REAL(num) :: fc_sa, fc, modb, hfl
     REAL(num) :: byf, bxf, bzf
-    REAL(num), DIMENSION(:,:), ALLOCATABLE :: temp
 
     hfl = 0.0_num
     IF (heat_flux_limiter) hfl = 1.0_num
 
     flux=0.0_num
-    DO iz = 1,nz
-      DO iy = 1,ny
-        DO ix = 1,nx
+    DO iz = 0,nz
+      DO iy = 0,ny
+        DO ix = 0,nx
           ixp = ix + 1
           ixm = ix - 1
           iyp = iy + 1
@@ -97,7 +98,7 @@ CONTAINS
           byf=0.25_num*(by(ix,iy,iz)+by(ixp,iy,iz)+&
               by(ix,iym,iz)+by(ixp,iym,iz))
           bzf=0.25_num*(bz(ix,iy,iz)+bz(ixp,iy,iz)+&
-              bz(ix,iy,izm)+by(ixp,iy,izm))
+              bz(ix,iy,izm)+bz(ixp,iy,izm))
 
           modb=SQRT(bx(ix,iy,iz)**2+byf**2+bzf**2)
 
@@ -225,33 +226,6 @@ CONTAINS
         END DO
       END DO
     END DO
-
-    !Send and add the flux on the x face
-    ALLOCATE(temp(-1:ny+2,-1:nz+2))
-    temp=0.0_num
-    CALL MPI_SENDRECV(flux(nx+1,:,:),(ny+4)*(nz+4),mpireal,&
-        proc_x_max,tag,temp,(ny+4)*(nz+4),mpireal, &
-        proc_x_min,tag, comm, status, errcode)
-    flux(1,:,:)=flux(1,:,:)+temp
-    DEALLOCATE(temp)
-
-    !Send and add the flux on the y face
-    ALLOCATE(temp(-1:nx+2,-1:nz+2))
-    temp=0.0_num
-    CALL MPI_SENDRECV(flux(:,ny+1,:),(nx+4)*(nz+4),mpireal,&
-        proc_y_max,tag,temp,(nx+4)*(nz+4),mpireal, &
-        proc_y_min,tag, comm, status, errcode)
-    flux(:,1,:)=flux(:,1,:)+temp
-    DEALLOCATE(temp)
-
-    !Send and add the flux on the z face
-    ALLOCATE(temp(-1:nx+2,-1:ny+2))
-    temp=0.0_num
-    CALL MPI_SENDRECV(flux(:,:,nz+1),(nx+4)*(ny+4),mpireal,&
-        proc_z_max,tag,temp,(nx+4)*(ny+4),mpireal, &
-        proc_z_min,tag, comm, status, errcode)
-    flux(:,:,1)=flux(:,:,1)+temp
-    DEALLOCATE(temp)
 
   END SUBROUTINE heat_flux
 
