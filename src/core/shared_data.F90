@@ -48,7 +48,7 @@ MODULE constants
   REAL(num), PARAMETER :: none_zero = TINY(1.0_num)
   REAL(num), PARAMETER :: largest_number = HUGE(1.0_num)
   REAL(num), PARAMETER :: third = 1.0_num / 3.0_num, sixth = 1.0_num / 6.0_num
-  INTEGER, PARAMETER :: BC_PERIODIC = 1, BC_OTHER = 2
+  INTEGER, PARAMETER :: BC_PERIODIC = 1, BC_USER = 2
   INTEGER, PARAMETER :: BC_OPEN = 3
 
   ! IC codes

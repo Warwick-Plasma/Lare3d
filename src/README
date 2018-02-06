@@ -49,10 +49,10 @@ eos_number = EOS_ION
 This was needed to simplify maintenance of the code. Names are now
   xbc_min = BC_PERIODIC
   xbc_max = BC_PERIODIC
-  ybc_min = BC_OTHER
-  ybc_max = BC_OTHER
-  zbc_min = BC_OTHER
-  zbc_max = BC_OTHER
+  ybc_min = BC_USER
+  ybc_max = BC_USER
+  zbc_min = BC_USER
+  zbc_max = BC_USER
 Hopefully these names need no explaining.
 
 3. The neutral fraction based on modified Saha uses the local temperature, without a
