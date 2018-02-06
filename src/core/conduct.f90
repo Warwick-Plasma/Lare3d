@@ -300,10 +300,8 @@ CONTAINS
     DO iz=-1,nz+2
       DO iy=-1,ny+2
         DO ix=-1,nx+2
-          temperature(ix,iy,iz) = (gamma - 1.0_num) / &
-              (2.0_num - xi_n(ix,iy,iz)) &
-              * (Y(0,ix,iy,iz) - (1.0_num - xi_n(ix,iy,iz))&
-              * ionise_pot)
+          temperature(ix,iy,iz) = (gamma - 1.0_num) / (2.0_num - xi_n(ix,iy,iz)) &
+              * (Y(0,ix,iy,iz) - (1.0_num - xi_n(ix,iy,iz)) * ionise_pot)
         ENDDO
       ENDDO
     ENDDO
