@@ -8,6 +8,8 @@ MODULE lagran
   USE boundary
   USE neutral
   USE conduct
+  USE radiative
+  USE openboundary
 
   IMPLICIT NONE
 
@@ -20,7 +22,6 @@ MODULE lagran
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: visc_heat, pressure, rho_v, cv_v
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: flux_x, flux_y, flux_z, curlb
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: fx_visc, fy_visc, fz_visc
-  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: fx, fy, fz
 
 CONTAINS
 
@@ -43,9 +44,6 @@ CONTAINS
     ALLOCATE(pressure(-1:nx+2,-1:ny+2,-1:nz+2))
     ALLOCATE(rho_v(-1:nx+1,-1:ny+1,-1:nz+1))
     ALLOCATE(cv_v(-1:nx+1,-1:ny+1,-1:nz+1))
-    ALLOCATE(fx(0:nx,0:ny,0:nz))
-    ALLOCATE(fy(0:nx,0:ny,0:nz))
-    ALLOCATE(fz(0:nx,0:ny,0:nz))
     ALLOCATE(fx_visc(0:nx,0:ny,0:nz))
     ALLOCATE(fy_visc(0:nx,0:ny,0:nz))
     ALLOCATE(fz_visc(0:nx,0:ny,0:nz))
@@ -114,7 +112,7 @@ CONTAINS
       dt = dt / REAL(substeps, num)
 
       DO subcycle = 1, substeps
-        CALL eta_calc
+        IF (resistive_mhd) CALL eta_calc
         IF (eos_number /= EOS_IDEAL) CALL neutral_fraction
         IF (cowling_resistivity) CALL perpendicular_resistivity
         IF (resistive_mhd) CALL resistive_effects
@@ -137,13 +135,13 @@ CONTAINS
     END IF
 
     IF (conduction) CALL conduct_heat
+    IF (radiation) CALL rad_losses
 
     CALL predictor_corrector_step
 
     DEALLOCATE(bx1, by1, bz1, alpha1, alpha2, alpha3)
     DEALLOCATE(visc_heat, pressure, rho_v, cv_v)
     DEALLOCATE(fx_visc, fy_visc, fz_visc)
-    DEALLOCATE(fx, fy, fz)
     DEALLOCATE(flux_x, flux_y, flux_z)
     DEALLOCATE(curlb)
 
@@ -168,6 +166,7 @@ CONTAINS
     REAL(num) :: bxv, byv, bzv, jx, jy, jz
     REAL(num) :: cvx, cvxp, cvy, cvyp, cvz, cvzp
     REAL(num) :: dv
+    REAL(num) :: fx, fy, fz
 
     CALL b_field_and_cv1_update
 
@@ -212,19 +211,19 @@ CONTAINS
           w1 = (pp + ppy + ppz + ppyz) * 0.25_num
           ! P total at Ex(i+1,j,k)
           w2 = (ppx + ppxy + ppxz + ppxyz) * 0.25_num
-          fx(ix,iy,iz) = -(w2 - w1) / dxc(ix)
+          fx = -(w2 - w1) / dxc(ix)
 
           ! P total at Ey(i,j,k)
           w1 = (pp + ppx + ppz + ppxz) * 0.25_num
           ! P total at Ey(i,j+1,k)
           w2 = (ppy + ppxy + ppyz + ppxyz) * 0.25_num
-          fy(ix,iy,iz) = -(w2 - w1) / dyc(iy)
+          fy = -(w2 - w1) / dyc(iy)
 
           ! P total at Ez(i,j,k)
           w1 = (pp + ppx + ppy + ppxy) * 0.25_num
           ! P total at Ez(i,j,k+1)
           w2 = (ppz + ppxz + ppyz + ppxyz) * 0.25_num
-          fz(ix,iy,iz) = -(w2 - w1) / dzc(iz)
+          fz = -(w2 - w1) / dzc(iz)
 
           cvx  = cv1(ix ,iy ,iz ) + cv1(ix ,iyp,iz ) &
               +  cv1(ix ,iy ,izp) + cv1(ix ,iyp,izp)
@@ -293,19 +292,16 @@ CONTAINS
               +  bz1(ix,iyp,izp) + bz1(ixp,iyp,izp)) &
               / (cvx + cvxp)
 
-          fx(ix,iy,iz) = fx(ix,iy,iz) + (jy * bzv - jz * byv)
-          fy(ix,iy,iz) = fy(ix,iy,iz) + (jz * bxv - jx * bzv)
-          fz(ix,iy,iz) = fz(ix,iy,iz) + (jx * byv - jy * bxv)
+          fx = fx + (jy * bzv - jz * byv)
+          fy = fy + (jz * bxv - jx * bzv)
+          fz = fz + (jx * byv - jy * bxv)
 
-          fz(ix,iy,iz) = fz(ix,iy,iz) - rho_v(ix,iy,iz) * grav(iz)
+          fz = fz - rho_v(ix,iy,iz) * grav(iz)
 
           ! Find half step velocity needed for remap
-          vx1(ix,iy,iz) = vx(ix,iy,iz) + dt2 * (fx_visc(ix,iy,iz) &
-              + fx(ix,iy,iz)) / rho_v(ix,iy,iz)
-          vy1(ix,iy,iz) = vy(ix,iy,iz) + dt2 * (fy_visc(ix,iy,iz) &
-              + fy(ix,iy,iz)) / rho_v(ix,iy,iz)
-          vz1(ix,iy,iz) = vz(ix,iy,iz) + dt2 * (fz_visc(ix,iy,iz) &
-              + fz(ix,iy,iz)) / rho_v(ix,iy,iz)
+          vx1(ix,iy,iz) = vx(ix,iy,iz) + dt2 * (fx_visc(ix,iy,iz) + fx) / rho_v(ix,iy,iz)
+          vy1(ix,iy,iz) = vy(ix,iy,iz) + dt2 * (fy_visc(ix,iy,iz) + fy) / rho_v(ix,iy,iz)
+          vz1(ix,iy,iz) = vz(ix,iy,iz) + dt2 * (fz_visc(ix,iy,iz) + fz) / rho_v(ix,iy,iz)
         END DO
       END DO
     END DO
@@ -320,17 +316,17 @@ CONTAINS
     DO iz = 0, nz
       DO iy = 0, ny
         DO ix = 0, nx
-          vx(ix,iy,iz) = vx(ix,iy,iz) + dt * (fx_visc(ix,iy,iz) &
-              + fx(ix,iy,iz)) / rho_v(ix,iy,iz)
-          vy(ix,iy,iz) = vy(ix,iy,iz) + dt * (fy_visc(ix,iy,iz) &
-              + fy(ix,iy,iz)) / rho_v(ix,iy,iz)
-          vz(ix,iy,iz) = vz(ix,iy,iz) + dt * (fz_visc(ix,iy,iz) &
-              + fz(ix,iy,iz)) / rho_v(ix,iy,iz)
+          vx(ix,iy,iz) = 2.0_num * vx1(ix,iy,iz) - vx(ix,iy,iz) 
+          vy(ix,iy,iz) = 2.0_num * vy1(ix,iy,iz) - vy(ix,iy,iz) 
+          vz(ix,iy,iz) = 2.0_num * vz1(ix,iy,iz) - vz(ix,iy,iz) 
         END DO
       END DO
     END DO
 
     CALL velocity_bcs
+    IF (any_open) THEN
+      CALL open_bcs         
+    END IF 
 
     !Finally correct density and energy to final values
     DO iz = 1, nz
