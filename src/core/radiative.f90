@@ -109,7 +109,7 @@ CONTAINS
           END DO
           IF (k .LT. 0) THEN
             temp_si = t_boundary(1)
-            energy(ix,iy) = temp_si * 2.0_num / (gamma - 1.0_num) / temp_norm
+            energy(ix,iy,iz) = temp_si * 2.0_num / (gamma - 1.0_num) / temp_norm
             CYCLE
           ENDIF
   
@@ -121,7 +121,7 @@ CONTAINS
           END IF
   
           energy(ix,iy,iz) = temp_si * 2.0_num / (gamma - 1.0_num) / temp_norm
-          
+
         END DO
       END DO
     END DO 
