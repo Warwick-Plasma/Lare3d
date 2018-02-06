@@ -202,6 +202,7 @@ CONTAINS
       END DO
       iz1 = iz1 + 1
     END DO
+    bx(-2,:,:) = bx(-1,:,:)
 
     amp = 0.01_num
     wptb = 20.0_num
