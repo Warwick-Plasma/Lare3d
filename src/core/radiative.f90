@@ -97,7 +97,7 @@ CONTAINS
             yt = yk(k) + ratios(k) * LOG((t_boundary(k)/temp_si))
           END IF
   
-          inverse_t_cool = cool * rho(ix,iy)
+          inverse_t_cool = cool * rho(ix,iy,iz)
           yt = yt +  dt * inverse_t_cool *  time_norm
   
           k = -1

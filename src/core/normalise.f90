@@ -13,19 +13,20 @@ CONTAINS
 
   SUBROUTINE normalise_transport
 
-    REAL(num) :: eta_bar_0, pressure0, v0, energy0, temp0, mbar, kappa0
+    REAL(num) :: eta_bar_0, pressure0, v0, energy0, mbar, kappa0
 
-    pressure0 = B0**2 / mu0_si
-    energy0 = pressure0 / rho0
+    pressure0 = B_norm**2 / mu0_si
+    energy0 = pressure0 / rho_norm
     v0 = SQRT(energy0)
     mbar = mf * mh_si
-    temp0 = (mbar / kb_si) * energy0
+    temp_norm = (mbar / kb_si) * energy0
+    time_norm = L_norm / v0
 
     ! Normalise tbar, r_bar and eta_bar for including Cowling resistivity and
     ! neutrals
-    t_bar = t_bar / temp0
-    r_bar = r_bar * rho0 / temp0**1.5_num
-    eta_bar_0 = (mu0_si * L0 * v0) * rho0**2 * SQRT(temp0) / B0**2
+    t_bar = t_bar / temp_norm
+    r_bar = r_bar * rho_norm / temp_norm**1.5_num
+    eta_bar_0 = (mu0_si * L_norm * v0) * rho_norm**2 * SQRT(temp_norm) / B_norm**2
     eta_bar = eta_bar / eta_bar_0
 
     ! Normalise ionise_pot - inioisation potential of hydrogen
@@ -33,21 +34,21 @@ CONTAINS
     IF (eos_number /= EOS_ION) ionise_pot = 0.0_num
 
     ! Normalise tr required for get_neutral etc.
-    tr = tr / temp0
+    tr = tr / temp_norm
 
     ! Normalise parallel thermal conductivity
-    kappa0 = energy0**1.5_num * rho0 * L0 / (mbar / kb_si * energy0)**3.5_num
+    kappa0 = energy0**1.5_num * rho_norm * L_norm / (mbar / kb_si * energy0)**3.5_num
     kappa_0 = 1.e-11_num / kappa0
 
     ! Find the normalised temperature corresponding to 100MK
-    temperature_100mk = 1.e8_num / temp0
+    temperature_100mk = 1.e8_num / temp_norm
 
     ! Convertion factor to get temperature in MK from temperature
-    t2tmk = temp0 / 1.e6_num
+    t2tmk = temp_norm / 1.e6_num
 
     ! Constants used in radiative losses
-    h_star = L0 / (rho0 * v0**3)
-    lr_star = 1.148e-35_num * (rho0 / mbar)**2
+    h_star = L_norm / (rho_norm * v0**3)
+    lr_star = 1.148e-35_num * (rho_norm / mbar)**2
 
   END SUBROUTINE normalise_transport
 

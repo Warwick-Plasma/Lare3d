@@ -37,13 +37,13 @@ CONTAINS
     ! non-ideal MHD terms.
 
     ! Magnetic field normalisation in Tesla
-    B0 = 0.03_num
+    B_norm = 0.03_num
 
     ! Length normalisation in m
-    L0 = 180.e3_num
+    L_norm = 180.e3_num
 
     ! Density normalisation in kg / m^3
-    RHO0 = 1.67e-4_num
+    rho_norm = 1.67e-4_num
 
   END SUBROUTINE user_normalisation
 
