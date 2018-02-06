@@ -251,7 +251,7 @@ radiative.o: radiative.f90 boundary.o shared_data.o
 diagnostics.o: diagnostics.F90 boundary.o conduct.o shared_data.o \
   version_data.o $(SDFMOD)
 initial_conditions.o: initial_conditions.f90 neutral.o shared_data.o
-lagran.o: lagran.F90 boundary.o conduct.o neutral.o shared_data.o
+lagran.o: lagran.F90 boundary.o openboundary.o conduct.o neutral.o shared_data.o
 lare3d.o: lare3d.f90 boundary.o control.o diagnostics.o initial_conditions.o \
   lagran.o mpi_routines.o neutral.o normalise.o openboundary.o remap.o setup.o \
   shared_data.o welcome.o
