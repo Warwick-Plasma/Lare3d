@@ -136,7 +136,7 @@ MODULE shared_data
   REAL(num) :: h_star
 
   ! Heat conduction
-  LOGICAL :: conduction, heat_flux_limiter, radiation, coronal_heating
+  LOGICAL :: conduction, heat_flux_limiter, radiation
   REAL(num) :: kappa_0, flux_limiter, temperature_100mk
 
   ! Equation of state

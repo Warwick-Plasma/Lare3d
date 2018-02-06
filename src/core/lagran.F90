@@ -136,7 +136,7 @@ CONTAINS
       dt = actual_dt
     END IF
 
-    IF (conduction .OR. coronal_heating .OR. radiation) CALL conduct_heat
+    IF (conduction) CALL conduct_heat
 
     CALL predictor_corrector_step
 
