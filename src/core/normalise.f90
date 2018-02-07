@@ -40,7 +40,6 @@ CONTAINS
     kappa0 = energy0**1.5_num * rho_norm * L_norm / (mbar / kb_si * energy0)**3.5_num
     kappa_0 = 1.e-11_num / kappa0
 
-
     ! Constants used in radiative losses
     h_star = L_norm / (rho_norm * v0**3)
     lr_star = 1.148e-35_num * (rho_norm / mbar)**2

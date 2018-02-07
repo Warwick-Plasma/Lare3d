@@ -123,6 +123,8 @@ CONTAINS
           !X temperature gradient at the x boundaries of the current cell
           tg = (temperature(ixp,iy,iz) - temperature(ix,iy,iz))/dxc(ix)
 
+          tb = MAX(tb, 0.0_num)
+
           fc_sp = - kappa_0 * tb**pow * (bx(ix,iy,iz) * (tg * bx(ix,iy,iz) + &
               tg_a1 * byf + tg_a2 * bzf)+tg*min_b)/(modb**2+min_b)
 
@@ -167,6 +169,7 @@ CONTAINS
           !X temperature gradient at the y boundaries of the current cell
           tg = (temperature(ix,iyp,iz) - temperature(ix,iy,iz))/dyc(iy)
 
+          tb = MAX(tb, 0.0_num)
 
           fc_sp = - kappa_0 * tb**pow * (by(ix,iy,iz) * (tg * by(ix,iy,iz) + &
               tg_a1 * bxf + tg_a2 * bzf)+tg*min_b)/(modb**2+min_b)
@@ -210,6 +213,8 @@ CONTAINS
 
           !X temperature gradient at the x boundaries of the current cell
           tg = (temperature(ix,iy,izp) - temperature(ix,iy,iz))/dzc(iz)
+
+          tb = MAX(tb, 0.0_num)
 
           fc_sp = - kappa_0 * tb**pow * (bz(ix,iy,iz) * (tg * bz(ix,iy,iz) + &
               tg_a1 * bxf + tg_a2 * byf)+tg*min_b)/(modb**2+min_b)
