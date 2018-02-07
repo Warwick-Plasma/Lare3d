@@ -110,16 +110,15 @@ CONTAINS
 
     ! Turn on or off the Braginskii thermal conduction term in
     ! the MHD equations
-    conduction = .TRUE.
+    conduction = .FALSE.
     ! Turn on heat flux limiter
-    heat_flux_limiter = .FALSE.
+    heat_flux_limiter = .TRUE.
     ! Limiter used if on
     flux_limiter = 0.05_num
 
     ! Use radiation as specified in SUBROUTINE rad_losses
     ! in src/core/radiative.f90
     radiation = .FALSE.
-
 
     ! Remap kinetic energy correction. LARE does not perfectly conserve kinetic
     ! energy during the remap step. This missing energy can be added back into
