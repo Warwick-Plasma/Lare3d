@@ -170,9 +170,9 @@ CONTAINS
 
     CALL b_field_and_cv1_update
 
-    bx1 = bx1 * cv1
-    by1 = by1 * cv1
-    bz1 = bz1 * cv1
+    bx1(:,:,:) = bx1(:,:,:) * cv1(:,:,:)
+    by1(:,:,:) = by1(:,:,:) * cv1(:,:,:)
+    bz1(:,:,:) = bz1(:,:,:) * cv1(:,:,:)
 
     DO iz = 0, nz + 1
       DO iy = 0, ny + 1
@@ -308,9 +308,9 @@ CONTAINS
 
     CALL remap_v_bcs
 
-    bx1 = bx1 / cv1
-    by1 = by1 / cv1
-    bz1 = bz1 / cv1
+    bx1(:,:,:) = bx1(:,:,:) / cv1(:,:,:)
+    by1(:,:,:) = by1(:,:,:) / cv1(:,:,:)
+    bz1(:,:,:) = bz1(:,:,:) / cv1(:,:,:)
     CALL shock_heating
 
     DO iz = 0, nz
@@ -1113,9 +1113,9 @@ CONTAINS
     ALLOCATE( c3(0:nx,0:ny,0:nz),  c4(0:nx,0:ny,0:nz))
 #endif
 
-    bx1 = bx(-1:nx+2,-1:ny+2,-1:nz+2)
-    by1 = by(-1:nx+2,-1:ny+2,-1:nz+2)
-    bz1 = bz(-1:nx+2,-1:ny+2,-1:nz+2)
+    bx1(:,:,:) = bx(-1:nx+2,-1:ny+2,-1:nz+2)
+    by1(:,:,:) = by(-1:nx+2,-1:ny+2,-1:nz+2)
+    bz1(:,:,:) = bz(-1:nx+2,-1:ny+2,-1:nz+2)
 
     ! Step 1
     CALL rkstep
@@ -1167,46 +1167,46 @@ CONTAINS
     half_dt = dt * 0.5_num
     dt6 = dt * sixth
 
-    k1x = flux_x
-    k1y = flux_y
-    k1z = flux_z
-    c1 = curlb
+    k1x(:,:,:) = flux_x(:,:,:)
+    k1y(:,:,:) = flux_y(:,:,:)
+    k1z(:,:,:) = flux_z(:,:,:)
+    c1(:,:,:) = curlb(:,:,:)
 
     ! Step 2
     CALL bstep(k1x, k1y, k1z, half_dt)
 
     CALL rkstep
 
-    k2x = flux_x
-    k2y = flux_y
-    k2z = flux_z
-    c2 = curlb
+    k2x(:,:,:) = flux_x(:,:,:)
+    k2y(:,:,:) = flux_y(:,:,:)
+    k2z(:,:,:) = flux_z(:,:,:)
+    c2(:,:,:) = curlb(:,:,:)
 
     ! Step 3
     CALL bstep(k2x, k2y, k2z, half_dt)
 
     CALL rkstep
 
-    k3x = flux_x
-    k3y = flux_y
-    k3z = flux_z
-    c3 = curlb
+    k3x(:,:,:) = flux_x(:,:,:)
+    k3y(:,:,:) = flux_y(:,:,:)
+    k3z(:,:,:) = flux_z(:,:,:)
+    c3(:,:,:)= curlb(:,:,:)
 
     ! Step 4
     CALL bstep(k3x, k3y, k3z, dt)
 
     CALL rkstep
 
-    k4x = flux_x
-    k4y = flux_y
-    k4z = flux_z
-    c4 = curlb
+    k4x(:,:,:) = flux_x(:,:,:)
+    k4y(:,:,:) = flux_y(:,:,:)
+    k4z(:,:,:) = flux_z(:,:,:)
+    c4(:,:,:) = curlb(:,:,:)
 
     ! Full update
-    k1x = k1x + 2.0_num * k2x + 2.0_num * k3x + k4x
-    k1y = k1y + 2.0_num * k2y + 2.0_num * k3y + k4y
-    k1z = k1z + 2.0_num * k2z + 2.0_num * k3z + k4z
-    c1 = c1 + 2.0_num * c2 + 2.0_num * c3 + c4
+    k1x(:,:,:) = k1x(:,:,:) + 2.0_num * k2x(:,:,:) + 2.0_num * k3x(:,:,:) + k4x(:,:,:)
+    k1y(:,:,:) = k1y(:,:,:) + 2.0_num * k2y(:,:,:) + 2.0_num * k3y(:,:,:) + k4y(:,:,:)
+    k1z(:,:,:) = k1z(:,:,:) + 2.0_num * k2z(:,:,:) + 2.0_num * k3z(:,:,:) + k4z(:,:,:)
+    c1(:,:,:) = c1(:,:,:) + 2.0_num * c2(:,:,:) + 2.0_num * c3(:,:,:) + c4(:,:,:)
 
     CALL bstep(k1x, k1y, k1z, dt6)
 

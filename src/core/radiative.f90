@@ -31,18 +31,18 @@ CONTAINS
 
     REAL(num) :: frac
 
-    t_boundary = (/0.02_num, 0.0398_num, 0.0794_num, 0.251_num, 0.562_num, 1.995_num, 10.0_num/) * 1e6_num
+    t_boundary(:) = (/0.02_num, 0.0398_num, 0.0794_num, 0.251_num, 0.562_num, 1.995_num, 10.0_num/) * 1e6_num
 
     !Define power for polynomial fit.
     !Alpha is defined as integer but RTV has one none
     !integer power so have integer alpha array and real pow array defined below.
     !The interger array is needed as alpha=1 is a special case.
     frac = -2.0_num / 3.0_num
-    alpha = (/0, 2, 0, -2, 0, 0/)
-    pow = REAL(alpha, num) + (/0.0_num, 0.0_num, 0.0_num, 0.0_num, 0.0_num, frac/)
+    alpha(:) = (/0, 2, 0, -2, 0, 0/)
+    pow(:) = REAL(alpha, num) + (/0.0_num, 0.0_num, 0.0_num, 0.0_num, 0.0_num, frac/)
 
     !Usually specify RTV in cgs
-    psi = (/-21.85_num, -31.0_num, -21.2_num, -10.4_num, -21.94_num, -17.73_num/)
+    psi(:) = (/-21.85_num, -31.0_num, -21.2_num, -10.4_num, -21.94_num, -17.73_num/)
     psi = 10**psi
     !Convert to SI
     psi = 1.e-13_num * psi

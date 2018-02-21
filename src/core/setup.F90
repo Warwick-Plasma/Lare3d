@@ -256,7 +256,7 @@ CONTAINS
     f = (lx_new - length_x) / (length_x - L) / 2.0_num
 
     dx = length_x / REAL(nx_global, num)
-    dxnew = dx + f * (1.0_num + TANH((ABS(xb_global) - L) / width)) * dx
+    dxnew(:) = dx + f * (1.0_num + TANH((ABS(xb_global(:)) - L) / width)) * dx
 
     DO ix = 1, nx_global + 2
       xb_global(ix) = xb_global(ix-1) + dxnew(ix)
@@ -294,7 +294,7 @@ CONTAINS
     f = (ly_new - length_y) / (length_y - L) / 2.0_num
 
     dy = length_y / REAL(ny_global, num)
-    dynew = dy + f * (1.0_num + TANH((ABS(yb_global) - L) / width)) * dy
+    dynew(:) = dy + f * (1.0_num + TANH((ABS(yb_global(:)) - L) / width)) * dy
 
     DO iy = 1, ny_global + 2
       yb_global(iy) = yb_global(iy-1) + dynew(iy)
@@ -332,7 +332,7 @@ CONTAINS
     f = (lz_new - length_z) / (length_z - L) / 2.0_num
 
     dz = length_z / REAL(nz_global, num)
-    dznew = dz + f * (1.0_num + TANH((ABS(zb_global) - L) / width)) * dz
+    dznew(:) = dz + f * (1.0_num + TANH((ABS(zb_global(:)) - L) / width)) * dz
 
     DO iz = 1, nz_global + 2
       zb_global(iz) = zb_global(iz-1) + dznew(iz)

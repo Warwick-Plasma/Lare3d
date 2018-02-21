@@ -51,7 +51,8 @@ ifeq ($(strip $(COMPILER)),gfortran)
   FFLAGS = -O3
   ifeq ($(strip $(MODE)),debug)
     FFLAGS = -O0 -g -Wall -Wextra -pedantic -fbounds-check \
-             -ffpe-trap=invalid,zero,overflow -Wno-unused-parameter
+             -ffpe-trap=invalid,zero,overflow -Wno-unused-parameter \
+						 -Wrealloc-lhs-all
     #FFLAGS += -ffpe-trap=underflow,denormal
 
     GNUVER := $(shell gfortran -dumpversion | head -1 \

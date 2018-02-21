@@ -356,7 +356,7 @@ CONTAINS
         !for jth stage  Y=[Y_0, Y_j-2, Y_j-1 , Y_j]
         Y(1,:,:,:) = Y(2,:,:,:)
         !This is not ideal, but it allows you to not have special boundary conditions
-        energy = Y(3,:,:,:)
+        energy(:,:,:) = Y(3,:,:,:)
         CALL energy_bcs
         IF (eos_number /= EOS_IDEAL) CALL neutral_fraction
         Y(2,:,:,:) = energy

@@ -35,7 +35,7 @@ CONTAINS
 
     dm = 0.0_num
     ! Store initial density in rho1
-    rho1 = rho
+    rho1(:,:,:) = rho(:,:,:)
 
     DO iz = -1, nz + 2
       izm = iz - 1
