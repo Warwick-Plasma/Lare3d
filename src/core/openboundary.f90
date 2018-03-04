@@ -419,6 +419,7 @@ CONTAINS
     END DO
 
     bxbc(0) = 0.5_num * (bxbc(1) + bxfar)
+    IF (ABS(bxbc(0)) <= none_zero) bxbc(0) = none_zero
 
     lambdag = 0.5_num * (lambdaystar(3) + lambdaystar(4) &
         + rhofar * cxfar * (uystar(3) - uystar(4)))
