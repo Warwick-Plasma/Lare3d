@@ -139,11 +139,13 @@ To perform an initial checkout of the code using git, you should issue the
 following command:
 
 ```
-  git clone --recursive ssh://<name>@ccpforge.cse.rl.ac.uk/gitroot/lare3d
+  git clone --recursive https://cfsa-pmw.warwick.ac.uk/Lare/Lare3d.git
 ```
 
 The "--recursive" flag ensures that not only the "lare3d"
-repository is checked out, but also the "SDF" submodules.
+repository is checked out, but also the "SDF" submodules. You will be prompted
+for a username and password. You should enter the same username and password
+that you use to login to your GitLab account.
 
 It is recommended that after checking out a copy of the git repository, users
 immediately create a new working branch and leave the default "master" branch
