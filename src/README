@@ -5,6 +5,7 @@ Contains
   control.f90
   diagnostics.f90
   initial_conditions.f90
+  radiative.f90
 
 -----------------------------------------------------------------
 control.f90
@@ -33,28 +34,8 @@ diagnostics.f90
 
 diagnostics.f90 performs the output of data to the output dump files, and must be changed by the user if additional output data is required. Changing the output dumps is described in the LARE manual
 -----------------------------------------------------------------
+radiative.f90
 
+specify user defined radiative losses and heating functions
+-----------------------------------------------------------------
 
-
-
-************************************************************************************
-CHANGELOG **************************************************************************
-
-New in v2.8
------------
-1. Fixed error in calculating temperature and specific internal energy density when using
-eos_number = EOS_ION
-
-2. Changed names of boundaries in control.f90. This means old control.f90 files will fail.
-This was needed to simplify maintenance of the code. Names are now
-  xbc_min = BC_PERIODIC
-  xbc_max = BC_PERIODIC
-  ybc_min = BC_USER
-  ybc_max = BC_USER
-  zbc_min = BC_USER
-  zbc_max = BC_USER
-Hopefully these names need no explaining.
-
-3. The neutral fraction based on modified Saha uses the local temperature, without a
-dilution factor, below a height of 0. Therefore the photosphere must be defined at z=0
-for this to work.

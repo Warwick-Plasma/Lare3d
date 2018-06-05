@@ -56,20 +56,20 @@ CONTAINS
   SUBROUTINE control_variables
 
     ! Set the number of gridpoints in x and y directions
-    nx_global = 64
-    ny_global = 64
-    nz_global = 64
+    nx_global = 10
+    ny_global = 10
+    nz_global = 10
 
     ! Set the maximum number of iterations of the core solver before the code
     ! terminates. If nsteps < 0 then the code will run until t = t_end
-    nsteps = 3
+    nsteps = 1
 
     ! The maximum runtime of the code
     t_end = 10.0_num
 
     ! Shock viscosities as detailed in manual - they are dimensionless
     visc1 = 0.1_num
-    visc2 = 0.0_num
+    visc2 = 0.5_num
 
     ! Set these constants to manually override the domain decomposition.
     ! If either constant is set to zero then the code will try to automatically
@@ -112,13 +112,17 @@ CONTAINS
     ! the MHD equations
     conduction = .FALSE.
     ! Turn on heat flux limiter
-    heat_flux_limiter = .TRUE.
+    heat_flux_limiter = .FALSE.
     ! Limiter used if on
     flux_limiter = 0.05_num
 
     ! Use radiation as specified in SUBROUTINE rad_losses
-    ! in src/core/radiative.f90
+    ! in src/radiative.f90
     radiation = .FALSE.
+
+    ! Include user specified heating function as specified in 
+    ! SUBROUTINE rad_losses user_defined_heating in src/radiative.f90
+    coronal_heating = .FALSE.
 
     ! Remap kinetic energy correction. LARE does not perfectly conserve kinetic
     ! energy during the remap step. This missing energy can be added back into
@@ -156,6 +160,14 @@ CONTAINS
     ! These routines are in boundary.f90 and you should check that they
     ! actually do what you want.
     damping = .FALSE.
+
+    ! Control Boris scheme for limiting the Alfven speed
+    ! Logical boris to turn on/off
+    ! va_max controls the effective mass density and is
+    ! the reduced light speed in Boris's paper in Lare normalised units
+    boris = .FALSE.
+    boris_b_only = .FALSE.
+    va_max = 4.7e3_num
 
     ! Set the equation of state. Valid choices are
     ! EOS_IDEAL - Simple ideal gas for perfectly ionised plasma

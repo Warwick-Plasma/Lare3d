@@ -7,7 +7,7 @@ MODULE radiative
 
   PRIVATE
 
-  PUBLIC :: rad_losses
+  PUBLIC :: rad_losses, user_defined_heating
 
   INTEGER, PARAMETER :: n = 7   !set the number of temperature boundaries used in Q(T)
   INTEGER, PARAMETER  :: kmax = n - 1
@@ -48,6 +48,36 @@ CONTAINS
     psi = 1.e-13_num * psi
 
   END SUBROUTINE setup_loss_function
+
+
+
+
+  SUBROUTINE user_defined_heating
+    ! Use this to define any heating needed on each timestep
+    ! This is a dumb example so change to the heating needed
+    ! This example specifies the heating rate (heat_in) in S.I. then
+    ! converts to Lare units
+
+    REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: heat_in
+
+    ALLOCATE (heat_in(-1:nx+2, -1:ny+2, -1:nz+2))
+
+    ! Specify heating in S.I. units W/m^3
+    DO iz = 1, nz
+    DO iy = 1, ny
+      DO ix = 1, nx
+        heat_in(ix,iy,iz) = 0.1 _num * EXP(-xc(ix)**2 -yc(iy)**2 - zc(iz)**2)
+      END DO
+    END DO
+    END DO
+    ! Convert to internal Lare units
+    heat_in(:,:,:) = heat_in(:,:,:) * time_norm**3 / (rho_norm * L_norm)
+
+    energy(:,:,:) = energy(:,:,:) + heat_in(:,:,:) * dt / rho(:,:,:)
+    CALL energy_bcs
+
+  END SUBROUTINE user_defined_heating
+
 
 
 

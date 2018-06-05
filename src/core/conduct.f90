@@ -10,7 +10,6 @@ MODULE conduct
 
   PUBLIC :: conduct_heat
 
-  INTEGER :: n_s_stages
   REAL(num),PARAMETER :: pow=5.0_num/2.0_num
   REAL(num),PARAMETER :: min_b=1.0e-10_num
 
@@ -78,7 +77,7 @@ CONTAINS
     REAL(num) :: tb, tg, fc_sp, rho_b
     REAL(num) :: tg_a1, tg_a2, tb_p, tb_m
     REAL(num) :: fc_sa, fc, modb, hfl
-    REAL(num) :: byf, bxf, bzf
+    REAL(num) :: byf, bxf, bzf, b_component
 
     hfl = 0.0_num
     IF (heat_flux_limiter) hfl = 1.0_num
@@ -100,7 +99,7 @@ CONTAINS
           bzf=0.25_num*(bz(ix,iy,iz)+bz(ixp,iy,iz)+&
               bz(ix,iy,izm)+bz(ixp,iy,izm))
 
-          modb=SQRT(bx(ix,iy,iz)**2+byf**2+bzf**2)
+          modb = bx(ix,iy,iz)**2 + byf**2 + bzf**2 + min_b
 
           !Braginskii Conductive Flux in X
           !Temperature at the x boundaries in the current cell
@@ -126,11 +125,12 @@ CONTAINS
           tb = MAX(tb, 0.0_num)
 
           fc_sp = - kappa_0 * tb**pow * (bx(ix,iy,iz) * (tg * bx(ix,iy,iz) + &
-              tg_a1 * byf + tg_a2 * bzf)+tg*min_b)/(modb**2+min_b)
+              tg_a1 * byf + tg_a2 * bzf)+tg*min_b) / modb
 
           ! Saturated Conductive Flux
           rho_b = (rho(ixp,iy,iz)+rho(ix,iy,iz))/2.0_num
-          fc_sa =  42.85_num * flux_limiter * rho_b * tb**(3.0_num/2.0_num)  !42.85 = SRQT(m_p/m_e)
+          b_component = SQRT((bx(ix,iy,iz)**2 + min_b) / modb)
+          fc_sa =  42.85_num * b_component * flux_limiter * rho_b * tb**(3.0_num/2.0_num)  !42.85 = SRQT(m_p/m_e)
 
           ! Conductive Flux Limiter.
           fc = (1.0_num - hfl) * fc_sp + hfl * fc_sp * fc_sa / MAX(ABS(fc_sp) + fc_sa, none_zero)
@@ -145,7 +145,7 @@ CONTAINS
           bzf=0.25_num*(bz(ix,iy,iz)+bz(ix,iyp,iz)+&
               bz(ix,iy,izm)+bz(ix,iyp,izm))
 
-          modb=SQRT(bxf**2+by(ix,iy,iz)**2+bzf**2)
+          modb = bxf**2 + by(ix,iy,iz)**2 + bzf**2 + min_b
 
           !Braginskii Conductive Flux in Y
           !Temperature at the y boundaries in the current cell
@@ -172,11 +172,12 @@ CONTAINS
           tb = MAX(tb, 0.0_num)
 
           fc_sp = - kappa_0 * tb**pow * (by(ix,iy,iz) * (tg * by(ix,iy,iz) + &
-              tg_a1 * bxf + tg_a2 * bzf)+tg*min_b)/(modb**2+min_b)
+              tg_a1 * bxf + tg_a2 * bzf)+tg*min_b) / modb
 
           ! Saturated Conductive Flux. 
           rho_b = (rho(ix,iyp,iz)+rho(ix,iy,iz))/2.0_num
-          fc_sa = 42.85_num * flux_limiter * rho_b * tb**(3.0_num/2.0_num)  !42.85 = SRQT(m_p/m_e)
+          b_component = SQRT((by(ix,iy,iz)**2 + min_b) / modb)
+          fc_sa = 42.85_num * b_component * flux_limiter * rho_b * tb**(3.0_num/2.0_num)  
 
           ! Conductive Flux Limiter. Note flux_limiter is inverse of usual
           fc = (1.0_num - hfl) * fc_sp + hfl * fc_sp * fc_sa / MAX(ABS(fc_sp) + fc_sa, none_zero)
@@ -190,7 +191,7 @@ CONTAINS
           byf=0.25_num*(by(ix,iy,iz)+by(ix,iy,izp)+&
               by(ix,iym,iz)+by(ix,iym,izp))
 
-          modb=SQRT(bxf**2+byf**2+bz(ix,iy,iz)**2)
+          modb = bxf**2 + byf**2 +bz(ix,iy,iz)**2 + min_b
 
           !Braginskii Conductive Flux in Z
           !Temperature at the z boundaries in the current cell
@@ -217,11 +218,12 @@ CONTAINS
           tb = MAX(tb, 0.0_num)
 
           fc_sp = - kappa_0 * tb**pow * (bz(ix,iy,iz) * (tg * bz(ix,iy,iz) + &
-              tg_a1 * bxf + tg_a2 * byf)+tg*min_b)/(modb**2+min_b)
+              tg_a1 * bxf + tg_a2 * byf)+tg*min_b) / modb
 
           ! Saturated Conductive Flux
           rho_b = (rho(ix,iy,izp)+rho(ix,iy,iz))/2.0_num
-          fc_sa = 42.85_num * flux_limiter * rho_b * tb**(3.0_num/2.0_num)  !42.85 = SRQT(m_p/m_e)
+          b_component = SQRT((bz(iz,iy,iz)**2 + min_b) / modb)
+          fc_sa = 42.85_num * b_component * flux_limiter * rho_b * tb**(3.0_num/2.0_num)  !42.85 = SRQT(m_p/m_e)
 
           ! Conductive Flux Limiter
           fc = (1.0_num - hfl) * fc_sp + hfl * fc_sp * fc_sa / MAX(ABS(fc_sp) + fc_sa, none_zero)
@@ -265,7 +267,6 @@ CONTAINS
     REAL(num), DIMENSION(2:n_s_stages)  :: mu, nu, gamma_tilde
     ! intermediate solutions Y=[Y_0, Y_j-2, Y_j-1 , Y_j]
     REAL(num), DIMENSION(:,:,:,:), ALLOCATABLE  :: Y             
-    REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: temperature
     REAL(num)  ::  c0, c1
     REAL(num)  ::  Lc_Yj_1                  ! L^c(Y_j-1)
     REAL(num), DIMENSION(:,:,:), ALLOCATABLE  :: Lc_Y0    ! L^c(Y_0)
@@ -274,7 +275,6 @@ CONTAINS
     ALLOCATE(flux(-1:nx+2,-1:ny+2,-1:nz+2))
     ALLOCATE(Y(0:3,-1:nx+2,-1:ny+2,-1:nz+2))
     ALLOCATE(Lc_Y0(1:nx,1:ny,1:nz))
-    ALLOCATE(temperature(-1:nx+2,-1:ny+2,-1:nz+2))
     flux=0.0_num
     Y=0.0_num
     
@@ -336,6 +336,8 @@ CONTAINS
           ENDDO
         ENDDO
       ENDDO
+
+      CALL temperature_bcs
       CALL heat_flux(temperature,flux)
 
       DO iz=1,nz
@@ -366,7 +368,6 @@ CONTAINS
     energy(1:nx,1:ny,1:nz) = Y(3,1:nx,1:ny,1:nz)
     CALL energy_bcs
 
-    DEALLOCATE(temperature)
     DEALLOCATE(Y)
     DEALLOCATE(flux)
     DEALLOCATE(Lc_Y0)

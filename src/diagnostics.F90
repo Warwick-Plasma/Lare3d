@@ -148,6 +148,7 @@ CONTAINS
     ! Output a snapshot of arrays
     IF (rank == 0) THEN
       WRITE(stat_unit,*) 'Dumping ', file_number, ' at time', time
+      IF (conduction) WRITE(stat_unit,*) 'Number of super-steps = ', n_s_stages
       CALL FLUSH(stat_unit)
     END IF
 

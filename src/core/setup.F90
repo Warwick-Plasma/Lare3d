@@ -63,6 +63,8 @@ CONTAINS
     vy = 0.0_num
     vz = 0.0_num
 
+    va_max2 = va_max**2
+
     CALL get_job_id(jobid)
 
   END SUBROUTINE after_control

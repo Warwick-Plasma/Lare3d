@@ -96,6 +96,7 @@ CONTAINS
       END DO
     END DO
 
+    IF (coronal_heating) CALL user_defined_heating
     CALL shock_viscosity
     CALL set_dt
     dt2 = 0.5_num * dt
@@ -292,9 +293,9 @@ CONTAINS
               +  bz1(ix,iyp,izp) + bz1(ixp,iyp,izp)) &
               / (cvx + cvxp)
 
-          fx = fx + (jy * bzv - jz * byv)
-          fy = fy + (jz * bxv - jx * bzv)
-          fz = fz + (jx * byv - jy * bxv)
+          fx = gamma_boris_p(ix,iy,iz) * fx + gamma_boris_b(ix,iy,iz) * (jy * bzv - jz * byv)
+          fy = gamma_boris_p(ix,iy,iz) * fy + gamma_boris_b(ix,iy,iz) * (jz * bxv - jx * bzv)
+          fz = gamma_boris_p(ix,iy,iz) * fz + gamma_boris_b(ix,iy,iz) * (jx * byv - jy * bxv)
 
           fz = fz - rho_v(ix,iy,iz) * grav(iz)
 
@@ -934,6 +935,9 @@ CONTAINS
     dt_local = largest_number
     dtr_local = largest_number
 
+    gamma_boris_b(:,:,:) = 1.0_num
+    gamma_boris_p(:,:,:) = 1.0_num
+
     DO iz = 0, nz
       izm = iz - 1
       DO iy = 0, ny
@@ -945,7 +949,12 @@ CONTAINS
           w1 = bx(ix,iy,iz)**2 + by(ix,iy,iz)**2 + bz(ix,iy,iz)**2
           ! Sound speed squared
           rho0 = MAX(rho(ix, iy, iz), none_zero)
-          cs2 = (gamma * pressure(ix,iy,iz) + w1) / rho0
+          w2 = w1 / rho0
+          IF (boris .AND. (w2 .GE. va_max2)) THEN
+            gamma_boris_b(ix,iy,iz) = 1.0_num / (1.0_num + (w2 - va_max2) / va_max2)
+          END IF
+          IF (.NOT. boris_b_only) gamma_boris_p(ix,iy,iz) = gamma_boris_b(ix,iy,iz)
+          cs2 = (gamma_boris_p(ix,iy,iz) * gamma * pressure(ix,iy,iz) + gamma_boris_b(ix,iy,iz) * w1) / rho0
 
           !effective speed from viscous pressure
           c_visc2 = p_visc(ix,iy,iz) / rho0

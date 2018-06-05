@@ -85,7 +85,7 @@ MODULE shared_data
   ! NB: as there are now 2 ghost cells, indexing will fail if (nx,ny,nz) < 2
   INTEGER :: nx, ny, nz
   INTEGER :: nsteps, step
-  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: rho, energy
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: rho, energy, temperature
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: bx, vx, vx1
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: by, vy, vy1
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: bz, vz, vz1
@@ -119,7 +119,7 @@ MODULE shared_data
   INTEGER :: ybc_min, ybc_max, iy, iym, iyp, ypass
   INTEGER :: zbc_min, zbc_max, iz, izm, izp, zpass
   INTEGER :: restart_snapshot
-  INTEGER :: peak_substeps = 0
+  INTEGER :: peak_substeps = 0, n_s_stages
   LOGICAL :: x_stretch, y_stretch, z_stretch
   LOGICAL :: resistive_mhd, any_open, rke
   LOGICAL :: restart
@@ -134,7 +134,7 @@ MODULE shared_data
   REAL(num) :: h_star
 
   ! Heat conduction
-  LOGICAL :: conduction, heat_flux_limiter, radiation
+  LOGICAL :: conduction, heat_flux_limiter, radiation, coronal_heating
   REAL(num) :: kappa_0, flux_limiter
 
   ! Equation of state
@@ -142,6 +142,12 @@ MODULE shared_data
 
   ! Damping boundary variables
   LOGICAL :: damping
+
+  ! Boris Alfven speed limiter
+  LOGICAL :: boris, boris_b_only
+  REAL(num) :: va_max, va_max2
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: gamma_boris_b, gamma_boris_p
+
 
   ! Partially ionised plasma
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: eta_perp, xi_n, eta_perp0

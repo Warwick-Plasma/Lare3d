@@ -155,7 +155,7 @@ CONTAINS
   ! Boundary conditions for density
   !****************************************************************************
 
-  SUBROUTINE density_bcs
+  SUBROUTINE temperature_bcs
 
     CALL density_mpi
 
@@ -189,7 +189,49 @@ CONTAINS
       rho(:,:,nz+2) = rho(:,:,nz-1)
     END IF
 
+  END SUBROUTINE temperature_bcs
+
+
+  !****************************************************************************
+  ! Boundary conditions for temperature
+  !****************************************************************************
+
+  SUBROUTINE density_bcs
+
+    CALL density_mpi
+
+    IF (proc_x_min == MPI_PROC_NULL .AND. xbc_min == BC_USER) THEN
+      temperature( 0,:,:) = temperature(1,:,:)
+      temperature(-1,:,:) = temperature(2,:,:)
+    END IF
+
+    IF (proc_x_max == MPI_PROC_NULL .AND. xbc_max == BC_USER) THEN
+      temperature(nx+1,:,:) = temperature(nx  ,:,:)
+      temperature(nx+2,:,:) = temperature(nx-1,:,:)
+    END IF
+
+    IF (proc_y_min == MPI_PROC_NULL .AND. ybc_min == BC_USER) THEN
+      temperature(:, 0,:) = temperature(:,1,:)
+      temperature(:,-1,:) = temperature(:,2,:)
+    END IF
+
+    IF (proc_y_max == MPI_PROC_NULL .AND. ybc_max == BC_USER) THEN
+      temperature(:,ny+1,:) = temperature(:,ny  ,:)
+      temperature(:,ny+2,:) = temperature(:,ny-1,:)
+    END IF
+
+    IF (proc_z_min == MPI_PROC_NULL .AND. zbc_min == BC_USER) THEN
+      temperature(:,:, 0) = temperature(:,:,1)
+      temperature(:,:,-1) = temperature(:,:,2)
+    END IF
+
+    IF (proc_z_max == MPI_PROC_NULL .AND. zbc_max == BC_USER) THEN
+      temperature(:,:,nz+1) = temperature(:,:,nz  )
+      temperature(:,:,nz+2) = temperature(:,:,nz-1)
+    END IF
+
   END SUBROUTINE density_bcs
+
 
 
 
