@@ -66,7 +66,7 @@ CONTAINS
     DO iz = 1, nz
     DO iy = 1, ny
       DO ix = 1, nx
-        heat_in(ix,iy,iz) = 0.1 _num * EXP(-xc(ix)**2 -yc(iy)**2 - zc(iz)**2)
+        heat_in(ix,iy,iz) = 0.1_num * EXP(-xc(ix)**2 -yc(iy)**2 - zc(iz)**2)
       END DO
     END DO
     END DO
