@@ -292,8 +292,7 @@ CONTAINS
     ALLOCATE(bz (-1:nx+2, -1:ny+2, -2:nz+2))
     ALLOCATE(eta(-1:nx+2, -1:ny+2, -1:nz+2))
     ALLOCATE(temperature(-1:nx+2, -1:ny+2, -1:nz+2))
-    ALLOCATE(gamma_boris_p(-1:nx+2, -1:ny+2, -1:nz+2))
-    ALLOCATE(gamma_boris_b(-1:nx+2, -1:ny+2, -1:nz+2))
+    ALLOCATE(gamma_boris(-1:nx+2, -1:ny+2, -1:nz+2))
     IF (rke) ALLOCATE(delta_ke(-1:nx+2, -1:ny+2, -1:nz+2))
 
     ! Shocked and resistive need to be larger to allow offset = 4 in shock_test
@@ -362,7 +361,7 @@ CONTAINS
     DEALLOCATE(cell_nx_mins, cell_nx_maxs)
     DEALLOCATE(cell_ny_mins, cell_ny_maxs)
     DEALLOCATE(cell_nz_mins, cell_nz_maxs)
-    DEALLOCATE(gamma_boris_b, gamma_boris_p)
+    DEALLOCATE(gamma_boris)
 
     IF (ALLOCATED(xi_n)) DEALLOCATE(xi_n)
     IF (ALLOCATED(delta_ke)) DEALLOCATE(delta_ke)

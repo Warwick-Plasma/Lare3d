@@ -144,9 +144,9 @@ MODULE shared_data
   LOGICAL :: damping
 
   ! Boris Alfven speed limiter
-  LOGICAL :: boris, boris_b_only
+  LOGICAL :: boris
   REAL(num) :: va_max, va_max2
-  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: gamma_boris_b, gamma_boris_p
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: gamma_boris
 
 
   ! Partially ionised plasma

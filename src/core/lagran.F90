@@ -293,16 +293,16 @@ CONTAINS
               +  bz1(ix,iyp,izp) + bz1(ixp,iyp,izp)) &
               / (cvx + cvxp)
 
-          fx = gamma_boris_p(ix,iy,iz) * fx + gamma_boris_b(ix,iy,iz) * (jy * bzv - jz * byv)
-          fy = gamma_boris_p(ix,iy,iz) * fy + gamma_boris_b(ix,iy,iz) * (jz * bxv - jx * bzv)
-          fz = gamma_boris_p(ix,iy,iz) * fz + gamma_boris_b(ix,iy,iz) * (jx * byv - jy * bxv)
+          fx = fx + (jy * bzv - jz * byv)
+          fy = fy + (jz * bxv - jx * bzv)
+          fz = fz + (jx * byv - jy * bxv)
 
           fz = fz - rho_v(ix,iy,iz) * grav(iz)
 
           ! Find half step velocity needed for remap
-          vx1(ix,iy,iz) = vx(ix,iy,iz) + dt2 * (fx_visc(ix,iy,iz) + fx) / rho_v(ix,iy,iz)
-          vy1(ix,iy,iz) = vy(ix,iy,iz) + dt2 * (fy_visc(ix,iy,iz) + fy) / rho_v(ix,iy,iz)
-          vz1(ix,iy,iz) = vz(ix,iy,iz) + dt2 * (fz_visc(ix,iy,iz) + fz) / rho_v(ix,iy,iz)
+          vx1(ix,iy,iz) = vx(ix,iy,iz) + dt2 * gamma_boris(ix,iy,iz) * (fx_visc(ix,iy,iz) + fx) / rho_v(ix,iy,iz)
+          vy1(ix,iy,iz) = vy(ix,iy,iz) + dt2 * gamma_boris(ix,iy,iz) * (fy_visc(ix,iy,iz) + fy) / rho_v(ix,iy,iz)
+          vz1(ix,iy,iz) = vz(ix,iy,iz) + dt2 * gamma_boris(ix,iy,iz) * (fz_visc(ix,iy,iz) + fz) / rho_v(ix,iy,iz)
         END DO
       END DO
     END DO
@@ -935,8 +935,7 @@ CONTAINS
     dt_local = largest_number
     dtr_local = largest_number
 
-    gamma_boris_b(:,:,:) = 1.0_num
-    gamma_boris_p(:,:,:) = 1.0_num
+    gamma_boris(:,:,:) = 1.0_num
 
     DO iz = 0, nz
       izm = iz - 1
@@ -951,13 +950,12 @@ CONTAINS
           rho0 = MAX(rho(ix, iy, iz), none_zero)
           w2 = w1 / rho0
           IF (boris .AND. (w2 .GE. va_max2)) THEN
-            gamma_boris_b(ix,iy,iz) = 1.0_num / (1.0_num + (w2 - va_max2) / va_max2)
+            gamma_boris(ix,iy,iz) = 1.0_num / (1.0_num + w2 / va_max2)
           END IF
-          IF (.NOT. boris_b_only) gamma_boris_p(ix,iy,iz) = gamma_boris_b(ix,iy,iz)
-          cs2 = (gamma_boris_p(ix,iy,iz) * gamma * pressure(ix,iy,iz) + gamma_boris_b(ix,iy,iz) * w1) / rho0
+          cs2 = gamma_boris(ix,iy,iz) * (gamma * pressure(ix,iy,iz) + w1) / rho0
 
           !effective speed from viscous pressure
-          c_visc2 = p_visc(ix,iy,iz) / rho0
+          c_visc2 = gamma_boris(ix,iy,iz) * p_visc(ix,iy,iz) / rho0
 
           ! length estimates - could be smoother as in DYNA3D
           length = MIN(dxb(ix), dyb(iy), dzb(iz))

@@ -166,7 +166,6 @@ CONTAINS
     ! va_max controls the effective mass density and is
     ! the reduced light speed in Boris's paper in Lare normalised units
     boris = .FALSE.
-    boris_b_only = .FALSE.
     va_max = 4.7e3_num
 
     ! Set the equation of state. Valid choices are
