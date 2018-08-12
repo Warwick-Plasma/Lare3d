@@ -458,8 +458,8 @@ CONTAINS
           j0 = j1
           k0 = k1
           i3 = i2 + 1
-          j3 = j1
-          k3 = k1
+          j3 = j2
+          k3 = k2
           dx = dxb(ix)
           dxp = dxb(ixp)
           dxm = dxb(ixm)
@@ -493,7 +493,7 @@ CONTAINS
           k0 = k1
           i3 = i2
           j3 = j2 + 1
-          k3 = k1
+          k3 = k2
           dx = dyb(iy)
           dxp = dyb(iyp)
           dxm = dyb(iym)
@@ -523,7 +523,7 @@ CONTAINS
           j0 = j1 
           k0 = k1 - 1
           i3 = i2
-          j3 = j1 
+          j3 = j2 
           k3 = k2 + 1
           dx = dzb(iz)
           dxp = dzb(izp)
