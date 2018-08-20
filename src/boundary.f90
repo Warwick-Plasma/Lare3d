@@ -155,7 +155,7 @@ CONTAINS
   ! Boundary conditions for density
   !****************************************************************************
 
-  SUBROUTINE temperature_bcs
+  SUBROUTINE density_bcs
 
     CALL density_mpi
 
@@ -189,14 +189,14 @@ CONTAINS
       rho(:,:,nz+2) = rho(:,:,nz-1)
     END IF
 
-  END SUBROUTINE temperature_bcs
+  END SUBROUTINE density_bcs
 
 
   !****************************************************************************
   ! Boundary conditions for temperature
   !****************************************************************************
 
-  SUBROUTINE density_bcs
+  SUBROUTINE temperature_bcs
 
     CALL density_mpi
 
@@ -230,7 +230,7 @@ CONTAINS
       temperature(:,:,nz+2) = temperature(:,:,nz-1)
     END IF
 
-  END SUBROUTINE density_bcs
+  END SUBROUTINE temperature_bcs
 
 
 
