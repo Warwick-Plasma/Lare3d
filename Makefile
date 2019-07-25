@@ -135,7 +135,7 @@ DEFINES := $(DEFINE)
 # the above line modifying the code behaviour at compile time.
 
 # Uncomment to use Cauchy solution for predictor step B-field, othwerwise advective prediction
-#DEFINES += $(D)CAUCHY
+DEFINES += $(D)CAUCHY
 
 # Uncomment the following line to use Qmono viscosity
 #DEFINES += $(D)SHOCKLIMITER
@@ -257,7 +257,7 @@ diagnostics.o: diagnostics.F90 boundary.o conduct.o shared_data.o \
 initial_conditions.o: initial_conditions.f90 neutral.o shared_data.o \
   boundary.o
 lagran.o: lagran.F90 boundary.o openboundary.o conduct.o neutral.o shared_data.o \
-  openboundary.o
+  openboundary.o remap.o
 lare3d.o: lare3d.f90 boundary.o control.o diagnostics.o initial_conditions.o \
   lagran.o mpi_routines.o neutral.o normalise.o openboundary.o remap.o setup.o \
   shared_data.o welcome.o

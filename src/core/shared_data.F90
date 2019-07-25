@@ -124,6 +124,7 @@ MODULE shared_data
   INTEGER :: peak_substeps = 0, n_s_stages
   LOGICAL :: driven_boundary = .FALSE.
   LOGICAL :: x_stretch, y_stretch, z_stretch
+  LOGICAL :: predictor_step
   LOGICAL :: resistive_mhd, any_open, rke
   LOGICAL :: restart
 

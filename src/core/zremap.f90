@@ -24,18 +24,21 @@ CONTAINS
 
     REAL(num) :: vxb, vxbm, vyb, vybm, vzb, vzbm, dv
 
-    ALLOCATE(rho1  (-1:nx+2, -1:ny+2, -1:nz+2))
-    ALLOCATE(dm    (-1:nx+2, -1:ny+2, -1:nz+2))
-    ALLOCATE(cv2   (-1:nx+2, -1:ny+2, -1:nz+2))
-    ALLOCATE(flux  (-1:nx+2, -1:ny+2, -2:nz+2))
-    ALLOCATE(dzb1  (-1:nx+2, -1:ny+2, -1:nz+2))
-    ALLOCATE(dzc1  (-1:nx+1, -1:ny+1, -1:nz+1))
-    ALLOCATE(rho_v (-1:nx+2, -1:ny+2, -1:nz+2))
-    ALLOCATE(rho_v1(-1:nx+2, -1:ny+2, -1:nz+2))
-
-    dm = 0.0_num
-    ! Store initial density in rho1
-    rho1(:,:,:) = rho(:,:,:)
+    IF (predictor_step) THEN
+      ALLOCATE(cv2   (-1:nx+2, -1:ny+2, -1:nz+2))
+      ALLOCATE(flux  (-1:nx+2, -1:ny+2, -2:nz+2))
+      ALLOCATE(dzb1  (-1:nx+2, -1:ny+2, -1:nz+2))
+      ALLOCATE(dzc1  (-1:nx+1, -1:ny+1, -1:nz+1))
+    ELSE
+      ALLOCATE(rho1  (-1:nx+2, -1:ny+2, -1:nz+2))
+      ALLOCATE(dm    (-1:nx+2, -1:ny+2, -1:nz+2))
+      ALLOCATE(cv2   (-1:nx+2, -1:ny+2, -1:nz+2))
+      ALLOCATE(flux  (-1:nx+2, -1:ny+2, -2:nz+2))
+      ALLOCATE(dzb1  (-1:nx+2, -1:ny+2, -1:nz+2))
+      ALLOCATE(dzc1  (-1:nx+1, -1:ny+1, -1:nz+1))
+      ALLOCATE(rho_v (-1:nx+2, -1:ny+2, -1:nz+2))
+      ALLOCATE(rho_v1(-1:nx+2, -1:ny+2, -1:nz+2))
+    END IF
 
     DO iz = -1, nz + 2
       izm = iz - 1
@@ -87,10 +90,10 @@ CONTAINS
       END DO
     END DO
 
-    DO iz = -1, nz + 1
-      izp = iz + 1
-      DO iy = -1, ny + 1
-        DO ix = -1, nx + 1
+    DO iz = -1, nz + 2
+      izp = MIN(iz + 1, nz + 2)
+      DO iy = -1, ny + 2
+        DO ix = -1, nx + 2
           ! dzc before remap
           dzc1(ix,iy,iz) = 0.5_num * (dzb1(ix,iy,iz) + dzb1(ix,iy,izp))
         END DO
@@ -101,18 +104,18 @@ CONTAINS
     ! constrained transport remap of magnetic fluxes
     CALL vz_bx_flux
 
-    DO iz = 1, nz
+    DO iz = 0, nz + 1
       izm = iz - 1
-      DO iy = 1, ny
-        DO ix = 0, nx
+      DO iy = 0, ny + 1
+        DO ix = 0, nx + 1
           bx(ix,iy,iz) = bx(ix,iy,iz) - flux(ix,iy,iz) + flux(ix,iy,izm)
         END DO
       END DO
     END DO
 
-    DO iz = 0, nz
-      DO iy = 1, ny
-        DO ix = 1, nx
+    DO iz = 0, nz + 1
+      DO iy = 0, ny + 1
+        DO ix = 0, nx + 1
           ixm = ix - 1
           bz(ix,iy,iz) = bz(ix,iy,iz) + flux(ix,iy,iz) - flux(ixm,iy,iz)
         END DO
@@ -121,23 +124,32 @@ CONTAINS
 
     CALL vz_by_flux
 
-    DO iz = 1, nz
+    DO iz = 0, nz + 1
       izm = iz - 1
-      DO iy = 0, ny
-        DO ix = 1, nx
+      DO iy = 0, ny + 1
+        DO ix = 0, nx + 1
           by(ix,iy,iz) = by(ix,iy,iz) - flux(ix,iy,iz) + flux(ix,iy,izm)
         END DO
       END DO
     END DO
 
-    DO iz = 0, nz
-      DO iy = 1, ny
+    DO iz = 0, nz + 1
+      DO iy = 0, ny + 1
         iym = iy - 1
-        DO ix = 1, nx
+        DO ix = 0, nx + 1
           bz(ix,iy,iz) = bz(ix,iy,iz) + flux(ix,iy,iz) - flux(ix,iym,iz)
         END DO
       END DO
     END DO
+
+    IF (predictor_step) THEN
+      DEALLOCATE(cv2, flux, dzb1, dzc1)
+      RETURN
+    END IF
+
+    dm = 0.0_num
+    ! Store initial density in rho1
+    rho1(:,:,:) = rho(:,:,:)
 
     ! Remap of mass + calculation of mass fluxes (dm) needed for later remaps
     ! Calculates dm(0:nx+1,0:ny+1,0:nz)
@@ -350,13 +362,13 @@ CONTAINS
     REAL(num) :: dzu, dbz, dbzp, dbzp2, dbzm
     INTEGER :: izp2
 
-    DO iz = 0, nz
-      izm  = iz - 1
+    DO iz = -1, nz + 1
+      izm  = MAX(iz - 1, -1)
       izp  = iz + 1
-      izp2 = iz + 2
-      DO iy = 0, ny
+      izp2 = MIN(iz + 2, nz + 2)
+      DO iy = -1, ny + 1
         iym = iy - 1
-        DO ix = 0, nx
+        DO ix = -1, nx + 1
           ixp = ix + 1
 
           v_advect = (vz1(ix,iy,iz) + vz1(ix,iym,iz)) * 0.5_num
@@ -417,13 +429,13 @@ CONTAINS
     REAL(num) :: dzu, dbz, dbzp, dbzp2, dbzm
     INTEGER :: izp2
 
-    DO iz = 0, nz
-      izm  = iz - 1
+    DO iz = -1, nz + 1
+      izm  = MAX(iz - 1, -1)
       izp  = iz + 1
-      izp2 = iz + 2
-      DO iy = 0, ny
+      izp2 = MIN(iz + 2, nz + 2)
+      DO iy = -1, ny + 1
         iyp = iy + 1
-        DO ix = 0, nx
+        DO ix = -1, nx + 1
           ixm = ix - 1
 
           v_advect = (vz1(ix,iy,iz) + vz1(ixm,iy,iz)) * 0.5_num

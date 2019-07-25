@@ -10,6 +10,7 @@ MODULE lagran
   USE conduct
   USE radiative
   USE openboundary
+  USE remap
 
   IMPLICIT NONE
 
@@ -22,6 +23,7 @@ MODULE lagran
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: visc_heat, pressure, rho_v, cv_v
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: flux_x, flux_y, flux_z, curlb
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: fx_visc, fy_visc, fz_visc
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: bx0, by0, bz0
 
 CONTAINS
 
@@ -34,6 +36,11 @@ CONTAINS
     INTEGER :: substeps, subcycle
     REAL(num) :: actual_dt, dt_sub
 
+#ifndef CAUCHY
+    ALLOCATE(bx0(-1:nx+2,-1:ny+2,-1:nz+2))
+    ALLOCATE(by0(-1:nx+2,-1:ny+2,-1:nz+2))
+    ALLOCATE(bz0(-1:nx+2,-1:ny+2,-1:nz+2))
+#endif
     ALLOCATE(bx1(-1:nx+2,-1:ny+2,-1:nz+2))
     ALLOCATE(by1(-1:nx+2,-1:ny+2,-1:nz+2))
     ALLOCATE(bz1(-1:nx+2,-1:ny+2,-1:nz+2))
@@ -145,6 +152,9 @@ CONTAINS
     DEALLOCATE(fx_visc, fy_visc, fz_visc)
     DEALLOCATE(flux_x, flux_y, flux_z)
     DEALLOCATE(curlb)
+#ifndef CAUCHY
+    DEALLOCATE(bx0, by0, bz0)
+#endif
 
     CALL energy_bcs
     CALL density_bcs
@@ -165,9 +175,17 @@ CONTAINS
     REAL(num) :: e1
     REAL(num) :: vxb, vxbm, vyb, vybm, vzb, vzbm
     REAL(num) :: bxv, byv, bzv, jx, jy, jz
+#ifdef CAUCHY
     REAL(num) :: cvx, cvxp, cvy, cvyp, cvz, cvzp
+#endif
     REAL(num) :: dv
     REAL(num) :: fx, fy, fz
+
+#ifndef CAUCHY
+    bx0(:,:,:) = bx(:,:,:)
+    by0(:,:,:) = by(:,:,:)
+    bz0(:,:,:) = bz(:,:,:)
+#endif
 
     CALL b_field_and_cv1_update
 
@@ -226,6 +244,7 @@ CONTAINS
           w2 = (ppz + ppxz + ppyz + ppxyz) * 0.25_num
           fz = -(w2 - w1) / dzc(iz)
 
+#ifdef CAUCHY
           cvx  = cv1(ix ,iy ,iz ) + cv1(ix ,iyp,iz ) &
               +  cv1(ix ,iy ,izp) + cv1(ix ,iyp,izp)
           cvxp = cv1(ixp,iy ,iz ) + cv1(ixp,iyp,iz ) &
@@ -292,7 +311,16 @@ CONTAINS
               +  bz1(ix,iy ,izp) + bz1(ixp,iy ,izp)  &
               +  bz1(ix,iyp,izp) + bz1(ixp,iyp,izp)) &
               / (cvx + cvxp)
+#else
 
+          bxv = 0.25_num * (bx(ix,iy,iz) + bx(ix,iyp,iz) + bx(ix,iy,izp) + bx(ix,iyp,izp))   
+          byv = 0.25_num * (by(ix,iy,iz) + by(ixp,iy,iz) + by(ix,iy,izp) + by(ixp,iy,izp))   
+          bzv = 0.25_num * (bz(ix,iy,iz) + bz(ix,iyp,iz) + bz(ixp,iy,iz) + bz(ixp,iyp,iz))   
+
+          jx = (bz(ix,iyp,iz) - bz(ix,iy,iz)) / dyc(iy) - (by(ix,iy,izp) - by(ix,iy,iz)) / dzc(iz)
+          jy = (bx(ix,iy,izp) - bx(ix,iy,iz)) / dzc(iz) - (bz(ix,iy,izp) - bz(ix,iy,iz)) / dxc(ix)
+          jz = (by(ixp,iy,iz) - by(ix,iy,iz)) / dxc(ix) - (bx(ix,iyp,iz) - bx(ix,iy,iz)) / dyc(iy)
+#endif
           fx = fx + (jy * bzv - jz * byv)
           fy = fy + (jz * bxv - jx * bzv)
           fz = fz + (jx * byv - jy * bxv)
@@ -307,11 +335,14 @@ CONTAINS
       END DO
     END DO
 
+#ifndef CAUCHY
+    bx(:,:,:) = bx0(:,:,:) 
+    by(:,:,:) = by0(:,:,:) 
+    bz(:,:,:) = bz0(:,:,:) 
+#endif
+
     CALL remap_v_bcs
 
-    bx1(:,:,:) = bx1(:,:,:) / cv1(:,:,:)
-    by1(:,:,:) = by1(:,:,:) / cv1(:,:,:)
-    bz1(:,:,:) = bz1(:,:,:) / cv1(:,:,:)
     CALL shock_heating
 
     DO iz = 0, nz
@@ -817,11 +848,10 @@ CONTAINS
 
   SUBROUTINE b_field_and_cv1_update
 
-    REAL(num) :: vxb, vxbm, vyb, vybm, vzb, vzbm
-    REAL(num) :: dvxdx, dvydx, dvzdx
-    REAL(num) :: dvxdy, dvydy, dvzdy
-    REAL(num) :: dvxdz, dvydz, dvzdz
-    REAL(num) :: dv
+    REAL(num) :: vxb, vxbm, vyb, vybm, vzb, vzbm, dvxdx, dvydy, dvzdz, dv
+#ifdef CAUCHY
+    REAL(num) :: dvydx, dvzdx, dvxdy, dvzdy, dvxdz, dvydz
+#endif
 
     DO iz = -1, nz + 2
       izm = iz - 1
@@ -856,6 +886,7 @@ CONTAINS
           dv = (dvxdx + dvydy + dvzdz) * dt2
           cv1(ix,iy,iz) = cv(ix,iy,iz) * (1.0_num + dv)
 
+#ifdef CAUCHY
           ! vx at By(i,j,k)
           vxb  = (vx(ix ,iy ,iz ) + vx(ixm,iy ,iz ) &
               +   vx(ix ,iy ,izm) + vx(ixm,iy ,izm)) * 0.25_num
@@ -915,9 +946,22 @@ CONTAINS
           bx1(ix,iy,iz) = (bx1(ix,iy,iz) + w3 * dt2) / (1.0_num + dv)
           by1(ix,iy,iz) = (by1(ix,iy,iz) + w4 * dt2) / (1.0_num + dv)
           bz1(ix,iy,iz) = (bz1(ix,iy,iz) + w5 * dt2) / (1.0_num + dv)
+#endif
         END DO
       END DO
     END DO
+
+#ifndef CAUCHY
+    vx1(:,:,:) = vx(:,:,:)
+    vy1(:,:,:) = vy(:,:,:)
+    vz1(:,:,:) = vz(:,:,:)
+    
+    predictor_step = .TRUE.
+    dt = 0.5_num * dt
+    CALL eulerian_remap(step)
+    dt = 2.0_num * dt
+    predictor_step = .FALSE. 
+#endif
 
   END SUBROUTINE b_field_and_cv1_update
 
@@ -1183,7 +1227,7 @@ CONTAINS
       END DO
     END IF
     energy = MAX(energy, 0.0_num)
-    
+
     CALL energy_bcs
 
     DO iz = 0, nz
