@@ -156,6 +156,9 @@ CONTAINS
     zbc_min = BC_USER
     zbc_max = BC_USER
 
+    !If any user boundaries are driven set this flag
+    driven_boundary = .TRUE.
+
     ! Set to true to turn on routine for damped boundaries.
     ! These routines are in boundary.f90 and you should check that they
     ! actually do what you want.

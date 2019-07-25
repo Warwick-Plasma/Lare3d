@@ -7,8 +7,13 @@ MODULE boundary
 
   USE shared_data
   USE mpiboundary
+  USE random_generator
 
   IMPLICIT NONE
+
+  REAL(num), DIMENSION(:), ALLOCATABLE :: drive_axis
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: drive_phase, drive_amp
+  INTEGER :: drive_nel
 
 CONTAINS
 
@@ -23,8 +28,71 @@ CONTAINS
         .OR. ybc_min == BC_OPEN .OR. ybc_max == BC_OPEN &
         .OR. zbc_min == BC_OPEN .OR. zbc_max == BC_OPEN) any_open = .TRUE.
 
+    IF (driven_boundary) CALL setup_driver_spectrum
+
   END SUBROUTINE set_boundary_conditions
 
+  !****************************************************************************
+  ! Routines to produce a spectral driver from a set of sine waves
+  ! These are example driver routines setup for zbc_min only
+  !****************************************************************************
+
+  SUBROUTINE setup_driver_spectrum
+
+    REAL(num) :: min_omega, max_omega
+    INTEGER :: iel
+
+    ! Set up a driver with 1000 elements
+    drive_nel = 1000
+    ALLOCATE(drive_axis(drive_nel))
+    ALLOCATE(drive_amp(-2:nx+2,-2:ny+2,drive_nel))
+    ALLOCATE(drive_phase(-2:nx+2,-2:ny+2,drive_nel))
+
+    min_omega = 0.01_num
+    max_omega = 10.0_num
+
+    ! Initialize the random number generator. Change the seed to get
+    ! different results
+    CALL random_init(76783467)
+
+    DO iel = 1, drive_nel
+      ! Uniformly spaced frequency bins
+      drive_axis(iel) = REAL(iel - 1, num) / REAL(drive_nel - 1, num) &
+          * (max_omega - min_omega) + min_omega
+      ! Random phase
+      drive_phase(:,:,iel) = random() * 2.0_num * pi
+      ! Kolmogorov amplitude
+      drive_amp(:,:,iel) = 1.0e-4_num * drive_axis(iel)**(-2.5_num / 3.0_num)
+    END DO
+
+  END SUBROUTINE setup_driver_spectrum
+
+
+
+  SUBROUTINE produce_spectrum(dat, time, rise_time)
+
+    REAL(num), DIMENSION(-2:,-2:,:), INTENT(INOUT) :: dat
+    REAL(num), INTENT(IN) :: time, rise_time
+    REAL(num) :: val
+    INTEGER :: iel, ix
+
+
+    DO iy = -2, ny + 2
+      DO ix = -2, nx + 2
+        val = 0.0_num
+        DO iel = 1, drive_nel
+          val = val + drive_amp(ix,iy,iel) &
+              * SIN(drive_axis(iel) * time + drive_phase(ix,iy,iel))
+        END DO
+        dat(ix,iy,:) = val
+      END DO
+    END DO
+
+    IF (time < rise_time) THEN
+      dat = dat * 0.5_num * (1.0_num - COS(time * pi / rise_time))
+    END IF
+
+  END SUBROUTINE produce_spectrum
 
 
   !****************************************************************************

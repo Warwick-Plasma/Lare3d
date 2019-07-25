@@ -180,7 +180,7 @@ SRCFILES = boundary.f90 conduct.f90 radiative.f90 control.f90 diagnostics.F90 \
   initial_conditions.f90 lagran.F90 lare3d.f90 mpi_routines.F90 \
   mpiboundary.f90 neutral.f90 normalise.f90 openboundary.f90 remap.f90 \
   setup.F90 shared_data.F90 version_data.F90 welcome.f90 xremap.f90 yremap.f90 \
-  zremap.f90
+  zremap.f90 random_generator.f90
 
 OBJFILES := $(SRCFILES:.f90=.o)
 OBJFILES := $(OBJFILES:.F90=.o)
@@ -248,7 +248,7 @@ FORCE:
 
 # All the dependencies
 
-boundary.o: boundary.f90 mpiboundary.o shared_data.o
+boundary.o: boundary.f90 mpiboundary.o random_generator.o shared_data.o
 conduct.o: conduct.f90 boundary.o neutral.o shared_data.o
 control.o: control.f90 normalise.o shared_data.o
 radiative.o: radiative.f90 boundary.o shared_data.o
@@ -266,6 +266,7 @@ mpiboundary.o: mpiboundary.f90 shared_data.o
 neutral.o: neutral.f90 boundary.o shared_data.o
 normalise.o: normalise.f90 shared_data.o
 openboundary.o: openboundary.f90 shared_data.o
+random_generator.o: random_generator.f90
 remap.o: remap.f90 boundary.o shared_data.o xremap.o yremap.o zremap.o
 setup.o: setup.F90 diagnostics.o shared_data.o version_data.o welcome.o \
   $(SDFMOD)

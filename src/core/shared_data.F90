@@ -120,6 +120,7 @@ MODULE shared_data
   INTEGER :: zbc_min, zbc_max, iz, izm, izp, zpass
   INTEGER :: restart_snapshot
   INTEGER :: peak_substeps = 0, n_s_stages
+  LOGICAL :: driven_boundary = .FALSE.
   LOGICAL :: x_stretch, y_stretch, z_stretch
   LOGICAL :: resistive_mhd, any_open, rke
   LOGICAL :: restart
