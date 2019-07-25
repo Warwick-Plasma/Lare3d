@@ -156,7 +156,7 @@ CONTAINS
     zbc_min = BC_USER
     zbc_max = BC_USER
 
-    !If any user boundaries are driven set this flag
+    !If any user boundaries are driven using the spectra routines in boundary.f90 then set this flag
     driven_boundary = .TRUE.
 
     ! Set to true to turn on routine for damped boundaries.
