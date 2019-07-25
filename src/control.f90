@@ -180,7 +180,7 @@ CONTAINS
     ! For fully ionised gas set .FALSE.
     ! For neutral hydrogen set .TRUE.
     ! This flag is ignored for all other EOS choices.
-    neutral_gas = .TRUE.
+    neutral_gas = .FALSE.
 
   END SUBROUTINE control_variables
 

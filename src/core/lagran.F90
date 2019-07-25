@@ -1004,10 +1004,11 @@ CONTAINS
           dxlocal = 1.0_num / (1.0_num / dxb(ix)**2 &
               + 1.0_num / dyb(iy)**2 + 1.0_num / dzb(iz)**2)
 
+          dt1 = largest_number
           IF (cowling_resistivity) THEN
             dt1 = 0.2_num * dxlocal &
                 / MAX(MAX(eta(ix,iy,iz), eta_perp(ix,iy,iz)), none_zero)
-          ELSE
+          ELSEIF (resistive_mhd) THEN
             dt1 = 0.2_num * dxlocal / MAX(eta(ix,iy,iz), none_zero)
           END IF
 
