@@ -135,7 +135,7 @@ DEFINES := $(DEFINE)
 # the above line modifying the code behaviour at compile time.
 
 # Uncomment to use Cauchy solution for predictor step B-field, othwerwise advective prediction
-DEFINES += $(D)CAUCHY
+#DEFINES += $(D)CAUCHY
 
 # Uncomment the following line to use Qmono viscosity
 #DEFINES += $(D)SHOCKLIMITER

@@ -28,14 +28,14 @@ CONTAINS
       ALLOCATE(cv2   (-1:nx+2, -1:ny+2, -1:nz+2))
       ALLOCATE(flux  (-1:nx+2, -2:ny+2, -1:nz+2))
       ALLOCATE(dyb1  (-1:nx+2, -1:ny+2, -1:nz+2))
-      ALLOCATE(dyc1  (-1:nx+1, -1:ny+1, -1:nz+1))
+      ALLOCATE(dyc1  (-1:nx+2, -1:ny+2, -1:nz+2))
     ELSE
       ALLOCATE(rho1  (-1:nx+2, -1:ny+2, -1:nz+2))
       ALLOCATE(dm    (-1:nx+2, -1:ny+2, -1:nz+2))
       ALLOCATE(cv2   (-1:nx+2, -1:ny+2, -1:nz+2))
       ALLOCATE(flux  (-1:nx+2, -2:ny+2, -1:nz+2))
       ALLOCATE(dyb1  (-1:nx+2, -1:ny+2, -1:nz+2))
-      ALLOCATE(dyc1  (-1:nx+1, -1:ny+1, -1:nz+1))
+      ALLOCATE(dyc1  (-1:nx+2, -1:ny+2, -1:nz+2))
       ALLOCATE(rho_v (-1:nx+2, -1:ny+2, -1:nz+2))
       ALLOCATE(rho_v1(-1:nx+2, -1:ny+2, -1:nz+2))
     END IF
@@ -93,7 +93,7 @@ CONTAINS
 
     DO iz = -1, nz + 2
       DO iy = -1, ny + 2
-        iyp = MAX(iy + 1, ny + 2)
+        iyp = MIN(iy + 1, ny + 2)
         DO ix = -1, nx + 2
           ! dyc before remap
           dyc1(ix,iy,iz) = 0.5_num * (dyb1(ix,iy,iz) + dyb1(ix,iyp,iz))

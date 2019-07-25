@@ -37,9 +37,9 @@ CONTAINS
     REAL(num) :: actual_dt, dt_sub
 
 #ifndef CAUCHY
-    ALLOCATE(bx0(-1:nx+2,-1:ny+2,-1:nz+2))
-    ALLOCATE(by0(-1:nx+2,-1:ny+2,-1:nz+2))
-    ALLOCATE(bz0(-1:nx+2,-1:ny+2,-1:nz+2))
+    ALLOCATE(bx0(-2:nx+2,-1:ny+2,-1:nz+2))
+    ALLOCATE(by0(-1:nx+2,-2:ny+2,-1:nz+2))
+    ALLOCATE(bz0(-1:nx+2,-1:ny+2,-2:nz+2))
 #endif
     ALLOCATE(bx1(-1:nx+2,-1:ny+2,-1:nz+2))
     ALLOCATE(by1(-1:nx+2,-1:ny+2,-1:nz+2))

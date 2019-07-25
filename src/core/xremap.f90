@@ -28,14 +28,14 @@ CONTAINS
       ALLOCATE(cv2   (-1:nx+2, -1:ny+2, -1:nz+2))
       ALLOCATE(flux  (-2:nx+2, -1:ny+2, -1:nz+2))
       ALLOCATE(dxb1  (-1:nx+2, -1:ny+2, -1:nz+2))
-      ALLOCATE(dxc1  (-1:nx+1, -1:ny+1, -1:nz+1))
+      ALLOCATE(dxc1  (-1:nx+2, -1:ny+2, -1:nz+2))
     ELSE
       ALLOCATE(rho1  (-1:nx+2, -1:ny+2, -1:nz+2))
       ALLOCATE(dm    (-1:nx+2, -1:ny+2, -1:nz+2))
       ALLOCATE(cv2   (-1:nx+2, -1:ny+2, -1:nz+2))
       ALLOCATE(flux  (-2:nx+2, -1:ny+2, -1:nz+2))
       ALLOCATE(dxb1  (-1:nx+2, -1:ny+2, -1:nz+2))
-      ALLOCATE(dxc1  (-1:nx+1, -1:ny+1, -1:nz+1))
+      ALLOCATE(dxc1  (-1:nx+2, -1:ny+2, -1:nz+2))
       ALLOCATE(rho_v (-1:nx+2, -1:ny+2, -1:nz+2))
       ALLOCATE(rho_v1(-1:nx+2, -1:ny+2, -1:nz+2))
     ENDIF
