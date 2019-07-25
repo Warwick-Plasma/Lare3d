@@ -79,20 +79,20 @@ CONTAINS
     nprocz = 0
 
     ! The length of the domain in the x direction
-    x_min = 0.0_num
-    x_max = 100.0_num
+    x_min = -5.0_num
+    x_max = 5.0_num
     ! Should the x grid be stretched or uniform
     x_stretch = .FALSE.
 
     ! The length of the domain in the y direction
-    y_min = 0.0_num
-    y_max = 100.0_num
+    y_min = -5.0_num
+    y_max = 5.0_num
     ! Should the y grid be stretched or uniform
     y_stretch = .FALSE.
 
     ! The length of the domain in the z direction
-    z_min = -20.0_num
-    z_max = 80.0_num
+    z_min = 0.0_num
+    z_max = 50.0_num
     ! Should the z grid be stretched or uniform
     z_stretch = .FALSE.
 
@@ -149,15 +149,15 @@ CONTAINS
     ! BC_PERIODIC - Periodic boundary conditions
     ! BC_OPEN     - Reimann far-field characteristic boundary conditions
     ! BC_USER    - Other boundary conditions specified in "boundary.f90"
-    xbc_min = BC_PERIODIC
-    xbc_max = BC_PERIODIC
-    ybc_min = BC_PERIODIC
-    ybc_max = BC_PERIODIC
+    xbc_min = BC_USER
+    xbc_max = BC_USER
+    ybc_min = BC_USER
+    ybc_max = BC_USER
     zbc_min = BC_USER
     zbc_max = BC_USER
 
     !If any user boundaries are driven using the spectra routines in boundary.f90 then set this flag
-    driven_boundary = .FALSE.
+    driven_boundary = .TRUE.
 
     ! Set to true to turn on routine for damped boundaries.
     ! These routines are in boundary.f90 and you should check that they
@@ -168,8 +168,8 @@ CONTAINS
     ! Logical boris to turn on/off
     ! va_max controls the effective mass density and is
     ! the reduced light speed in Boris's paper in Lare normalised units
-    boris = .FALSE.
-    va_max = 4.7e3_num
+    boris = .TRUE.
+    va_max = 1.e4_num
 
     ! Set the equation of state. Valid choices are
     ! EOS_IDEAL - Simple ideal gas for perfectly ionised plasma
@@ -183,7 +183,7 @@ CONTAINS
     ! For fully ionised gas set .FALSE.
     ! For neutral hydrogen set .TRUE.
     ! This flag is ignored for all other EOS choices.
-    neutral_gas = .FALSE.
+    neutral_gas = .TRUE.
 
     !An exponential moving average 
     !(https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average)
@@ -207,7 +207,7 @@ CONTAINS
     data_dir = 'Data'
 
     ! The interval between output snapshots.
-    dt_snapshots = 10.0_num
+    dt_snapshots = t_end / 10.0_num
 
     ! dump_mask is an array which specifies which quantities the code should
     ! output to disk in a data dump.
