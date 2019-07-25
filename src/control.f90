@@ -157,7 +157,7 @@ CONTAINS
     zbc_max = BC_USER
 
     !If any user boundaries are driven using the spectra routines in boundary.f90 then set this flag
-    driven_boundary = .TRUE.
+    driven_boundary = .FALSE.
 
     ! Set to true to turn on routine for damped boundaries.
     ! These routines are in boundary.f90 and you should check that they
@@ -183,7 +183,15 @@ CONTAINS
     ! For fully ionised gas set .FALSE.
     ! For neutral hydrogen set .TRUE.
     ! This flag is ignored for all other EOS choices.
-    neutral_gas = .TRUE.
+    neutral_gas = .FALSE.
+
+    !An exponential moving average 
+    !(https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average)
+    !Tweak this to get a "good" cooling function that doesn't just remove all
+    !heating effects
+    ! Works for viscosity and first order resistive effects
+    cooling_term = .FALSE.
+    alpha_av = 0.05_num
 
   END SUBROUTINE control_variables
 

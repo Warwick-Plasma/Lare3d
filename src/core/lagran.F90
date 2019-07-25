@@ -368,6 +368,8 @@ CONTAINS
               + (dt * visc_heat(ix,iy,iz) - dv * pressure(ix,iy,iz)) &
               / rho(ix,iy,iz)
 
+          visc_dep(ix,iy,iz) = visc_dep(ix,iy,iz) + dt * visc_heat(ix,iy,iz)
+
           rho(ix,iy,iz) = rho(ix,iy,iz) / (1.0_num + dv)
 
           total_visc_heating = total_visc_heating &
@@ -376,6 +378,20 @@ CONTAINS
         END DO
       END DO
     END DO
+
+    IF (cooling_term) THEN
+      DO iz = 1, nz
+        DO iy = 1, ny
+          DO ix = 1, nx
+            cool_term_v(ix,iy,iz) = alpha_av * dt * visc_heat(ix,iy,iz)/rho(ix,iy,iz) + &
+                (1.0_num - alpha_av) * cool_term_v(ix,iy,iz)
+  
+            energy(ix,iy,iz) = energy(ix,iy,iz) - cool_term_v(ix,iy,iz)
+          END DO
+        END DO
+      END DO
+      energy = MAX(energy, 0.0_num)
+    END IF
 
   END SUBROUTINE predictor_corrector_step
 
@@ -1102,7 +1118,7 @@ CONTAINS
 
   SUBROUTINE resistive_effects
 
-    REAL(num) :: jx1, jx2, jy1, jy2, jz1, jz2
+    REAL(num) :: jx1, jx2, jy1, jy2, jz1, jz2, local_heating
 #ifdef FOURTHORDER
     REAL(num) :: dt6, half_dt
     REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: k1x, k2x, k3x, k4x
@@ -1137,16 +1153,37 @@ CONTAINS
         iym = iy - 1
         DO ix = 1, nx
           ixm = ix - 1
-          energy(ix,iy,iz) = energy(ix,iy,iz) &
+          local_heating = energy(ix,iy,iz) &
               + (curlb(ix ,iy ,iz ) + curlb(ixm,iy ,iz )  &
               +  curlb(ix ,iym,iz ) + curlb(ixm,iym,iz )  &
               +  curlb(ix ,iy ,izm) + curlb(ixm,iy ,izm)  &
               +  curlb(ix ,iym,izm) + curlb(ixm,iym,izm)) &
               * dt / (8.0_num * rho(ix,iy,iz))
+
+          ohmic_dep(ix,iy,iz) = ohmic_dep(ix,iy,iz) + local_heating
+          
+          energy(ix,iy,iz) = energy(ix,iy,iz) + local_heating 
         END DO
       END DO
     END DO
 
+    IF (cooling_term) THEN 
+      DO iz = 1, nz
+        DO iy = 1, ny
+          DO ix = 1, nx
+            local_heating = (curlb(ix ,iy ,iz) + curlb(ixm,iy ,iz)  &
+                + curlb(ix ,iym,iz) + curlb(ixm,iym,iz)) &
+                * dt / (4.0_num * rho(ix,iy,iz))
+            cool_term_b(ix,iy,iz) = alpha_av * local_heating  &
+              + (1.0_num - alpha_av) * cool_term_b(ix,iy,iz)
+  
+            energy(ix,iy,iz) = energy(ix,iy,iz) - cool_term_b(ix,iy,iz)
+          END DO
+        END DO
+      END DO
+    END IF
+    energy = MAX(energy, 0.0_num)
+    
     CALL energy_bcs
 
     DO iz = 0, nz

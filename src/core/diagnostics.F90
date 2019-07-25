@@ -425,6 +425,29 @@ CONTAINS
           node_distribution, nodeng_subarray, convert)
     END IF
 
+    IF (dump_mask(20)) THEN
+      varname = 'Resistive_Heat'
+      units = 'J/m^3'
+      dims = global_dims
+
+      CALL sdf_write_plain_variable(sdf_handle, TRIM(varname), &
+          'Fluid/' // TRIM(varname), TRIM(units), dims, &
+          c_stagger_cell_centre, 'grid', ohmic_dep, &
+          cell_distribution, cell_subarray, convert)
+
+      varname = 'Viscous_Heat'
+      units = 'J/m^3'
+      dims = global_dims
+
+      CALL sdf_write_plain_variable(sdf_handle, TRIM(varname), &
+          'Fluid/' // TRIM(varname), TRIM(units), dims, &
+          c_stagger_cell_centre, 'grid', visc_dep, &
+          cell_distribution, cell_subarray, convert)
+
+      ohmic_dep = 0.0_num
+      visc_dep = 0.0_num
+    END IF
+
     IF (ALLOCATED(array)) DEALLOCATE(array)
 
     ! Close the file

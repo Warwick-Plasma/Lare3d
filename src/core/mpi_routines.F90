@@ -292,8 +292,17 @@ CONTAINS
     ALLOCATE(bz (-1:nx+2, -1:ny+2, -2:nz+2))
     ALLOCATE(eta(-1:nx+2, -1:ny+2, -1:nz+2))
     ALLOCATE(temperature(-1:nx+2, -1:ny+2, -1:nz+2))
+    ALLOCATE(visc_dep(-1:nx+2, -1:ny+2, -1:nz+2))
+    ALLOCATE(ohmic_dep(-1:nx+2, -1:ny+2, -1:nz+2))
     ALLOCATE(gamma_boris(-1:nx+2, -1:ny+2, -1:nz+2))
     IF (rke) ALLOCATE(delta_ke(-1:nx+2, -1:ny+2, -1:nz+2))
+
+    IF (cooling_term) THEN
+      ALLOCATE(cool_term_v(nx,ny,nz))
+      ALLOCATE(cool_term_b(nx,ny,nz))
+      cool_term_v = 0.0_num
+      cool_term_b = 0.0_num
+    END IF
 
     ! Shocked and resistive need to be larger to allow offset = 4 in shock_test
     ALLOCATE(cv(-1:nx+2, -1:ny+2, -1:nz+2), cv1(-1:nx+2, -1:ny+2, -1:nz+2))
@@ -313,6 +322,8 @@ CONTAINS
 
     p_visc = 0.0_num
     eta = 0.0_num
+    visc_dep = 0.0_num
+    ohmic_dep = 0.0_num
 
     CALL mpi_create_types
 
@@ -361,6 +372,7 @@ CONTAINS
     DEALLOCATE(cell_nx_mins, cell_nx_maxs)
     DEALLOCATE(cell_ny_mins, cell_ny_maxs)
     DEALLOCATE(cell_nz_mins, cell_nz_maxs)
+    DEALLOCATE(visc_dep, ohmic_dep)
     DEALLOCATE(gamma_boris)
 
     IF (ALLOCATED(xi_n)) DEALLOCATE(xi_n)
@@ -368,6 +380,9 @@ CONTAINS
     IF (ALLOCATED(eta_perp)) DEALLOCATE(eta_perp)
     IF (ALLOCATED(parallel_current)) DEALLOCATE(parallel_current)
     IF (ALLOCATED(perp_current)) DEALLOCATE(perp_current)
+    IF (ALLOCATED(cool_term_b)) DEALLOCATE(cool_term_b)
+    IF (ALLOCATED(cool_term_v)) DEALLOCATE(cool_term_v)
+
 
   END SUBROUTINE mpi_close
 
