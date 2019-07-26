@@ -69,28 +69,44 @@ CONTAINS
 
 
 
-  SUBROUTINE produce_spectrum(dat, time, rise_time)
+  SUBROUTINE produce_spectrum(dat1, dat2, time, rise_time)
 
-    REAL(num), DIMENSION(-2:,-2:,:), INTENT(INOUT) :: dat
+    REAL(num), DIMENSION(-2:nx+2,-2:ny+2,-2:0), INTENT(INOUT) :: dat1, dat2
     REAL(num), INTENT(IN) :: time, rise_time
-    REAL(num) :: val
-    INTEGER :: iel, ix
+    REAL(num) :: theta
+!     REAL(num) :: val
+!     INTEGER :: iel
 
+    dat1 = 0.0_num
+    dat2 = 0.0_num
 
-    DO iy = -2, ny + 2
-      DO ix = -2, nx + 2
-        val = 0.0_num
-        DO iel = 1, drive_nel
-          val = val + drive_amp(ix,iy,iel) &
-              * SIN(drive_axis(iel) * time + drive_phase(ix,iy,iel))
-        END DO
-        dat(ix,iy,:) = val
+    DO ix = -2, nx+2
+      DO iy = -2, ny+2
+        theta = ATAN(yb(iy),(xb(ix)-4.0_num))
+        dat1(ix,iy,-2:0) = SIN(theta) * EXP(-(xc(ix)-4.0_num)**2 - yc(iy)**2)
+        dat2(ix,iy,-2:0) = - COS(theta) * EXP(-(xc(ix)-4.0_num)**2 - yc(iy)**2)
       END DO
     END DO
-
+    
     IF (time < rise_time) THEN
-      dat = dat * 0.5_num * (1.0_num - COS(time * pi / rise_time))
+        dat1(:,:,:) = dat1(:,:,:) * 0.5_num * (1.0_num - COS(time * pi / rise_time))
+        dat2(:,:,:) = dat2(:,:,:) * 0.5_num * (1.0_num - COS(time * pi / rise_time))
     END IF
+
+!     DO iy = -2, ny + 2
+!       DO ix = -2, nx + 2
+!         val = 0.0_num
+!         DO iel = 1, drive_nel
+!           val = val + drive_amp(ix,iy,iel) &
+!               * SIN(drive_axis(iel) * time + drive_phase(ix,iy,iel))
+!         END DO
+!         dat(ix,iy,:) = val
+!       END DO
+!     END DO
+
+!     IF (time < rise_time) THEN
+!       dat = dat * 0.5_num * (1.0_num - COS(time * pi / rise_time))
+!     END IF
 
   END SUBROUTINE produce_spectrum
 
@@ -339,6 +355,7 @@ CONTAINS
       vx(:,:,-2:0) = 0.0_num
       vy(:,:,-2:0) = 0.0_num
       vz(:,:,-2:0) = 0.0_num
+      CALL produce_spectrum(vx(:,:,-2:0), vy(:,:,-2:0), time, 0.1_num)
     END IF
 
     IF (proc_z_max == MPI_PROC_NULL .AND. zbc_max == BC_USER) THEN
@@ -387,6 +404,7 @@ CONTAINS
       vx1(:,:,-2:0) = 0.0_num
       vy1(:,:,-2:0) = 0.0_num
       vz1(:,:,-2:0) = 0.0_num
+      CALL produce_spectrum(vx1(:,:,-2:0), vy1(:,:,-2:0), time - 0.5_num * dt, 0.1_num)
     END IF
 
     IF (proc_z_max == MPI_PROC_NULL .AND. zbc_max == BC_USER) THEN

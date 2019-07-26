@@ -56,9 +56,9 @@ CONTAINS
   SUBROUTINE control_variables
 
     ! Set the number of gridpoints in x and y directions
-    nx_global = 10
-    ny_global = 10
-    nz_global = 10
+    nx_global = 128
+    ny_global = 128
+    nz_global = 128
 
     ! Set the maximum number of iterations of the core solver before the code
     ! terminates. If nsteps < 0 then the code will run until t = t_end
@@ -79,20 +79,20 @@ CONTAINS
     nprocz = 0
 
     ! The length of the domain in the x direction
-    x_min = -5.0_num
-    x_max = 5.0_num
+    x_min = -15.0_num
+    x_max = 15.0_num
     ! Should the x grid be stretched or uniform
     x_stretch = .FALSE.
 
     ! The length of the domain in the y direction
-    y_min = -5.0_num
-    y_max = 5.0_num
+    y_min = -15.0_num
+    y_max = 15.0_num
     ! Should the y grid be stretched or uniform
     y_stretch = .FALSE.
 
     ! The length of the domain in the z direction
     z_min = 0.0_num
-    z_max = 50.0_num
+    z_max = 10.0_num
     ! Should the z grid be stretched or uniform
     z_stretch = .FALSE.
 
@@ -135,8 +135,8 @@ CONTAINS
     !              setup new initial conditions
     ! IC_RESTART - Load the output file with index restart_snapshot and use it
     !              as the initial conditions
-    initial = IC_NEW
-    restart_snapshot = 1
+    initial = IC_RESTART
+    restart_snapshot = 0
 
     ! If cowling_resistivity is true then the code calculates and
     ! applies the Cowling Resistivity to the MHD equations
@@ -162,7 +162,7 @@ CONTAINS
     ! Set to true to turn on routine for damped boundaries.
     ! These routines are in boundary.f90 and you should check that they
     ! actually do what you want.
-    damping = .FALSE.
+    damping = .TRUE.
 
     ! Control Boris scheme for limiting the Alfven speed
     ! Logical boris to turn on/off

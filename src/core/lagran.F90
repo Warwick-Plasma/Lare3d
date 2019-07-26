@@ -318,7 +318,7 @@ CONTAINS
           bzv = 0.25_num * (bz(ix,iy,iz) + bz(ix,iyp,iz) + bz(ixp,iy,iz) + bz(ixp,iyp,iz))   
 
           jx = (bz(ix,iyp,iz) - bz(ix,iy,iz)) / dyc(iy) - (by(ix,iy,izp) - by(ix,iy,iz)) / dzc(iz)
-          jy = (bx(ix,iy,izp) - bx(ix,iy,iz)) / dzc(iz) - (bz(ix,iy,izp) - bz(ix,iy,iz)) / dxc(ix)
+          jy = (bx(ix,iy,izp) - bx(ix,iy,iz)) / dzc(iz) - (bz(ixp,iy,iz) - bz(ix,iy,iz)) / dxc(ix)
           jz = (by(ixp,iy,iz) - by(ix,iy,iz)) / dxc(ix) - (bx(ix,iyp,iz) - bx(ix,iy,iz)) / dyc(iy)
 #endif
           fx = fx + (jy * bzv - jz * byv)
