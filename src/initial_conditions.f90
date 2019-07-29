@@ -293,12 +293,12 @@ CONTAINS
     CALL bfield_bcs
 
     !Only incoming flux on lower boundary
-    bz_min_local = MAXVAL(bz)
-    IF (proc_z_min == MPI_PROC_NULL) THEN
-      bz_min_local = MINVAL(bz(1:nx,1:ny,0))
-    END IF
-    CALL MPI_ALLREDUCE(bz_min_local, bz_min, 1, mpireal, MPI_MIN, comm, errcode)
-    bz = bz - MIN(bz_min, 0.0_num)
+!     bz_min_local = MAXVAL(bz)
+!     IF (proc_z_min == MPI_PROC_NULL) THEN
+!       bz_min_local = MINVAL(bz(1:nx,1:ny,0))
+!     END IF
+!     CALL MPI_ALLREDUCE(bz_min_local, bz_min, 1, mpireal, MPI_MIN, comm, errcode)
+!     bz = bz - MIN(bz_min, 0.0_num)
 
     !Find maximum Bz on lower boundary
     bz_max_local = MINVAL(bz)
@@ -308,9 +308,9 @@ CONTAINS
     CALL MPI_ALLREDUCE(bz_max_local, bz_max, 1, mpireal, MPI_MAX, comm, errcode) 
 
     !Scale the field to one in normalised units
-    bz = bz / bz_max 
-    by = by / bz_max 
-    bx = bx / bz_max 
+    bz = bz / bz_max / 0.3_num
+    by = by / bz_max / 0.3_num
+    bx = bx / bz_max / 0.3_num
 
     DEALLOCATE(phi)
 
@@ -362,11 +362,11 @@ CONTAINS
             END DO
           END DO
         END IF
-        CALL MPI_ALLREDUCE(local_flux, total_flux, 1, mpireal, MPI_SUM, comm, errcode)
-        IF (proc_z_min == MPI_PROC_NULL) THEN
-          phi(1:nx,1:ny,0) = phi(1:nx,1:ny,0) - dzc(1) * total_flux / length_x / length_y
-          phi(1:nx,1:ny,-1) = phi(1:nx,1:ny,0)
-        END IF        
+!         CALL MPI_ALLREDUCE(local_flux, total_flux, 1, mpireal, MPI_SUM, comm, errcode)
+!         IF (proc_z_min == MPI_PROC_NULL) THEN
+!           phi(1:nx,1:ny,0) = phi(1:nx,1:ny,0) - dzc(1) * total_flux / length_x / length_y
+!           phi(1:nx,1:ny,-1) = phi(1:nx,1:ny,0)
+!         END IF        
 
         IF (proc_z_max == MPI_PROC_NULL) THEN
           phi(:,:,nz+1) = 0.0_num

@@ -62,7 +62,7 @@ CONTAINS
 
     ! Set the maximum number of iterations of the core solver before the code
     ! terminates. If nsteps < 0 then the code will run until t = t_end
-    nsteps = 1
+    nsteps = -1
 
     ! The maximum runtime of the code
     t_end = 10.0_num
@@ -92,7 +92,7 @@ CONTAINS
 
     ! The length of the domain in the z direction
     z_min = 0.0_num
-    z_max = 10.0_num
+    z_max = 40.0_num
     ! Should the z grid be stretched or uniform
     z_stretch = .FALSE.
 
@@ -168,8 +168,8 @@ CONTAINS
     ! Logical boris to turn on/off
     ! va_max controls the effective mass density and is
     ! the reduced light speed in Boris's paper in Lare normalised units
-    boris = .TRUE.
-    va_max = 1.e4_num
+    boris = .FALSE.
+    va_max = 10.0_num
 
     ! Set the equation of state. Valid choices are
     ! EOS_IDEAL - Simple ideal gas for perfectly ionised plasma
@@ -183,14 +183,14 @@ CONTAINS
     ! For fully ionised gas set .FALSE.
     ! For neutral hydrogen set .TRUE.
     ! This flag is ignored for all other EOS choices.
-    neutral_gas = .TRUE.
+    neutral_gas = .FALSE.
 
     !An exponential moving average 
     !(https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average)
     !Tweak this to get a "good" cooling function that doesn't just remove all
     !heating effects
     ! Works for viscosity and first order resistive effects
-    cooling_term = .FALSE.
+    cooling_term = .TRUE.
     alpha_av = 0.05_num
 
   END SUBROUTINE control_variables
