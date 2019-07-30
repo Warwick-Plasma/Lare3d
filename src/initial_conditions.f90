@@ -350,14 +350,14 @@ CONTAINS
         !Unipolar flux
         local_flux = 0.0_num
         IF (proc_z_min == MPI_PROC_NULL) THEN
-          local_flux = 0.0_num
+!           local_flux = 0.0_num
           DO iy = 1, ny
             DO ix = 1, nx
 !               phi(ix,iy,0) = phi(ix,iy,1) + dzc(1) * EXP(-(xc(ix)**2+yc(iy)**2)) 
-              phi(ix,iy,0) = phi(ix,iy,1) + dyc(1) * 3.5_num * EXP(-(xc(ix)-4.0_num)**2 - yc(iy)**2) &
-                - 7.5_num * dyc(1) * EXP(-(xc(ix)+4.0_num)**2 - yc(iy)**2) 
-              local_flux = local_flux + dxb(ix) * dyb(iy) * (3.5_num * EXP(-(xc(ix)-4.0_num)**2 - yc(iy)**2) &
-                - 7.5_num * dyc(1) * EXP(-(xc(ix)+4.0_num)**2 - yc(iy)**2)) 
+              phi(ix,iy,0) = phi(ix,iy,1) + dzc(1) * 4.0_num * EXP(-4.0_num * ((xc(ix)-2.0_num)**2 + yc(iy)**2)) &
+                - 0.16_num * dzc(1) * EXP(-0.25_num*((xc(ix) + 4.0_num)**2 + yc(iy)**2)) 
+!               local_flux = local_flux + dxb(ix) * dyb(iy) * (3.5_num * EXP(-(xc(ix)-4.0_num)**2 - yc(iy)**2) &
+!                 - 7.5_num * dyc(1) * EXP(-(xc(ix)+4.0_num)**2 - yc(iy)**2)) 
               phi(ix,iy,-1) = phi(ix,iy,0)
             END DO
           END DO

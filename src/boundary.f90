@@ -73,7 +73,7 @@ CONTAINS
 
     REAL(num), DIMENSION(-2:nx+2,-2:ny+2,-2:0), INTENT(INOUT) :: dat1, dat2
     REAL(num), INTENT(IN) :: time, rise_time
-    REAL(num) :: theta
+    REAL(num) :: theta, radius
 !     REAL(num) :: val
 !     INTEGER :: iel
 
@@ -82,9 +82,10 @@ CONTAINS
 
     DO ix = -2, nx+2
       DO iy = -2, ny+2
-        theta = ATAN(yb(iy),(xb(ix)-4.0_num))
-        dat1(ix,iy,-2:0) = SIN(theta) * EXP(-(xc(ix)-4.0_num)**2 - yc(iy)**2)
-        dat2(ix,iy,-2:0) = - COS(theta) * EXP(-(xc(ix)-4.0_num)**2 - yc(iy)**2)
+        radius = SQRT((xc(ix) + 4.0_num)**2 + yc(iy)**2) 
+        theta = ATAN(yb(iy),(xb(ix)+4.0_num))
+        dat1(ix,iy,-2:0) = - SIN(theta) * radius * EXP(-0.25_num*((xc(ix) + 4.0_num)**2 + yc(iy)**2)) 
+        dat2(ix,iy,-2:0) =  COS(theta) * radius * EXP(-0.25_num*((xc(ix) + 4.0_num)**2 + yc(iy)**2)) 
       END DO
     END DO
     

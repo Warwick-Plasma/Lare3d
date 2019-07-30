@@ -79,20 +79,20 @@ CONTAINS
     nprocz = 0
 
     ! The length of the domain in the x direction
-    x_min = -15.0_num
-    x_max = 15.0_num
+    x_min = -10.0_num
+    x_max = 6.0_num
     ! Should the x grid be stretched or uniform
     x_stretch = .FALSE.
 
     ! The length of the domain in the y direction
-    y_min = -15.0_num
-    y_max = 15.0_num
+    y_min = -8.0_num
+    y_max = 8.0_num
     ! Should the y grid be stretched or uniform
     y_stretch = .FALSE.
 
     ! The length of the domain in the z direction
     z_min = 0.0_num
-    z_max = 40.0_num
+    z_max = 20.0_num
     ! Should the z grid be stretched or uniform
     z_stretch = .FALSE.
 
@@ -135,7 +135,7 @@ CONTAINS
     !              setup new initial conditions
     ! IC_RESTART - Load the output file with index restart_snapshot and use it
     !              as the initial conditions
-    initial = IC_RESTART
+    initial = IC_NEW
     restart_snapshot = 0
 
     ! If cowling_resistivity is true then the code calculates and
