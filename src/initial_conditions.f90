@@ -185,7 +185,7 @@ CONTAINS
     END DO
     DO iy= -1, ny + 2
      DO ix= -1, nx + 2
-        energy(ix,iy,ny+2) = energy(ix,iy,ny+1)
+        energy(ix,iy,nz+2) = energy(ix,iy,nz+1)
       END DO
     END DO
 
