@@ -73,19 +73,20 @@ CONTAINS
 
     REAL(num), DIMENSION(-2:nx+2,-2:ny+2,-2:0), INTENT(INOUT) :: dat1, dat2
     REAL(num), INTENT(IN) :: time, rise_time
-    REAL(num) :: theta, radius
-!     REAL(num) :: val
-!     INTEGER :: iel
+    REAL(num) :: theta, radius, r1, r2, centre
 
     dat1 = 0.0_num
     dat2 = 0.0_num
 
     DO ix = -2, nx+2
-      DO iy = -2, ny+2
-        radius = SQRT((xb(ix) + 4.0_num)**2 + yb(iy)**2) 
-        theta = ATAN(yb(iy),(xb(ix)+4.0_num))
-        dat1(ix,iy,-2:0) = - SIN(theta) * radius * EXP(-0.25_num*((xc(ix) + 4.0_num)**2 + yc(iy)**2)) 
-        dat2(ix,iy,-2:0) =  COS(theta) * radius * EXP(-0.25_num*((xc(ix) + 4.0_num)**2 + yc(iy)**2)) 
+      DO iy = -2, ny+2              
+        centre = 30.0_num
+        radius = 10.0_num
+        r2 = (xb(ix) - centre)**2 + yb(iy)**2 
+        r1 = SQRT(r2)
+        theta = ATAN(yb(iy),(xb(ix)-centre))
+        dat1(ix,iy,-2:0) = - SIN(theta) * r1 * EXP(-r2 / radius**2) 
+        dat2(ix,iy,-2:0) =  COS(theta) * r1 * EXP(-r2 / radius**2)  
       END DO
     END DO
     
@@ -93,21 +94,6 @@ CONTAINS
         dat1(:,:,:) = dat1(:,:,:) * 0.5_num * (1.0_num - COS(time * pi / rise_time))
         dat2(:,:,:) = dat2(:,:,:) * 0.5_num * (1.0_num - COS(time * pi / rise_time))
     END IF
-
-!     DO iy = -2, ny + 2
-!       DO ix = -2, nx + 2
-!         val = 0.0_num
-!         DO iel = 1, drive_nel
-!           val = val + drive_amp(ix,iy,iel) &
-!               * SIN(drive_axis(iel) * time + drive_phase(ix,iy,iel))
-!         END DO
-!         dat(ix,iy,:) = val
-!       END DO
-!     END DO
-
-!     IF (time < rise_time) THEN
-!       dat = dat * 0.5_num * (1.0_num - COS(time * pi / rise_time))
-!     END IF
 
   END SUBROUTINE produce_spectrum
 
