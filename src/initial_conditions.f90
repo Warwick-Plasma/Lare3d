@@ -220,7 +220,7 @@ CONTAINS
 
     converged = .FALSE.
     w = 1.6_num   !2.0_num / (1.0_num + SIN(pi / REAL(nx_global,num)))
-    fractional_error = 1.e-8_num
+    fractional_error = 1.e-6_num
 
     ! Iterate to get phi^{n+1} by SOR Gauss-Seidel
     iterate: DO loop = 1, 1000000
@@ -292,19 +292,8 @@ CONTAINS
 
     CALL bfield_bcs
 
-    !Only incoming flux on lower boundary
-!     bz_min_local = MAXVAL(bz)
-!     IF (proc_z_min == MPI_PROC_NULL) THEN
-!       bz_min_local = MINVAL(bz(1:nx,1:ny,0))
-!     END IF
-!     CALL MPI_ALLREDUCE(bz_min_local, bz_min, 1, mpireal, MPI_MIN, comm, errcode)
-!     bz = bz - MIN(bz_min, 0.0_num)
-
     !Find maximum Bz on lower boundary
-    bz_max_local = MINVAL(bz)
-    IF (proc_y_min == MPI_PROC_NULL) THEN
-      bz_max_local = MAXVAL(bz(1:nx,1:ny,0))
-    END IF
+    bz_max_local = MAXVAL(ABS(bz(1:nx,1:ny,0)))
     CALL MPI_ALLREDUCE(bz_max_local, bz_max, 1, mpireal, MPI_MAX, comm, errcode) 
 
     !Scale the field to one in normalised units
@@ -350,23 +339,14 @@ CONTAINS
         !Unipolar flux
         local_flux = 0.0_num
         IF (proc_z_min == MPI_PROC_NULL) THEN
-!           local_flux = 0.0_num
           DO iy = 1, ny
             DO ix = 1, nx
-!               phi(ix,iy,0) = phi(ix,iy,1) + dzc(1) * EXP(-(xc(ix)**2+yc(iy)**2)) 
               phi(ix,iy,0) = phi(ix,iy,1) + dzc(1) * 4.0_num * EXP(-4.0_num * ((xc(ix)-2.0_num)**2 + yc(iy)**2)) &
                 - 0.16_num * dzc(1) * EXP(-0.25_num*((xc(ix) + 4.0_num)**2 + yc(iy)**2)) 
-!               local_flux = local_flux + dxb(ix) * dyb(iy) * (3.5_num * EXP(-(xc(ix)-4.0_num)**2 - yc(iy)**2) &
-!                 - 7.5_num * dyc(1) * EXP(-(xc(ix)+4.0_num)**2 - yc(iy)**2)) 
               phi(ix,iy,-1) = phi(ix,iy,0)
             END DO
           END DO
         END IF
-!         CALL MPI_ALLREDUCE(local_flux, total_flux, 1, mpireal, MPI_SUM, comm, errcode)
-!         IF (proc_z_min == MPI_PROC_NULL) THEN
-!           phi(1:nx,1:ny,0) = phi(1:nx,1:ny,0) - dzc(1) * total_flux / length_x / length_y
-!           phi(1:nx,1:ny,-1) = phi(1:nx,1:ny,0)
-!         END IF        
 
         IF (proc_z_max == MPI_PROC_NULL) THEN
           phi(:,:,nz+1) = 0.0_num
