@@ -62,10 +62,10 @@ CONTAINS
 
     ! Set the maximum number of iterations of the core solver before the code
     ! terminates. If nsteps < 0 then the code will run until t = t_end
-    nsteps = 1
+    nsteps = -1
 
     ! The maximum runtime of the code
-    t_end = 10.0_num
+    t_end = 30.0_num
 
     ! Shock viscosities as detailed in manual - they are dimensionless
     visc1 = 0.1_num
