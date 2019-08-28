@@ -293,7 +293,7 @@ CONTAINS
     CALL bfield_bcs
 
     !Find maximum Bz on lower boundary
-    bz_max_local = MAXVAL(ABS(bz(1:nx,1:ny,0)))
+    bz_max_local = MAXVAL(bz(1:nx,1:ny,0))
     CALL MPI_ALLREDUCE(bz_max_local, bz_max, 1, mpireal, MPI_MAX, comm, errcode) 
 
     !Scale the field to one in normalised units
@@ -308,6 +308,7 @@ CONTAINS
       SUBROUTINE phi_mpi
 
         REAL(num) :: total_flux, local_flux
+        REAL(num) :: centre, radius, amp
 
         CALL MPI_SENDRECV( &
             phi(   1,-1,-1), 1, cell_xface, proc_x_min, tag, &
@@ -341,8 +342,19 @@ CONTAINS
         IF (proc_z_min == MPI_PROC_NULL) THEN
           DO iy = 1, ny
             DO ix = 1, nx
-              phi(ix,iy,0) = phi(ix,iy,1) + dzc(1) * 4.0_num * EXP(-4.0_num * ((xc(ix)-2.0_num)**2 + yc(iy)**2)) &
-                - 0.16_num * dzc(1) * EXP(-0.25_num*((xc(ix) + 4.0_num)**2 + yc(iy)**2)) 
+
+              centre = 60.0_num
+              radius = 5.0_num
+              amp = 1.0_num
+              phi(ix,iy,0) = phi(ix,iy,1) &
+                + amp * dzc(1) * EXP(-((xc(ix)-centre)**2 + yc(iy)**2)/radius**2) 
+
+              centre = 30.0_num
+              radius = 10.0_num
+              amp = 0.25_num
+              phi(ix,iy,0) = phi(ix,iy,0) &
+                - amp * dzc(1) * EXP(-((xc(ix)-centre)**2 + yc(iy)**2)/radius**2) 
+
               phi(ix,iy,-1) = phi(ix,iy,0)
             END DO
           END DO

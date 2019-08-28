@@ -62,7 +62,7 @@ CONTAINS
 
     ! Set the maximum number of iterations of the core solver before the code
     ! terminates. If nsteps < 0 then the code will run until t = t_end
-    nsteps = -1
+    nsteps = 1
 
     ! The maximum runtime of the code
     t_end = 10.0_num
@@ -79,14 +79,14 @@ CONTAINS
     nprocz = 0
 
     ! The length of the domain in the x direction
-    x_min = -10.0_num
-    x_max = 6.0_num
+    x_min = 0.0_num
+    x_max = 80.0_num
     ! Should the x grid be stretched or uniform
     x_stretch = .FALSE.
 
     ! The length of the domain in the y direction
-    y_min = -8.0_num
-    y_max = 8.0_num
+    y_min = -40.0_num
+    y_max = 40.0_num
     ! Should the y grid be stretched or uniform
     y_stretch = .FALSE.
 
