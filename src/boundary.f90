@@ -80,13 +80,13 @@ CONTAINS
 
     DO ix = -2, nx+2
       DO iy = -2, ny+2              
-        centre = 30.0_num
-        radius = 10.0_num
+        centre = 5.5_num
+        radius = 2.2_num 
         r2 = (xb(ix) - centre)**2 + yb(iy)**2 
         r1 = SQRT(r2)
         theta = ATAN(yb(iy),(xb(ix)-centre))
-        dat1(ix,iy,-2:0) = - SIN(theta) * r1 * EXP(-r2 / radius**2) 
-        dat2(ix,iy,-2:0) =  COS(theta) * r1 * EXP(-r2 / radius**2)  
+        dat1(ix,iy,-2:0) = - SIN(theta) * r1 * (1.0_num - TANH((r1 - radius)/0.2_num))
+        dat2(ix,iy,-2:0) =  COS(theta) * r1 * (1.0_num - TANH((r1 - radius)/0.2_num))
       END DO
     END DO
     
@@ -486,22 +486,22 @@ CONTAINS
       END DO
     END IF
 
-    IF (proc_z_min == MPI_PROC_NULL) THEN
-      d = n_cells * dzb(1)
-      DO iz = -1, nz + 1
-        DO iy = -1, ny + 1
-          DO ix = -1, nx + 1
-            pos = zb(iz) - z_min
-            IF (pos < d) THEN
-              a = dt * damp_scale * pos / d + 1.0_num
-              vx(ix,iy,iz) = vx(ix,iy,iz) / a
-              vy(ix,iy,iz) = vy(ix,iy,iz) / a
-              vz(ix,iy,iz) = vz(ix,iy,iz) / a
-            END IF
-          END DO
-        END DO
-      END DO
-    END IF
+!     IF (proc_z_min == MPI_PROC_NULL) THEN
+!       d = n_cells * dzb(1)
+!       DO iz = -1, nz + 1
+!         DO iy = -1, ny + 1
+!           DO ix = -1, nx + 1
+!             pos = zb(iz) - z_min
+!             IF (pos < d) THEN
+!               a = dt * damp_scale * pos / d + 1.0_num
+!               vx(ix,iy,iz) = vx(ix,iy,iz) / a
+!               vy(ix,iy,iz) = vy(ix,iy,iz) / a
+!               vz(ix,iy,iz) = vz(ix,iy,iz) / a
+!             END IF
+!           END DO
+!         END DO
+!       END DO
+!     END IF
 
     IF (proc_z_max == MPI_PROC_NULL) THEN
       d = n_cells * dzb(nz)

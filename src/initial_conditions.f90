@@ -88,9 +88,9 @@ CONTAINS
   
     !fill in the reference gravity array - lowering grav to zero at the top 
     !of the corona smoothly from a1 to grav=0 at a2 and above
-    grav_ref = 11.78_num
-    a1 = 25.0_num!zb_global(nx_global) - 20.0_num
-    a2 = 40.0_num
+    grav_ref = L_norm * 274.0_num / v0**2
+    a1 = 0.7_num * zb_global(nx_global) 
+    a2 = 0.9_num * zb_global(nx_global) 
     DO iz = 0,nz_global+2
        IF (zb_global(iz) > a1) THEN
           grav_ref(iz) = 11.78_num * (1.0_num + COS(pi * (zb_global(iz) - a1) &
@@ -107,7 +107,6 @@ CONTAINS
     !photosphere and calculating up and down from there including beta
     rho_ref = 1.0_num
     mu_m = 1.0_num
-    temp_ref = 1.0_num
     IF (eos_number == EOS_IDEAL .AND. (.NOT. neutral_gas)) mu_m = 0.5_num
 
     DO loop = 1,1000
@@ -297,9 +296,9 @@ CONTAINS
     CALL MPI_ALLREDUCE(bz_max_local, bz_max, 1, mpireal, MPI_MAX, comm, errcode) 
 
     !Scale the field to one in normalised units
-    bz = bz / bz_max / 0.3_num
-    by = by / bz_max / 0.3_num
-    bx = bx / bz_max / 0.3_num
+    bz = bz / bz_max 
+    by = by / bz_max
+    bx = bx / bz_max 
 
     DEALLOCATE(phi)
 
@@ -308,7 +307,7 @@ CONTAINS
       SUBROUTINE phi_mpi
 
         REAL(num) :: total_flux, local_flux
-        REAL(num) :: centre, radius, amp
+        REAL(num) :: centre, radius, amp, r1
 
         CALL MPI_SENDRECV( &
             phi(   1,-1,-1), 1, cell_xface, proc_x_min, tag, &
@@ -343,17 +342,19 @@ CONTAINS
           DO iy = 1, ny
             DO ix = 1, nx
 
-              centre = 60.0_num
-              radius = 5.0_num
+              centre = 11.5_num
+              radius = 1.0_num
               amp = 1.0_num
+              r1 = SQRT((xc(ix)-centre)**2 + yc(iy)**2)
               phi(ix,iy,0) = phi(ix,iy,1) &
-                + amp * dzc(1) * EXP(-((xc(ix)-centre)**2 + yc(iy)**2)/radius**2) 
+                + amp * dzc(1) * (1.0_num - TANH((r1 - radius)/0.2_num))
 
-              centre = 30.0_num
-              radius = 10.0_num
+              centre = 5.5_num
+              radius = 2.0_num
               amp = 0.25_num
+              r1 = SQRT((xc(ix)-centre)**2 + yc(iy)**2)
               phi(ix,iy,0) = phi(ix,iy,0) &
-                - amp * dzc(1) * EXP(-((xc(ix)-centre)**2 + yc(iy)**2)/radius**2) 
+                - amp * dzc(1) * (1.0_num - TANH((r1 - radius)/0.2_num))
 
               phi(ix,iy,-1) = phi(ix,iy,0)
             END DO

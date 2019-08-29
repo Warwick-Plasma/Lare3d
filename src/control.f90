@@ -37,10 +37,10 @@ CONTAINS
     ! non-ideal MHD terms.
 
     ! Magnetic field normalisation in Tesla
-    B_norm = 0.03_num
+    B_norm = 0.1_num
 
     ! Length normalisation in m
-    L_norm = 180.e3_num
+    L_norm = 1.e6_num
 
     ! Density normalisation in kg / m^3
     rho_norm = 1.67e-4_num
@@ -65,7 +65,7 @@ CONTAINS
     nsteps = -1
 
     ! The maximum runtime of the code
-    t_end = 30.0_num
+    t_end = 10.0_num
 
     ! Shock viscosities as detailed in manual - they are dimensionless
     visc1 = 0.1_num
@@ -80,19 +80,19 @@ CONTAINS
 
     ! The length of the domain in the x direction
     x_min = 0.0_num
-    x_max = 80.0_num
+    x_max = 16.0_num
     ! Should the x grid be stretched or uniform
     x_stretch = .FALSE.
 
     ! The length of the domain in the y direction
-    y_min = -40.0_num
-    y_max = 40.0_num
+    y_min = -8.0_num
+    y_max = 8.0_num
     ! Should the y grid be stretched or uniform
     y_stretch = .FALSE.
 
     ! The length of the domain in the z direction
     z_min = 0.0_num
-    z_max = 20.0_num
+    z_max = 16.0_num
     ! Should the z grid be stretched or uniform
     z_stretch = .FALSE.
 
@@ -136,7 +136,7 @@ CONTAINS
     ! IC_RESTART - Load the output file with index restart_snapshot and use it
     !              as the initial conditions
     initial = IC_NEW
-    restart_snapshot = 0
+    restart_snapshot = 1
 
     ! If cowling_resistivity is true then the code calculates and
     ! applies the Cowling Resistivity to the MHD equations
@@ -183,7 +183,7 @@ CONTAINS
     ! For fully ionised gas set .FALSE.
     ! For neutral hydrogen set .TRUE.
     ! This flag is ignored for all other EOS choices.
-    neutral_gas = .FALSE.
+    neutral_gas = .TRUE.
 
     !An exponential moving average 
     !(https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average)
@@ -207,7 +207,7 @@ CONTAINS
     data_dir = 'Data'
 
     ! The interval between output snapshots.
-    dt_snapshots = t_end / 10.0_num
+    dt_snapshots = t_end / 20.0_num
 
     ! dump_mask is an array which specifies which quantities the code should
     ! output to disk in a data dump.

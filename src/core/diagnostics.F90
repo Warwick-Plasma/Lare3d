@@ -91,7 +91,7 @@ CONTAINS
 
     ! Output energy diagnostics etc
     IF (last_call .AND. rank == 0) THEN
-      WRITE(stat_unit,*) 'final nsteps / time = ', step, time
+      WRITE(stat_unit,*) 'final nsteps / time / dt = ', step, time, dt
 
       IF (ALLOCATED(var_local)) DEALLOCATE(var_local)
       IF (ALLOCATED(var_sum)) DEALLOCATE(var_sum)
@@ -147,7 +147,7 @@ CONTAINS
 
     ! Output a snapshot of arrays
     IF (rank == 0) THEN
-      WRITE(stat_unit,*) 'Dumping ', file_number, ' at time', time
+      WRITE(stat_unit,*) 'Dumping ', file_number, ' at time', time, 'with dt ', dt
       IF (conduction) WRITE(stat_unit,*) 'Number of super-steps = ', n_s_stages
       CALL FLUSH(stat_unit)
     END IF
