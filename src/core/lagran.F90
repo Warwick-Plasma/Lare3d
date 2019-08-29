@@ -175,6 +175,7 @@ CONTAINS
     REAL(num) :: e1
     REAL(num) :: vxb, vxbm, vyb, vybm, vzb, vzbm
     REAL(num) :: bxv, byv, bzv, jx, jy, jz
+    REAL(num) :: jx1, jx2, jy1, jy2, jz1, jz2
 #ifdef CAUCHY
     REAL(num) :: cvx, cvxp, cvy, cvyp, cvz, cvzp
 #endif
@@ -317,9 +318,26 @@ CONTAINS
           byv = 0.25_num * (by(ix,iy,iz) + by(ixp,iy,iz) + by(ix,iy,izp) + by(ixp,iy,izp))   
           bzv = 0.25_num * (bz(ix,iy,iz) + bz(ix,iyp,iz) + bz(ixp,iy,iz) + bz(ixp,iyp,iz))   
 
-          jx = (bz(ix,iyp,iz) - bz(ix,iy,iz)) / dyc(iy) - (by(ix,iy,izp) - by(ix,iy,iz)) / dzc(iz)
-          jy = (bx(ix,iy,izp) - bx(ix,iy,iz)) / dzc(iz) - (bz(ixp,iy,iz) - bz(ix,iy,iz)) / dxc(ix)
-          jz = (by(ixp,iy,iz) - by(ix,iy,iz)) / dxc(ix) - (bx(ix,iyp,iz) - bx(ix,iy,iz)) / dyc(iy)
+!           jx = (bz(ix,iyp,iz) - bz(ix,iy,iz)) / dyc(iy) - (by(ix,iy,izp) - by(ix,iy,iz)) / dzc(iz)
+!           jy = (bx(ix,iy,izp) - bx(ix,iy,iz)) / dzc(iz) - (bz(ixp,iy,iz) - bz(ix,iy,iz)) / dxc(ix)
+!           jz = (by(ixp,iy,iz) - by(ix,iy,iz)) / dxc(ix) - (bx(ix,iyp,iz) - bx(ix,iy,iz)) / dyc(iy)
+
+          jx1 = (bz(ix ,iyp,iz ) - bz(ix ,iy ,iz )) / dyc(iy) &
+              - (by(ix ,iy ,izp) - by(ix ,iy ,iz )) / dzc(iz)
+          jx2 = (bz(ixp,iyp,iz ) - bz(ixp,iy ,iz )) / dyc(iy) &
+              - (by(ixp,iy ,izp) - by(ixp,iy ,iz )) / dzc(iz)
+          jy1 = (bx(ix ,iy ,izp) - bx(ix ,iy ,iz )) / dzc(iz) &
+              - (bz(ixp,iy ,iz ) - bz(ix ,iy ,iz )) / dxc(ix)
+          jy2 = (bx(ix ,iyp,izp) - bx(ix ,iyp,iz )) / dzc(iz) &
+              - (bz(ixp,iyp,iz ) - bz(ix ,iyp,iz )) / dxc(ix)
+          jz1 = (by(ixp,iy ,iz ) - by(ix ,iy ,iz )) / dxc(ix) &
+              - (bx(ix ,iyp,iz ) - bx(ix ,iy ,iz )) / dyc(iy)
+          jz2 = (by(ixp,iy ,izp) - by(ix ,iy ,izp)) / dxc(ix) &
+              - (bx(ix ,iyp,izp) - bx(ix ,iy ,izp)) / dyc(iy)
+
+          jx = (jx1 + jx2) * 0.5_num
+          jy = (jy1 + jy2) * 0.5_num
+          jz = (jz1 + jz2) * 0.5_num
 #endif
           fx = fx + (jy * bzv - jz * byv)
           fy = fy + (jz * bxv - jx * bzv)
@@ -1149,7 +1167,7 @@ CONTAINS
         END DO
       END DO
     ELSE
-      eta = 0.0_num
+      eta(:,:,:) = 0.0_num
     END IF
 
   END SUBROUTINE eta_calc

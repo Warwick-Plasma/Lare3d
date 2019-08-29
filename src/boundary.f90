@@ -75,8 +75,11 @@ CONTAINS
     REAL(num), INTENT(IN) :: time, rise_time
     REAL(num) :: theta, radius, r1, r2, centre
 
-    dat1 = 0.0_num
-    dat2 = 0.0_num
+    IF (.NOT. driven_boundary) THEN
+      dat1 = 0.0_num
+      dat2 = 0.0_num
+      RETURN
+    END IF
 
     DO ix = -2, nx+2
       DO iy = -2, ny+2              
@@ -90,10 +93,10 @@ CONTAINS
       END DO
     END DO
     
-    IF (time < rise_time) THEN
-        dat1(:,:,:) = dat1(:,:,:) * 0.5_num * (1.0_num - COS(time * pi / rise_time))
-        dat2(:,:,:) = dat2(:,:,:) * 0.5_num * (1.0_num - COS(time * pi / rise_time))
-    END IF
+!     IF (time < rise_time) THEN
+!         dat1(:,:,:) = dat1(:,:,:) * 0.5_num * (1.0_num - COS(time * pi / rise_time))
+!         dat2(:,:,:) = dat2(:,:,:) * 0.5_num * (1.0_num - COS(time * pi / rise_time))
+!     END IF
 
   END SUBROUTINE produce_spectrum
 

@@ -62,7 +62,7 @@ CONTAINS
     by(:,:,:)  = 0.0_num
     bz(:,:,:) = 0.0_num
     rho(:,:,:)  = 1.0_num
-    energy(:,:,:)  = 1.0_num
+    energy(:,:,:)  = 0.1_num
     grav(:) = 0.0_num
 
     ALLOCATE(zc_global(-1:nz_global+1))
@@ -210,7 +210,7 @@ CONTAINS
     LOGICAL :: converged
 
     ALLOCATE(phi(-1:nx+2,-1:ny+2, -1:nz+2))
-    phi = 0.0_num
+    phi(:,:,:) = 0.0_num
 
     ! Only works for uniform x,y grids - no strecthed grids
     dx1 = (REAL(nx_global, num) / length_x)**2
@@ -219,7 +219,7 @@ CONTAINS
 
     converged = .FALSE.
     w = 1.6_num   !2.0_num / (1.0_num + SIN(pi / REAL(nx_global,num)))
-    fractional_error = 1.e-6_num
+    fractional_error = 1.e-8_num
 
     ! Iterate to get phi^{n+1} by SOR Gauss-Seidel
     iterate: DO loop = 1, 1000000
@@ -251,8 +251,8 @@ CONTAINS
           END DO
           y1 = 3 - y1
         END DO
-        z1 = 3 - z1
         CALL phi_mpi
+        z1 = 3 - z1
       END DO
 
       CALL MPI_ALLREDUCE(errmax, error, 1, mpireal, MPI_MAX, comm, errcode)
@@ -292,13 +292,18 @@ CONTAINS
     CALL bfield_bcs
 
     !Find maximum Bz on lower boundary
-    bz_max_local = MAXVAL(bz(1:nx,1:ny,0))
+    bz_max_local = -largest_number
+    IF (proc_z_min == MPI_PROC_NULL) THEN
+      bz_max_local = MAXVAL(bz(1:nx,1:nz,0))
+    END IF
     CALL MPI_ALLREDUCE(bz_max_local, bz_max, 1, mpireal, MPI_MAX, comm, errcode) 
 
     !Scale the field to one in normalised units
-    bz = bz / bz_max 
-    by = by / bz_max
-    bx = bx / bz_max 
+    bz(:,:,:) = bz(:,:,:) / bz_max 
+    by(:,:,:) = by(:,:,:) / bz_max
+    bx(:,:,:) = bx(:,:,:) / bz_max 
+
+    CALL bfield_bcs
 
     DEALLOCATE(phi)
 

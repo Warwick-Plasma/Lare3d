@@ -105,7 +105,7 @@ CONTAINS
     ! The critical current for triggering anomalous resistivity
     ! and the resistivity when above the critical current.
     ! The resistivity is expressed as the inverse Lundquist number.
-    j_max = 0.0_num
+    j_max = 1.e10_num
     eta0 = 0.0_num
 
     ! Turn on or off the Braginskii thermal conduction term in
@@ -135,8 +135,8 @@ CONTAINS
     !              setup new initial conditions
     ! IC_RESTART - Load the output file with index restart_snapshot and use it
     !              as the initial conditions
-    initial = IC_NEW
-    restart_snapshot = 1
+    initial = IC_RESTART
+    restart_snapshot = 0
 
     ! If cowling_resistivity is true then the code calculates and
     ! applies the Cowling Resistivity to the MHD equations
@@ -162,7 +162,7 @@ CONTAINS
     ! Set to true to turn on routine for damped boundaries.
     ! These routines are in boundary.f90 and you should check that they
     ! actually do what you want.
-    damping = .TRUE.
+    damping = .FALSE.
 
     ! Control Boris scheme for limiting the Alfven speed
     ! Logical boris to turn on/off
@@ -190,7 +190,7 @@ CONTAINS
     !Tweak this to get a "good" cooling function that doesn't just remove all
     !heating effects
     ! Works for viscosity and first order resistive effects
-    cooling_term = .TRUE.
+    cooling_term = .FALSE.
     alpha_av = 0.05_num
 
   END SUBROUTINE control_variables
@@ -207,7 +207,7 @@ CONTAINS
     data_dir = 'Data'
 
     ! The interval between output snapshots.
-    dt_snapshots = t_end / 20.0_num
+    dt_snapshots = t_end / 100.0_num
 
     ! dump_mask is an array which specifies which quantities the code should
     ! output to disk in a data dump.
@@ -239,7 +239,7 @@ CONTAINS
     dump_mask(1:10) = .TRUE.
     IF (eos_number /= EOS_IDEAL) dump_mask(14) = .TRUE.
     IF (cowling_resistivity) dump_mask(15) = .TRUE.
-    IF (resistive_mhd) dump_mask(16) = .TRUE.
+    IF (resistive_mhd) dump_mask(17:19) = .TRUE.
 
   END SUBROUTINE set_output_dumps
 
