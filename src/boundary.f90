@@ -73,7 +73,7 @@ CONTAINS
 
     REAL(num), DIMENSION(-2:nx+2,-2:ny+2,-2:0), INTENT(INOUT) :: dat1, dat2
     REAL(num), INTENT(IN) :: time, rise_time
-    REAL(num) :: theta, radius, r1, r2, centre
+    REAL(num) :: theta, radius, r1, r2, centre, amp
 
     IF (.NOT. driven_boundary) THEN
       dat1 = 0.0_num
@@ -85,11 +85,12 @@ CONTAINS
       DO iy = -2, ny+2              
         centre = 5.5_num
         radius = 2.2_num 
+        amp = 1.0_num
         r2 = (xb(ix) - centre)**2 + yb(iy)**2 
         r1 = SQRT(r2)
         theta = ATAN(yb(iy),(xb(ix)-centre))
-        dat1(ix,iy,-2:0) = - SIN(theta) * r1 * (1.0_num - TANH((r1 - radius)/0.2_num))
-        dat2(ix,iy,-2:0) =  COS(theta) * r1 * (1.0_num - TANH((r1 - radius)/0.2_num))
+        dat1(ix,iy,-2:0) = - SIN(theta) * r1 * 0.5_num * (1.0_num - TANH((r1 - radius)/0.2_num))
+        dat2(ix,iy,-2:0) =  COS(theta) * r1 * 0.5_num * (1.0_num - TANH((r1 - radius)/0.2_num))
       END DO
     END DO
     
