@@ -347,14 +347,14 @@ CONTAINS
           DO iy = 1, ny
             DO ix = 1, nx
 
-              centre = 11.5_num
+              centre = 10.0_num
               radius = 1.0_num
               amp = 1.0_num
               r1 = SQRT((xc(ix)-centre)**2 + yc(iy)**2)
               phi(ix,iy,0) = phi(ix,iy,1) &
                 + amp * dzc(1) * (1.0_num - TANH((r1 - radius)/0.2_num))
 
-              centre = 5.5_num
+              centre = 6.0_num
               radius = 2.0_num
               amp = 0.25_num
               r1 = SQRT((xc(ix)-centre)**2 + yc(iy)**2)

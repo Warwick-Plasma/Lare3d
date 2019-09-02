@@ -62,10 +62,10 @@ CONTAINS
 
     ! Set the maximum number of iterations of the core solver before the code
     ! terminates. If nsteps < 0 then the code will run until t = t_end
-    nsteps = -1
+    nsteps = 1
 
     ! The maximum runtime of the code
-    t_end = 10.0_num
+    t_end = 6.0_num
 
     ! Shock viscosities as detailed in manual - they are dimensionless
     visc1 = 0.1_num
@@ -80,19 +80,19 @@ CONTAINS
 
     ! The length of the domain in the x direction
     x_min = 0.0_num
-    x_max = 16.0_num
+    x_max = 14.0_num
     ! Should the x grid be stretched or uniform
     x_stretch = .FALSE.
 
     ! The length of the domain in the y direction
-    y_min = -8.0_num
-    y_max = 8.0_num
+    y_min = -7.0_num
+    y_max = 7.0_num
     ! Should the y grid be stretched or uniform
     y_stretch = .FALSE.
 
     ! The length of the domain in the z direction
     z_min = 0.0_num
-    z_max = 16.0_num
+    z_max = 14.0_num
     ! Should the z grid be stretched or uniform
     z_stretch = .FALSE.
 
@@ -135,7 +135,7 @@ CONTAINS
     !              setup new initial conditions
     ! IC_RESTART - Load the output file with index restart_snapshot and use it
     !              as the initial conditions
-    initial = IC_RESTART
+    initial = IC_NEW
     restart_snapshot = 0
 
     ! If cowling_resistivity is true then the code calculates and
@@ -190,7 +190,7 @@ CONTAINS
     !Tweak this to get a "good" cooling function that doesn't just remove all
     !heating effects
     ! Works for viscosity and first order resistive effects
-    cooling_term = .FALSE.
+    cooling_term = .TRUE.
     alpha_av = 0.05_num
 
   END SUBROUTINE control_variables

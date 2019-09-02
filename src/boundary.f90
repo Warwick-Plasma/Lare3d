@@ -83,12 +83,12 @@ CONTAINS
 
     DO ix = -2, nx+2
       DO iy = -2, ny+2              
-        centre = 5.5_num
-        radius = 2.2_num 
-        amp = 1.0_num
+        centre = 6.0_num
+        radius = 2.0_num 
+        amp = 6.0_num
         r2 = (xb(ix) - centre)**2 + yb(iy)**2 
         r1 = SQRT(r2)
-        theta = ATAN(yb(iy),(xb(ix)-centre))
+        theta = ATAN2(yb(iy),(xb(ix)-centre))
         dat1(ix,iy,-2:0) = - SIN(theta) * r1 * 0.5_num * (1.0_num - TANH((r1 - radius)/0.2_num))
         dat2(ix,iy,-2:0) =  COS(theta) * r1 * 0.5_num * (1.0_num - TANH((r1 - radius)/0.2_num))
       END DO
