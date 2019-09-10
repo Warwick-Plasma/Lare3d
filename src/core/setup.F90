@@ -317,30 +317,24 @@ CONTAINS
 
   SUBROUTINE stretch_z
 
-    REAL(num) :: width, dz, L, f, lz_new
+    REAL(num) :: width, dz, L, f
     REAL(num), DIMENSION(:), ALLOCATABLE :: dznew
 
     ALLOCATE(dznew(-2:nz_global+2))
 
-    ! New total length
-    lz_new = 100.0_num
-
-    ! Centre of tanh stretching in unstretched coordinates
-    L = length_z / 1.5_num
-
-    ! Width of tanh stretching in unstretched coordinates
-    width = length_z / 10.0_num
-
-    f = (lz_new - length_z) / (length_z - L) / 2.0_num
-
+    L = 0.7_num * length_z 
+    width = 0.1_num * length_z 
     dz = length_z / REAL(nz_global, num)
-    dznew(:) = dz + f * (1.0_num + TANH((ABS(zb_global(:)) - L) / width)) * dz
+    f = 10.0_num
+    dznew(:) = dz * (1.0_num + f * ( 1.0_num + TANH((ABS(zb_global(:)) - L) / width))) 
 
     DO iz = 1, nz_global + 2
       zb_global(iz) = zb_global(iz-1) + dznew(iz)
     END DO
 
-    length_z = lz_new
+    z_min = zb_global(0)
+    z_max = zb_global(nz_global)
+    length_z = z_max - z_min
 
     DEALLOCATE(dznew)
 
