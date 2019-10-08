@@ -605,32 +605,32 @@ CONTAINS
           ixm = ix - 1
           ixp = ix + 1
           ! Estimate p_visc based on alpha * dv, for timestep control
-          a1 = ((vx(ixm,iym,iz ) - vx(ix ,iym,iz ))**2  &
-                + (vy(ixm,iym,iz ) - vy(ix ,iym,iz ))**2 + (vz(ixm,iym,iz ) - vz(ix ,iym,iz ))**2) 
-          a2 = ((vx(ix ,iym,iz ) - vx(ix ,iy, iz ))**2  &
-                + (vy(ix ,iym,iz ) - vy(ix ,iy ,iz ))**2 + (vz(ix ,iym,iz ) - vz(ix ,iy ,iz ))**2)
-          a3 = ((vx(ix ,iy ,iz ) - vx(ixm,iy ,iz ))**2  &
-                + (vy(ix ,iy ,iz ) - vy(ixm,iy ,iz ))**2 + (vz(ix ,iy ,iz ) - vz(ixm,iy ,iz ))**2) 
-          a4 = ((vx(ixm,iy ,iz ) - vx(ixm,iym,iz ))**2  &
-                + (vy(ixm,iy ,iz ) - vy(ixm,iym,iz ))**2 + (vz(ixm,iy ,iz ) - vz(ixm,iym,iz ))**2)
+          a1 = ((vx(ixm,iym,izm) - vx(ix ,iym,izm))**2  &
+              + (vy(ixm,iym,izm) - vy(ix ,iym,izm))**2 + (vz(ixm,iym,izm) - vz(ix ,iym,izm))**2) 
+          a2 = ((vx(ix ,iym,izm) - vx(ix ,iy, izm))**2  &
+              + (vy(ix ,iym,izm) - vy(ix ,iy ,izm))**2 + (vz(ix ,iym,izm) - vz(ix ,iy ,izm))**2)
+          a3 = ((vx(ix ,iy ,izm) - vx(ixm,iy ,izm))**2  &
+              + (vy(ix ,iy ,izm) - vy(ixm,iy ,izm))**2 + (vz(ix ,iy ,izm) - vz(ixm,iy ,izm))**2) 
+          a4 = ((vx(ixm,iy ,izm) - vx(ixm,iym,izm))**2  &
+              + (vy(ixm,iy ,izm) - vy(ixm,iym,izm))**2 + (vz(ixm,iy ,izm) - vz(ixm,iym,izm))**2)
 
-          a5 = ((vx(ixm,iym,izp) - vx(ix ,iym,izp))**2  &
-                + (vy(ixm,iym,izp) - vy(ix ,iym,izp))**2 + (vz(ixm,iym,izp) - vz(ix ,iym,izp))**2) 
-          a6 = ((vx(ix ,iym,izp) - vx(ix ,iy, izp))**2  &
-                + (vy(ix ,iym,izp) - vy(ix ,iy ,izp))**2 + (vz(ix ,iym,izp) - vz(ix ,iy ,izp))**2)
-          a7 = ((vx(ix ,iy ,izp) - vx(ixm,iy ,izp))**2  &
-                + (vy(ix ,iy ,izp) - vy(ixm,iy ,izp))**2 + (vz(ix ,iy ,izp) - vz(ixm,iy ,izp))**2) 
-          a8 = ((vx(ixm,iy ,izp) - vx(ixm,iym,izp))**2  &
-                + (vy(ixm,iy ,izp) - vy(ixm,iym,izp))**2 + (vz(ixm,iy ,izp) - vz(ixm,iym,izp))**2)
+          a5 = ((vx(ixm,iym,iz ) - vx(ix ,iym,iz ))**2  &
+              + (vy(ixm,iym,iz ) - vy(ix ,iym,iz ))**2 + (vz(ixm,iym,iz ) - vz(ix ,iym,iz ))**2) 
+          a6 = ((vx(ix ,iym,iz ) - vx(ix ,iy, iz ))**2  &
+              + (vy(ix ,iym,iz ) - vy(ix ,iy ,iz ))**2 + (vz(ix ,iym,iz ) - vz(ix ,iy ,iz ))**2)
+          a7 = ((vx(ix ,iy ,iz ) - vx(ixm,iy ,iz ))**2  &
+              + (vy(ix ,iy ,iz ) - vy(ixm,iy ,iz ))**2 + (vz(ix ,iy ,iz ) - vz(ixm,iy ,iz ))**2) 
+          a8 = ((vx(ixm,iy ,iz ) - vx(ixm,iym,iz ))**2  &
+              + (vy(ixm,iy ,iz ) - vy(ixm,iym,iz ))**2 + (vz(ixm,iy ,iz ) - vz(ixm,iym,iz ))**2)
 
           a9 = ((vx(ix ,iy ,izm) - vx(ix ,iy ,iz ))**2  &
-                + (vy(ix ,iy ,izm) - vy(ix ,iy ,iz))**2 + (vz(ix ,iy ,izm) - vz(ix ,iy ,iz))**2) 
+              + (vy(ix ,iy ,izm) - vy(ix ,iy ,iz))**2 + (vz(ix ,iy ,izm) - vz(ix ,iy ,iz))**2) 
           a10= ((vx(ixm,iy ,izm) - vx(ixm,iy ,iz ))**2  &
-                + (vy(ixm,iy ,izm) - vy(ixm,iy ,iz))**2 + (vz(ixm,iy ,izm) - vz(ixm,iy ,iz))**2) 
+              + (vy(ixm,iy ,izm) - vy(ixm,iy ,iz))**2 + (vz(ixm,iy ,izm) - vz(ixm,iy ,iz))**2) 
           a11= ((vx(ixm,iym,izm) - vx(ixm,iym,iz ))**2  &
-                + (vy(ixm,iym,izm) - vy(ixm,iym,iz))**2 + (vz(ixm,iym,izm) - vz(ixm,iym,iz))**2) 
+              + (vy(ixm,iym,izm) - vy(ixm,iym,iz))**2 + (vz(ixm,iym,izm) - vz(ixm,iym,iz))**2) 
           a12= ((vx(ix ,iym,izm) - vx(ix ,iym,iz ))**2  &
-                + (vy(ix ,iym,izm) - vy(ix ,iym,iz))**2 + (vz(ix ,iym,izm) - vz(ix ,iym,iz))**2) 
+              + (vy(ix ,iym,izm) - vy(ix ,iym,iz))**2 + (vz(ix ,iym,izm) - vz(ix ,iym,iz))**2) 
 
   
           p_visc(ix,iy,iz) = MAX(p_visc(ix,iy,iz), - alpha1(ix,iy,iz)*SQRT(a1)) 
@@ -646,11 +646,11 @@ CONTAINS
               - 0.25_num * dxb(ix) * dzb(iz) * alpha2(ix ,iy ,izp) * a6  &
               - 0.25_num * dyb(iy) * dzb(iz) * alpha1(ix ,iyp,izp) * a7  &
               - 0.25_num * dxb(ix) * dzb(iz) * alpha2(ixm,iy ,izp) * a8  &
-              - 0.25_num * dyb(iy) * dyb(iy) * alpha3(ix ,iy ,iz ) * a9  &
+              - 0.25_num * dxb(ix) * dyb(iy) * alpha3(ix ,iy ,iz ) * a9  &
               - 0.25_num * dxb(ix) * dyb(iy) * alpha3(ixm,iy ,iz ) * a10 &
-              - 0.25_num * dyb(iy) * dyb(iy) * alpha3(ixm,iym,iz ) * a11 &
-              - 0.25_num * dxb(ix) * dyb(iy) * alpha3(ix ,iym,iz ) * a12 
-  
+              - 0.25_num * dxb(ix) * dyb(iy) * alpha3(ixm,iym,iz ) * a11 &
+              - 0.25_num * dxb(ix) * dyb(iy) * alpha3(ix ,iym,iz ) * a12
+              
           visc_heat(ix,iy,iz) = visc_heat(ix,iy,iz) / cv(ix,iy,iz)
         END DO
       END DO
@@ -840,9 +840,9 @@ CONTAINS
               - 0.25_num * dxb(ix) * dzb(iz) * alpha2(ix ,iy ,izp) * a6  &
               - 0.25_num * dyb(iy) * dzb(iz) * alpha1(ix ,iyp,izp) * a7  &
               - 0.25_num * dxb(ix) * dzb(iz) * alpha2(ixm,iy ,izp) * a8  &
-              - 0.25_num * dyb(iy) * dyb(iy) * alpha3(ix ,iy ,iz ) * a9  &
+              - 0.25_num * dxb(ix) * dyb(iy) * alpha3(ix ,iy ,iz ) * a9  &
               - 0.25_num * dxb(ix) * dyb(iy) * alpha3(ixm,iy ,iz ) * a10 &
-              - 0.25_num * dyb(iy) * dyb(iy) * alpha3(ixm,iym,iz ) * a11 &
+              - 0.25_num * dxb(ix) * dyb(iy) * alpha3(ixm,iym,iz ) * a11 &
               - 0.25_num * dxb(ix) * dyb(iy) * alpha3(ix ,iym,iz ) * a12 
   
           visc_heat(ix,iy,iz) = visc_heat(ix,iy,iz) / cv(ix,iy,iz)
