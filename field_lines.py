@@ -2,20 +2,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def load_data(i, data_dir='Data'):
-    global data, dx, dy, dz
+    global data, gridx, gridy, gridz
     import sdf_helper as sh
     data = sh.getdata(i, wkd=data_dir)
-    x = data.Grid_Grid.data[0]
-    y = data.Grid_Grid.data[1]
-    z = data.Grid_Grid.data[2]
-    dx = (x[-1] - x[0]) / xc.shape[0]
-    dy = (y[-1] - y[0]) / yc.shape[0]
-    dz = (z[-1] - z[0]) / zc.shape[0]
-
-def get_loc(x,y,z):
     gridx = data.Grid_Grid.data[0]
     gridy = data.Grid_Grid.data[1]
     gridz = data.Grid_Grid.data[2]
+
+def get_loc(x,y,z):
     ix = np.digitize(x, gridx)
     nx = data.Grid_Grid.data[0].shape[0] - 1
     ny = data.Grid_Grid.data[1].shape[0] - 1
@@ -43,7 +37,9 @@ def get_dir(x, y, z):
     byp = by[ix-1,iy,iz-1]
     bzm = bz[ix-1,iy-1,iz-1]
     bzp = bz[ix-1,iy-1,iz]
-    # dx, dy, dz not correct for stretched grid
+    dx = gridx[ix] - gridx[ix-1]
+    dy = gridy[iy] - gridy[iy-1]
+    dz = gridz[iz] - gridz[iz-1]
     deltax = (x - data.Grid_Grid.data[0][ix-1]) / dx
     deltay = (y - data.Grid_Grid.data[1][iy-1]) / dy
     deltaz = (z - data.Grid_Grid.data[2][iz-1]) / dz
