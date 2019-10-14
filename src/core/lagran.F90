@@ -731,31 +731,31 @@ CONTAINS
           ixm = ix - 1
           ixp = ix + 1
   
-          a1 =  (vx(ixm,iym, iz) - vx(ix ,iym, iz))*(vx1(ixm,iym, iz) - vx1(ix ,iym, iz)) &
+          a1 =  (vx(ixm,iym,izm) - vx(ix ,iym,izm))*(vx1(ixm,iym,izm) - vx1(ix ,iym,izm)) &
+              + (vy(ixm,iym,izm) - vy(ix ,iym,izm))*(vy1(ixm,iym,izm) - vy1(ix ,iym,izm)) &
+              + (vz(ixm,iym,izm) - vz(ix ,iym,izm))*(vz1(ixm,iym,izm) - vz1(ix ,iym,izm)) 
+          a2 =  (vx(ix ,iym,izm) - vx(ix ,iy ,izm))*(vx1(ix ,iym,izm) - vx1(ix ,iy ,izm)) &
+              + (vy(ix ,iym,izm) - vy(ix ,iy ,izm))*(vy1(ix ,iym,izm) - vy1(ix ,iy ,izm)) &
+              + (vz(ix ,iym,izm) - vz(ix ,iy ,izm))*(vz1(ix ,iym,izm) - vz1(ix ,iy ,izm))
+          a3 =  (vx(ix ,iy ,izm) - vx(ixm,iy ,izm))*(vx1(ix ,iy ,izm) - vx1(ixm,iy ,izm)) &
+              + (vy(ix ,iy ,izm) - vy(ixm,iy ,izm))*(vy1(ix ,iy ,izm) - vy1(ixm,iy ,izm)) &
+              + (vz(ix ,iy ,izm) - vz(ixm,iy ,izm))*(vz1(ix ,iy ,izm) - vz1(ixm,iy ,izm))
+          a4 =  (vx(ixm,iy ,izm) - vx(ixm,iym,izm))*(vx1(ixm,iy ,izm) - vx1(ixm,iym,izm)) &
+              + (vy(ixm,iy ,izm) - vy(ixm,iym,izm))*(vy1(ixm,iy ,izm) - vy1(ixm,iym,izm)) &
+              + (vz(ixm,iy ,izm) - vz(ixm,iym,izm))*(vz1(ixm,iy ,izm) - vz1(ixm,iym,izm))
+  
+          a5 =  (vx(ixm,iym, iz) - vx(ix ,iym, iz))*(vx1(ixm,iym, iz) - vx1(ix ,iym, iz)) &
               + (vy(ixm,iym, iz) - vy(ix ,iym, iz))*(vy1(ixm,iym, iz) - vy1(ix ,iym, iz)) &
               + (vz(ixm,iym, iz) - vz(ix ,iym, iz))*(vz1(ixm,iym, iz) - vz1(ix ,iym, iz)) 
-          a2 =  (vx(ix ,iym, iz) - vx(ix ,iy , iz))*(vx1(ix ,iym, iz) - vx1(ix ,iy , iz)) &
+          a6 =  (vx(ix ,iym, iz) - vx(ix ,iy , iz))*(vx1(ix ,iym, iz) - vx1(ix ,iy , iz)) &
               + (vy(ix ,iym, iz) - vy(ix ,iy , iz))*(vy1(ix ,iym, iz) - vy1(ix ,iy , iz)) &
               + (vz(ix ,iym, iz) - vz(ix ,iy , iz))*(vz1(ix ,iym, iz) - vz1(ix ,iy , iz))
-          a3 =  (vx(ix ,iy , iz) - vx(ixm,iy , iz))*(vx1(ix ,iy , iz) - vx1(ixm,iy , iz)) &
+          a7 =  (vx(ix ,iy , iz) - vx(ixm,iy , iz))*(vx1(ix ,iy , iz) - vx1(ixm,iy , iz)) &
               + (vy(ix ,iy , iz) - vy(ixm,iy , iz))*(vy1(ix ,iy , iz) - vy1(ixm,iy , iz)) &
               + (vz(ix ,iy , iz) - vz(ixm,iy , iz))*(vz1(ix ,iy , iz) - vz1(ixm,iy , iz))
-          a4 =  (vx(ixm,iy , iz) - vx(ixm,iym, iz))*(vx1(ixm,iy , iz) - vx1(ixm,iym, iz)) &
+          a8 =  (vx(ixm,iy , iz) - vx(ixm,iym, iz))*(vx1(ixm,iy , iz) - vx1(ixm,iym, iz)) &
               + (vy(ixm,iy , iz) - vy(ixm,iym, iz))*(vy1(ixm,iy , iz) - vy1(ixm,iym, iz)) &
               + (vz(ixm,iy , iz) - vz(ixm,iym, iz))*(vz1(ixm,iy , iz) - vz1(ixm,iym, iz))
-  
-          a5 =  (vx(ixm,iym,izp) - vx(ix ,iym,izp))*(vx1(ixm,iym,izp) - vx1(ix ,iym,izp)) &
-              + (vy(ixm,iym,izp) - vy(ix ,iym,izp))*(vy1(ixm,iym,izp) - vy1(ix ,iym,izp)) &
-              + (vz(ixm,iym,izp) - vz(ix ,iym,izp))*(vz1(ixm,iym,izp) - vz1(ix ,iym,izp)) 
-          a6 =  (vx(ix ,iym,izp) - vx(ix ,iy ,izp))*(vx1(ix ,iym,izp) - vx1(ix ,iy ,izp)) &
-              + (vy(ix ,iym,izp) - vy(ix ,iy ,izp))*(vy1(ix ,iym,izp) - vy1(ix ,iy ,izp)) &
-              + (vz(ix ,iym,izp) - vz(ix ,iy ,izp))*(vz1(ix ,iym,izp) - vz1(ix ,iy ,izp))
-          a7 =  (vx(ix ,iy ,izp) - vx(ixm,iy ,izp))*(vx1(ix ,iy ,izp) - vx1(ixm,iy ,izp)) &
-              + (vy(ix ,iy ,izp) - vy(ixm,iy ,izp))*(vy1(ix ,iy ,izp) - vy1(ixm,iy ,izp)) &
-              + (vz(ix ,iy ,izp) - vz(ixm,iy ,izp))*(vz1(ix ,iy ,izp) - vz1(ixm,iy ,izp))
-          a8 =  (vx(ixm,iy ,izp) - vx(ixm,iym,izp))*(vx1(ixm,iy ,izp) - vx1(ixm,iym,izp)) &
-              + (vy(ixm,iy ,izp) - vy(ixm,iym,izp))*(vy1(ixm,iy ,izp) - vy1(ixm,iym,izp)) &
-              + (vz(ixm,iy ,izp) - vz(ixm,iym,izp))*(vz1(ixm,iy ,izp) - vz1(ixm,iym,izp))
   
           a9 =  (vx(ix ,iy ,izm) - vx(ix ,iy , iz))*(vx1(ix ,iy ,izm) - vx1(ix ,iy , iz)) &
               + (vy(ix ,iy ,izm) - vy(ix ,iy , iz))*(vy1(ix ,iy ,izm) - vy1(ix ,iy , iz)) &
