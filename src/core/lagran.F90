@@ -335,16 +335,16 @@ CONTAINS
           jy = (jy1 + jy2) * 0.5_num
           jz = (jz1 + jz2) * 0.5_num
 #endif
-          fx = fx + (jy * bzv - jz * byv)
-          fy = fy + (jz * bxv - jx * bzv)
-          fz = fz + (jx * byv - jy * bxv)
+          fx = fx + gamma_boris(ix,iy,iz) *(jy * bzv - jz * byv)
+          fy = fy + gamma_boris(ix,iy,iz) *(jz * bxv - jx * bzv)
+          fz = fz + gamma_boris(ix,iy,iz) *(jx * byv - jy * bxv)
 
           fz = fz - rho_v(ix,iy,iz) * grav(iz)
 
           ! Find half step velocity needed for remap
-          vx1(ix,iy,iz) = vx(ix,iy,iz) + dt2 * gamma_boris(ix,iy,iz) * (fx_visc(ix,iy,iz) + fx) / rho_v(ix,iy,iz)
-          vy1(ix,iy,iz) = vy(ix,iy,iz) + dt2 * gamma_boris(ix,iy,iz) * (fy_visc(ix,iy,iz) + fy) / rho_v(ix,iy,iz)
-          vz1(ix,iy,iz) = vz(ix,iy,iz) + dt2 * gamma_boris(ix,iy,iz) * (fz_visc(ix,iy,iz) + fz) / rho_v(ix,iy,iz)
+          vx1(ix,iy,iz) = vx(ix,iy,iz) + dt2 * (fx_visc(ix,iy,iz) + fx) / rho_v(ix,iy,iz)
+          vy1(ix,iy,iz) = vy(ix,iy,iz) + dt2 * (fy_visc(ix,iy,iz) + fy) / rho_v(ix,iy,iz)
+          vz1(ix,iy,iz) = vz(ix,iy,iz) + dt2 * (fz_visc(ix,iy,iz) + fz) / rho_v(ix,iy,iz)
         END DO
       END DO
     END DO
@@ -471,7 +471,7 @@ CONTAINS
         DO iy = -1, ny + 2
           rmin = MAX(rho(ix,iy,iz), none_zero)
           b2 = bx1(ix,iy,iz)**2 + by1(ix,iy,iz)**2 + bz1(ix,iy,iz)**2
-          cs(ix,iy,iz) = SQRT((gamma * pressure(ix,iy,iz) + b2) / rmin)
+          cs(ix,iy,iz) = SQRT((gamma * pressure(ix,iy,iz) + gamma_boris(ix,iy,iz) * b2) / rmin)
         END DO
       END DO
     END DO
@@ -1026,10 +1026,10 @@ CONTAINS
           IF (boris .AND. (w2 .GE. va_max2)) THEN
             gamma_boris(ix,iy,iz) = 1.0_num / (1.0_num + w2 / va_max2)
           END IF
-          cs2 = gamma_boris(ix,iy,iz) * (gamma * pressure(ix,iy,iz) + w1) / rho0
+          cs2 = (gamma * pressure(ix,iy,iz) + gamma_boris(ix,iy,iz) * w1) / rho0
 
           !effective speed from viscous pressure
-          c_visc2 = gamma_boris(ix,iy,iz) * p_visc(ix,iy,iz) / rho0
+          c_visc2 = p_visc(ix,iy,iz) / rho0
 
           ! length estimates - could be smoother as in DYNA3D
           length = MIN(dxb(ix), dyb(iy), dzb(iz))
