@@ -41,7 +41,7 @@ CONTAINS
     REAL(num) :: a1, a2, dg
     REAL(num) :: a=2.0_num, Tph=11.8_num
     REAL(num) :: r1, maxerr, xi_v
-    REAL(num) :: t_bottom
+    REAL(num) :: t_bottom, grav_0
     REAL(num) :: pressure0, energy0, v0, mbar, temp0, time0
     REAL(num), DIMENSION(:), ALLOCATABLE :: zc_global, dzb_global, dzc_global
     REAL(num), DIMENSION(:), ALLOCATABLE :: grav_ref, temp_ref, rho_ref
@@ -88,13 +88,13 @@ CONTAINS
   
     !fill in the reference gravity array - lowering grav to zero at the top 
     !of the corona smoothly from a1 to grav=0 at a2 and above
-    grav_ref = L_norm * 274.0_num / v0**2
-    a1 = 0.7_num * zb_global(nx_global) 
-    a2 = 0.9_num * zb_global(nx_global) 
+    grav_0 = L_norm * 274.0_num / v0**2
+    grav_ref(:) = grav_0
+    a1 = 10.0_num !0.7_num * zb_global(nx_global) 
+    a2 = 20.0_num !0.9_num * zb_global(nx_global) 
     DO iz = 0,nz_global+2
        IF (zb_global(iz) > a1) THEN
-          grav_ref(iz) = 11.78_num * (1.0_num + COS(pi * (zb_global(iz) - a1) &
-               / (a2-a1))) / 2.0_num
+          grav_ref(iz) = 0.5_num * grav_0 * (1.0_num + COS(pi * (zb_global(iz) - a1) / (a2-a1))) 
        END IF
        IF (zb_global(iz) > a2) THEN
           grav_ref(iz) = 0.0_num
