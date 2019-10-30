@@ -24,6 +24,7 @@ MODULE lagran
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: flux_x, flux_y, flux_z, curlb
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: fx_visc, fy_visc, fz_visc
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: bx0, by0, bz0
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: qx, qy, qz
 
 CONTAINS
 
@@ -58,6 +59,9 @@ CONTAINS
     ALLOCATE(flux_y(0:nx,0:ny,0:nz))
     ALLOCATE(flux_z(0:nx,0:ny,0:nz))
     ALLOCATE(curlb (0:nx,0:ny,0:nz))
+    ALLOCATE(qx(0:nx+1,0:ny+1,0:nz+1))
+    ALLOCATE(qy(0:nx+1,0:ny+1,0:nz+1))
+    ALLOCATE(qz(0:nx+1,0:ny+1,0:nz+1))
 
     DO iz = -1, nz + 2
       izm = iz - 1
@@ -104,6 +108,8 @@ CONTAINS
     END DO
 
     IF (coronal_heating) CALL user_defined_heating
+
+    IF (use_viscous_damping) CALL viscous_damping
     CALL shock_viscosity
     CALL set_dt
     dt2 = 0.5_num * dt
@@ -152,6 +158,7 @@ CONTAINS
     DEALLOCATE(fx_visc, fy_visc, fz_visc)
     DEALLOCATE(flux_x, flux_y, flux_z)
     DEALLOCATE(curlb)
+    DEALLOCATE(qx, qy, qz)
 #ifndef CAUCHY
     DEALLOCATE(bx0, by0, bz0)
 #endif
@@ -440,6 +447,51 @@ CONTAINS
 
   END SUBROUTINE predictor_corrector_step
 
+
+
+
+  SUBROUTINE viscous_damping
+
+    qx = 0.0_num
+    qy = 0.0_num
+    qz = 0.0_num
+
+    DO iz = 0, nz
+      izp = iz + 1
+      izm = iz - 1
+      DO iy = 0, ny
+        iyp = iy + 1
+        iym = iy - 1
+        DO ix = 0, nx
+          ixp = ix + 1
+          ixm = ix - 1
+          qx(ix,iy,iz) = visc3(ix,iy,iz)  &
+            * (((vx(ixp,iy,iz) - vx(ix,iy,iz))/ dxb(ixp) - (vx(ix,iy,iz) - vx(ixm,iy,iz))/ dxb(ix)) / dxc(ix) &
+            +  ((vx(ix,iyp,iz) - vx(ix,iy,iz))/ dyb(iyp) - (vx(ix,iy,iz) - vx(ix,iym,iz))/ dyb(iy)) / dyc(iy) &
+            +  ((vx(ix,iy,izp) - vx(ix,iy,iz))/ dzb(izp) - (vx(ix,iy,iz) - vx(ix,iy,izm))/ dzb(iz)) / dzc(iz)) 
+          qy(ix,iy,iz) = visc3(ix,iy,iz)  &
+            * (((vy(ixp,iy,iz) - vy(ix,iy,iz))/ dxb(ixp) - (vy(ix,iy,iz) - vy(ixm,iy,iz))/ dxb(ix)) / dxc(ix) &
+            +  ((vy(ix,iyp,iz) - vy(ix,iy,iz))/ dyb(iyp) - (vy(ix,iy,iz) - vy(ix,iym,iz))/ dyb(iy)) / dyc(iy) &
+            +  ((vy(ix,iy,izp) - vy(ix,iy,iz))/ dzb(izp) - (vy(ix,iy,iz) - vy(ix,iy,izm))/ dzb(iz)) / dzc(iz)) 
+          qz(ix,iy,iz) = visc3(ix,iy,iz)  &
+            * (((vz(ixp,iy,iz) - vz(ix,iy,iz))/ dxb(ixp) - (vz(ix,iy,iz) - vz(ixm,iy,iz))/ dxb(ix)) / dxc(ix) &
+            +  ((vz(ix,iyp,iz) - vz(ix,iy,iz))/ dyb(iyp) - (vz(ix,iy,iz) - vz(ix,iym,iz))/ dyb(iy)) / dyc(iy) &
+            +  ((vz(ix,iy,izp) - vz(ix,iy,iz))/ dzb(izp) - (vz(ix,iy,iz) - vz(ix,iy,izm))/ dzb(iz)) / dzc(iz)) 
+        END DO
+      END DO
+    END DO
+
+    DO iz = 0, nz
+      DO iy = 0, ny
+        DO ix = 0, nx
+          vx(ix,iy,iz) = vx(ix,iy,iz) + dt * qx(ix,iy,iz)
+          vy(ix,iy,iz) = vy(ix,iy,iz) + dt * qy(ix,iy,iz)
+          vz(ix,iy,iz) = vz(ix,iy,iz) + dt * qz(ix,iy,iz)
+        END DO
+      END DO
+    END DO
+
+  END SUBROUTINE viscous_damping
 
 
   !****************************************************************************
@@ -990,11 +1042,8 @@ CONTAINS
     ! Assumes all variables are defined at the same point. Be careful with
     ! setting 'dt_multiplier' if you expect massive changes across cells.
 
-    REAL(num) :: vxbm, vxbp, avxm, avxp, dvx, ax
-    REAL(num) :: vybm, vybp, avym, avyp, dvy, ay
-    REAL(num) :: vzbm, vzbp, avzm, avzp, dvz, az
-    REAL(num) :: cs2, c_visc2, volume, rho0, length
-    REAL(num) :: dxlocal, dt_local, dtr_local, dt1, dt2, dt3
+    REAL(num) :: cs2, c_visc2, rho0, length
+    REAL(num) :: dxlocal, dt_local, dtr_local, dt1
     REAL(num) :: dt_locals(2), dt_min(2)
     LOGICAL, SAVE :: first = .TRUE.
 
@@ -1037,41 +1086,6 @@ CONTAINS
           ! Find ideal MHD CFL limit for Lagrangian step
           dt1 = length / (SQRT(c_visc2) + SQRT(cs2 + c_visc2))
           dt_local = MIN(dt_local, dt1)
-
-          ! Now find dt for remap step
-          ax = 0.25_num * dyb(iy) * dzb(iz)
-          ay = 0.25_num * dxb(ix) * dzb(iz)
-          az = 0.25_num * dxb(ix) * dyb(iy)
-          vxbm = (vx(ixm,iy ,iz ) + vx(ixm,iym,iz ) &
-              +   vx(ixm,iy ,izm) + vx(ixm,iym,izm)) * ax
-          vxbp = (vx(ix ,iy ,iz ) + vx(ix ,iym,iz ) &
-              +   vx(ix ,iy ,izm) + vx(ix ,iym,izm)) * ax
-          vybm = (vy(ix ,iym,iz ) + vy(ixm,iym,iz ) &
-              +   vy(ix ,iym,izm) + vy(ixm,iym,izm)) * ay
-          vybp = (vy(ix ,iy ,iz ) + vy(ixm,iy ,iz ) &
-              +   vy(ix ,iy ,izm) + vy(ixm,iy ,izm)) * ay
-          vzbm = (vz(ix ,iy ,izm) + vz(ixm,iy ,izm) &
-              +   vz(ix ,iym,izm) + vz(ixm,iym,izm)) * az
-          vzbp = (vz(ix ,iy ,iz ) + vz(ixm,iy ,iz ) &
-              +   vz(ix ,iym,iz ) + vz(ixm,iym,iz )) * az
-
-          dvx = ABS(vxbp - vxbm)
-          dvy = ABS(vybp - vybm)
-          dvz = ABS(vzbp - vzbm)
-          avxm = ABS(vxbm)
-          avxp = ABS(vxbp)
-          avym = ABS(vybm)
-          avyp = ABS(vybp)
-          avzm = ABS(vzbm)
-          avzp = ABS(vzbp)
-
-          volume = ax * dxb(ix)
-          dt1 = volume / MAX(avxm, avxp, dvx, 1.e-10_num * volume)
-          dt2 = volume / MAX(avym, avyp, dvy, 1.e-10_num * volume)
-          dt3 = volume / MAX(avzm, avzp, dvz, 1.e-10_num * volume)
-
-          ! Fix dt for remap step
-          dt_local = MIN(dt_local, dt1, dt2, dt3)
 
           ! Note resistive limits assumes uniform resistivity hence cautious
           ! factor 0.2

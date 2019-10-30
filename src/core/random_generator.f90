@@ -2,7 +2,7 @@ MODULE random_generator
 
   IMPLICIT NONE
   PRIVATE
-  PUBLIC :: random, random_init, get_random_state, set_random_state
+  PUBLIC :: random, random_init_local, get_random_state, set_random_state
   INTEGER :: x = 123456789, y = 362436069, z = 521288629, w = 916191069
 
 CONTAINS
@@ -40,7 +40,7 @@ CONTAINS
 
 
 
-  SUBROUTINE random_init(seed)
+  SUBROUTINE random_init_local(seed)
 
     INTEGER, INTENT(IN) :: seed
     INTEGER :: i
@@ -56,7 +56,7 @@ CONTAINS
       dummy = random()
     END DO
 
-  END SUBROUTINE random_init
+  END SUBROUTINE random_init_local
 
 
 

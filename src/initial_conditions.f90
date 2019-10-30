@@ -38,7 +38,7 @@ CONTAINS
     !Avrett and Loeser  
     INTEGER :: loop
     INTEGER :: ix, iz
-    REAL(num) :: a1, a2, dg
+    REAL(num) :: a1, a2, dg, centre, width, amp
     REAL(num) :: a=2.0_num, Tph=11.8_num
     REAL(num) :: r1, maxerr, xi_v
     REAL(num) :: t_bottom, grav_0
@@ -193,6 +193,20 @@ CONTAINS
 
     IF (IAND(initial, IC_NEW) /= 0) CALL potential_field
 
+    visc3 = 0.0_num
+    IF (use_viscous_damping) THEN
+      width = length_z / 10.0_num
+      centre = 0.4_num * length_z + width
+      amp = 1.e2_num
+      DO iz = -1, nz+1
+        DO iy = -1, ny + 1
+          DO ix = -1, nx + 1
+            visc3(ix,iy,iz) = visc3(ix,iy,iz) + amp * (1.0_num + TANH((ABS(zb(iz)) - centre) / width)) 
+          END DO
+        END DO
+      END DO
+    END IF    
+
   END SUBROUTINE set_initial_conditions
   
 
@@ -203,7 +217,6 @@ CONTAINS
 
     REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: phi
     REAL(num) :: w, errmax, error, residual, fractional_error
-    REAL(num) :: bz_min, bz_min_local
     REAL(num) :: bz_max, bz_max_local
     REAL(num) :: dx1, dy1, dz1
     INTEGER :: loop, x1, y1, z1, redblack
@@ -311,7 +324,7 @@ CONTAINS
 
       SUBROUTINE phi_mpi
 
-        REAL(num) :: total_flux, local_flux
+        REAL(num) :: local_flux
         REAL(num) :: centre, radius, amp, r1
 
         CALL MPI_SENDRECV( &

@@ -53,7 +53,7 @@ CONTAINS
 
     ! Initialize the random number generator. Change the seed to get
     ! different results
-    CALL random_init(76783467)
+    CALL random_init_local(76783467)
 
     DO iel = 1, drive_nel
       ! Uniformly spaced frequency bins
@@ -94,10 +94,10 @@ CONTAINS
       END DO
     END DO
     
-!     IF (time < rise_time) THEN
-!         dat1(:,:,:) = dat1(:,:,:) * 0.5_num * (1.0_num - COS(time * pi / rise_time))
-!         dat2(:,:,:) = dat2(:,:,:) * 0.5_num * (1.0_num - COS(time * pi / rise_time))
-!     END IF
+    IF (time < rise_time) THEN
+        dat1(:,:,:) = dat1(:,:,:) * 0.5_num * (1.0_num - COS(time * pi / rise_time))
+        dat2(:,:,:) = dat2(:,:,:) * 0.5_num * (1.0_num - COS(time * pi / rise_time))
+    END IF
 
   END SUBROUTINE produce_spectrum
 
@@ -112,7 +112,6 @@ CONTAINS
     CALL energy_bcs
     CALL density_bcs
     CALL velocity_bcs
-    CALL damp_boundaries
 
   END SUBROUTINE boundary_conditions
 
@@ -407,123 +406,5 @@ CONTAINS
   END SUBROUTINE remap_v_bcs
 
 
-
-  !****************************************************************************
-  ! Damped boundary conditions
-  !****************************************************************************
-
-  SUBROUTINE damp_boundaries
-
-    REAL(num) :: a, d, pos, n_cells, damp_scale
-
-    IF (.NOT.damping) RETURN
-    ! number of cells near boundary to apply linearly increasing damping
-    n_cells = 20.0_num 
-    ! increase the damping if needed
-    damp_scale = 1.0_num
-
-    IF (proc_x_min == MPI_PROC_NULL) THEN
-      d = n_cells * dxb(1)
-      DO iz = -1, nz + 1
-        DO iy = -1, ny + 1
-          DO ix = -1, nx + 1
-            pos = xb(ix) - x_min
-            IF (pos < d) THEN
-              a = dt * damp_scale * pos / d + 1.0_num
-              vx(ix,iy,iz) = vx(ix,iy,iz) / a
-              vy(ix,iy,iz) = vy(ix,iy,iz) / a
-              vz(ix,iy,iz) = vz(ix,iy,iz) / a
-            END IF
-          END DO
-        END DO
-      END DO
-    END IF
-
-    IF (proc_x_max == MPI_PROC_NULL) THEN
-      d = n_cells * dxb(nx)
-      DO iz = -1, nz + 1
-        DO iy = -1, ny + 1
-          DO ix = -1, nx + 1
-            pos = x_max - xb(ix)
-            IF (pos < d) THEN
-              a = dt * damp_scale * pos / d + 1.0_num
-              vx(ix,iy,iz) = vx(ix,iy,iz) / a
-              vy(ix,iy,iz) = vy(ix,iy,iz) / a
-              vz(ix,iy,iz) = vz(ix,iy,iz) / a
-            END IF
-          END DO
-        END DO
-      END DO
-    END IF
-
-    IF (proc_y_min == MPI_PROC_NULL) THEN
-      d = n_cells * dyb(1)
-      DO iz = -1, nz + 1
-        DO iy = -1, ny + 1
-          DO ix = -1, nx + 1
-            pos = yb(iy) - y_min
-            IF (pos < d) THEN
-              a = dt * damp_scale * pos / d + 1.0_num
-              vx(ix,iy,iz) = vx(ix,iy,iz) / a
-              vy(ix,iy,iz) = vy(ix,iy,iz) / a
-              vz(ix,iy,iz) = vz(ix,iy,iz) / a
-            END IF
-          END DO
-        END DO
-      END DO
-    END IF
-
-    IF (proc_y_max == MPI_PROC_NULL) THEN
-      d = n_cells * dyb(ny)
-      DO iz = -1, nz + 1
-        DO iy = -1, ny + 1
-          DO ix = -1, nx + 1
-            pos = y_max - yb(iy) 
-            IF (pos < d) THEN
-              a = dt * damp_scale * pos / d + 1.0_num
-              vx(ix,iy,iz) = vx(ix,iy,iz) / a
-              vy(ix,iy,iz) = vy(ix,iy,iz) / a
-              vz(ix,iy,iz) = vz(ix,iy,iz) / a
-            END IF
-          END DO
-        END DO
-      END DO
-    END IF
-
-!     IF (proc_z_min == MPI_PROC_NULL) THEN
-!       d = n_cells * dzb(1)
-!       DO iz = -1, nz + 1
-!         DO iy = -1, ny + 1
-!           DO ix = -1, nx + 1
-!             pos = zb(iz) - z_min
-!             IF (pos < d) THEN
-!               a = dt * damp_scale * pos / d + 1.0_num
-!               vx(ix,iy,iz) = vx(ix,iy,iz) / a
-!               vy(ix,iy,iz) = vy(ix,iy,iz) / a
-!               vz(ix,iy,iz) = vz(ix,iy,iz) / a
-!             END IF
-!           END DO
-!         END DO
-!       END DO
-!     END IF
-
-    IF (proc_z_max == MPI_PROC_NULL) THEN
-      d = n_cells * dzb(nz)
-      DO iz = -1, nz + 1
-        DO iy = -1, ny + 1
-          DO ix = -1, nx + 1
-            pos = z_max - zb(iz)
-            IF (pos < d) THEN
-              a = dt * damp_scale * pos / d + 1.0_num
-              vx(ix,iy,iz) = vx(ix,iy,iz) / a
-              vy(ix,iy,iz) = vy(ix,iy,iz) / a
-              vz(ix,iy,iz) = vz(ix,iy,iz) / a
-            END IF
-          END DO
-        END DO
-      END DO
-    END IF
-
-  END SUBROUTINE damp_boundaries
 
 END MODULE boundary

@@ -295,6 +295,7 @@ CONTAINS
     ALLOCATE(visc_dep(-1:nx+2, -1:ny+2, -1:nz+2))
     ALLOCATE(ohmic_dep(-1:nx+2, -1:ny+2, -1:nz+2))
     ALLOCATE(gamma_boris(-1:nx+2, -1:ny+2, -1:nz+2))
+    ALLOCATE(visc3(-2:nx+2, -2:ny+2, -2:nz+2))
     IF (rke) ALLOCATE(delta_ke(-1:nx+2, -1:ny+2, -1:nz+2))
 
     IF (cooling_term) THEN
@@ -373,7 +374,7 @@ CONTAINS
     DEALLOCATE(cell_ny_mins, cell_ny_maxs)
     DEALLOCATE(cell_nz_mins, cell_nz_maxs)
     DEALLOCATE(visc_dep, ohmic_dep)
-    DEALLOCATE(gamma_boris)
+    DEALLOCATE(gamma_boris, visc3)
 
     IF (ALLOCATED(xi_n)) DEALLOCATE(xi_n)
     IF (ALLOCATED(delta_ke)) DEALLOCATE(delta_ke)

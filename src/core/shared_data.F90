@@ -95,7 +95,7 @@ MODULE shared_data
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: delta_ke, p_visc
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: cool_term_b, cool_term_v
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: visc_dep, ohmic_dep
-  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: eta, cv, cv1
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: eta, cv, cv1, visc3
 
   REAL(num), DIMENSION(:), ALLOCATABLE :: xc, xb, dxb, dxc, xb_global
   REAL(num), DIMENSION(:), ALLOCATABLE :: yc, yb, dyb, dyc, yb_global
@@ -144,8 +144,8 @@ MODULE shared_data
   ! Equation of state
   INTEGER :: eos_number = EOS_IDEAL
 
-  ! Damping boundary variables
-  LOGICAL :: damping
+  ! Viscous visc3 term used 
+  LOGICAL :: use_viscous_damping
 
   ! Include exponentially moving average cooling term
   LOGICAL :: cooling_term
