@@ -85,6 +85,21 @@ CONTAINS
        dzc_global(iz) = zc_global(iz+1) - zc_global(iz)
     END DO
     dzb_global(nz_global+1) = dzb_global(nz_global) 
+
+    ! set backgroun, non-shock, viscosity
+    visc3 = 0.0_num
+    IF (use_viscous_damping) THEN
+      width = length_z / 10.0_num
+      centre = 0.4_num * length_z + width
+      amp = 1.e2_num
+      DO iz = -1, nz+1
+        DO iy = -1, ny + 1
+          DO ix = -1, nx + 1
+            visc3(ix,iy,iz) = visc3(ix,iy,iz) + amp * (1.0_num + TANH((ABS(zb(iz)) - centre) / width)) 
+          END DO
+        END DO
+      END DO
+    END IF    
   
     !fill in the reference gravity array - lowering grav to zero at the top 
     !of the corona smoothly from a1 to grav=0 at a2 and above
@@ -193,20 +208,6 @@ CONTAINS
 
     IF (IAND(initial, IC_NEW) /= 0) CALL potential_field
 
-    visc3 = 0.0_num
-    IF (use_viscous_damping) THEN
-      width = length_z / 10.0_num
-      centre = 0.4_num * length_z + width
-      amp = 1.e2_num
-      DO iz = -1, nz+1
-        DO iy = -1, ny + 1
-          DO ix = -1, nx + 1
-            visc3(ix,iy,iz) = visc3(ix,iy,iz) + amp * (1.0_num + TANH((ABS(zb(iz)) - centre) / width)) 
-          END DO
-        END DO
-      END DO
-    END IF    
-
   END SUBROUTINE set_initial_conditions
   
 
@@ -232,7 +233,7 @@ CONTAINS
 
     converged = .FALSE.
     w = 1.6_num   !2.0_num / (1.0_num + SIN(pi / REAL(nx_global,num)))
-    fractional_error = 1.e-8_num
+    fractional_error = 5.e-5_num !1.e-8_num
 
     ! Iterate to get phi^{n+1} by SOR Gauss-Seidel
     iterate: DO loop = 1, 1000000
