@@ -37,10 +37,10 @@ CONTAINS
     ! non-ideal MHD terms.
 
     ! Magnetic field normalisation in Tesla
-    B_norm = 0.03_num
+    B_norm = 0.1_num
 
     ! Length normalisation in m
-    L_norm = 180.e3_num
+    L_norm = 1.e6_num
 
     ! Density normalisation in kg / m^3
     rho_norm = 1.67e-4_num
@@ -56,20 +56,23 @@ CONTAINS
   SUBROUTINE control_variables
 
     ! Set the number of gridpoints in x and y directions
-    nx_global = 10
-    ny_global = 10
-    nz_global = 10
+    nx_global = 128
+    ny_global = 128
+    nz_global = 128
 
     ! Set the maximum number of iterations of the core solver before the code
     ! terminates. If nsteps < 0 then the code will run until t = t_end
     nsteps = 1
 
     ! The maximum runtime of the code
-    t_end = 10.0_num
+    t_end = 6.0_num
 
     ! Shock viscosities as detailed in manual - they are dimensionless
     visc1 = 0.1_num
     visc2 = 0.5_num
+    ! \nabla^2 v damping 
+    ! visc3 is an array set initial conditions
+    use_viscous_damping = .TRUE.
 
     ! Set these constants to manually override the domain decomposition.
     ! If either constant is set to zero then the code will try to automatically
@@ -80,19 +83,19 @@ CONTAINS
 
     ! The length of the domain in the x direction
     x_min = 0.0_num
-    x_max = 100.0_num
+    x_max = 14.0_num
     ! Should the x grid be stretched or uniform
     x_stretch = .FALSE.
 
     ! The length of the domain in the y direction
-    y_min = 0.0_num
-    y_max = 100.0_num
+    y_min = -7.0_num
+    y_max = 7.0_num
     ! Should the y grid be stretched or uniform
     y_stretch = .FALSE.
 
     ! The length of the domain in the z direction
-    z_min = -20.0_num
-    z_max = 80.0_num
+    z_min = 0.0_num
+    z_max = 14.0_num
     ! Should the z grid be stretched or uniform
     z_stretch = .FALSE.
 
@@ -105,7 +108,7 @@ CONTAINS
     ! The critical current for triggering anomalous resistivity
     ! and the resistivity when above the critical current.
     ! The resistivity is expressed as the inverse Lundquist number.
-    j_max = 0.0_num
+    j_max = 1.e10_num
     eta0 = 0.0_num
 
     ! Turn on or off the Braginskii thermal conduction term in
@@ -136,7 +139,7 @@ CONTAINS
     ! IC_RESTART - Load the output file with index restart_snapshot and use it
     !              as the initial conditions
     initial = IC_NEW
-    restart_snapshot = 1
+    restart_snapshot = 0
 
     ! If cowling_resistivity is true then the code calculates and
     ! applies the Cowling Resistivity to the MHD equations
@@ -149,24 +152,22 @@ CONTAINS
     ! BC_PERIODIC - Periodic boundary conditions
     ! BC_OPEN     - Reimann far-field characteristic boundary conditions
     ! BC_USER    - Other boundary conditions specified in "boundary.f90"
-    xbc_min = BC_PERIODIC
-    xbc_max = BC_PERIODIC
-    ybc_min = BC_PERIODIC
-    ybc_max = BC_PERIODIC
+    xbc_min = BC_USER
+    xbc_max = BC_USER
+    ybc_min = BC_USER
+    ybc_max = BC_USER
     zbc_min = BC_USER
     zbc_max = BC_USER
 
-    ! Set to true to turn on routine for damped boundaries.
-    ! These routines are in boundary.f90 and you should check that they
-    ! actually do what you want.
-    damping = .FALSE.
+    !If any user boundaries are driven using the spectra routines in boundary.f90 then set this flag
+    driven_boundary = .TRUE.
 
     ! Control Boris scheme for limiting the Alfven speed
     ! Logical boris to turn on/off
     ! va_max controls the effective mass density and is
     ! the reduced light speed in Boris's paper in Lare normalised units
     boris = .FALSE.
-    va_max = 4.7e3_num
+    va_max = 10.0_num
 
     ! Set the equation of state. Valid choices are
     ! EOS_IDEAL - Simple ideal gas for perfectly ionised plasma
@@ -180,7 +181,15 @@ CONTAINS
     ! For fully ionised gas set .FALSE.
     ! For neutral hydrogen set .TRUE.
     ! This flag is ignored for all other EOS choices.
-    neutral_gas = .FALSE.
+    neutral_gas = .TRUE.
+
+    !An exponential moving average 
+    !(https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average)
+    !Tweak this to get a "good" cooling function that doesn't just remove all
+    !heating effects
+    ! Works for viscosity and first order resistive effects
+    cooling_term = .TRUE.
+    alpha_av = 0.05_num
 
   END SUBROUTINE control_variables
 
@@ -196,7 +205,7 @@ CONTAINS
     data_dir = 'Data'
 
     ! The interval between output snapshots.
-    dt_snapshots = 10.0_num
+    dt_snapshots = t_end / 100.0_num
 
     ! dump_mask is an array which specifies which quantities the code should
     ! output to disk in a data dump.
@@ -220,6 +229,7 @@ CONTAINS
     ! 17 - jx
     ! 18 - jy
     ! 19 - jz
+    ! 20 - accumulated viscous and ohmic heating between output dumps
     ! If a given element of dump_mask is true then that field is dumped
     ! If the element is false then the field isn't dumped
     ! N.B. if dump_mask(1:8) not true then the restart will not work
@@ -227,7 +237,7 @@ CONTAINS
     dump_mask(1:10) = .TRUE.
     IF (eos_number /= EOS_IDEAL) dump_mask(14) = .TRUE.
     IF (cowling_resistivity) dump_mask(15) = .TRUE.
-    IF (resistive_mhd) dump_mask(16) = .TRUE.
+    IF (resistive_mhd) dump_mask(17:19) = .TRUE.
 
   END SUBROUTINE set_output_dumps
 

@@ -134,6 +134,9 @@ DEFINES := $(DEFINE)
 # The following are a list of pre-processor defines which can be added to
 # the above line modifying the code behaviour at compile time.
 
+# Uncomment to use Cauchy solution for predictor step B-field, othwerwise advective prediction
+#DEFINES += $(D)CAUCHY
+
 # Uncomment the following line to use Qmono viscosity
 #DEFINES += $(D)SHOCKLIMITER
 
@@ -177,7 +180,7 @@ SRCFILES = boundary.f90 conduct.f90 radiative.f90 control.f90 diagnostics.F90 \
   initial_conditions.f90 lagran.F90 lare3d.f90 mpi_routines.F90 \
   mpiboundary.f90 neutral.f90 normalise.f90 openboundary.f90 remap.f90 \
   setup.F90 shared_data.F90 version_data.F90 welcome.f90 xremap.f90 yremap.f90 \
-  zremap.f90
+  zremap.f90 random_generator.f90
 
 OBJFILES := $(SRCFILES:.f90=.o)
 OBJFILES := $(OBJFILES:.F90=.o)
@@ -245,14 +248,16 @@ FORCE:
 
 # All the dependencies
 
-boundary.o: boundary.f90 mpiboundary.o shared_data.o
+boundary.o: boundary.f90 mpiboundary.o random_generator.o shared_data.o
 conduct.o: conduct.f90 boundary.o neutral.o shared_data.o
 control.o: control.f90 normalise.o shared_data.o
 radiative.o: radiative.f90 boundary.o shared_data.o
 diagnostics.o: diagnostics.F90 boundary.o conduct.o shared_data.o \
   version_data.o $(SDFMOD)
-initial_conditions.o: initial_conditions.f90 neutral.o shared_data.o
-lagran.o: lagran.F90 boundary.o openboundary.o conduct.o neutral.o shared_data.o
+initial_conditions.o: initial_conditions.f90 neutral.o shared_data.o \
+  boundary.o
+lagran.o: lagran.F90 boundary.o openboundary.o conduct.o neutral.o shared_data.o \
+  openboundary.o remap.o
 lare3d.o: lare3d.f90 boundary.o control.o diagnostics.o initial_conditions.o \
   lagran.o mpi_routines.o neutral.o normalise.o openboundary.o remap.o setup.o \
   shared_data.o welcome.o
@@ -261,6 +266,7 @@ mpiboundary.o: mpiboundary.f90 shared_data.o
 neutral.o: neutral.f90 boundary.o shared_data.o
 normalise.o: normalise.f90 shared_data.o
 openboundary.o: openboundary.f90 shared_data.o
+random_generator.o: random_generator.f90
 remap.o: remap.f90 boundary.o shared_data.o xremap.o yremap.o zremap.o
 setup.o: setup.F90 diagnostics.o shared_data.o version_data.o welcome.o \
   $(SDFMOD)

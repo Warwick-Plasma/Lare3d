@@ -91,7 +91,7 @@ CONTAINS
 
     ! Output energy diagnostics etc
     IF (last_call .AND. rank == 0) THEN
-      WRITE(stat_unit,*) 'final nsteps / time = ', step, time
+      WRITE(stat_unit,*) 'final nsteps / time / dt = ', step, time, dt
 
       IF (ALLOCATED(var_local)) DEALLOCATE(var_local)
       IF (ALLOCATED(var_sum)) DEALLOCATE(var_sum)
@@ -147,7 +147,7 @@ CONTAINS
 
     ! Output a snapshot of arrays
     IF (rank == 0) THEN
-      WRITE(stat_unit,*) 'Dumping ', file_number, ' at time', time
+      WRITE(stat_unit,*) 'Dumping ', file_number, ' at time', time, 'with dt ', dt
       IF (conduction) WRITE(stat_unit,*) 'Number of super-steps = ', n_s_stages
       CALL FLUSH(stat_unit)
     END IF
@@ -423,6 +423,29 @@ CONTAINS
           'Current/' // TRIM(varname), TRIM(units), dims, &
           c_stagger_vertex, 'grid', jz_r, &
           node_distribution, nodeng_subarray, convert)
+    END IF
+
+    IF (dump_mask(20)) THEN
+      varname = 'Resistive_Heat'
+      units = 'J/m^3'
+      dims = global_dims
+
+      CALL sdf_write_plain_variable(sdf_handle, TRIM(varname), &
+          'Fluid/' // TRIM(varname), TRIM(units), dims, &
+          c_stagger_cell_centre, 'grid', ohmic_dep, &
+          cell_distribution, cell_subarray, convert)
+
+      varname = 'Viscous_Heat'
+      units = 'J/m^3'
+      dims = global_dims
+
+      CALL sdf_write_plain_variable(sdf_handle, TRIM(varname), &
+          'Fluid/' // TRIM(varname), TRIM(units), dims, &
+          c_stagger_cell_centre, 'grid', visc_dep, &
+          cell_distribution, cell_subarray, convert)
+
+      ohmic_dep = 0.0_num
+      visc_dep = 0.0_num
     END IF
 
     IF (ALLOCATED(array)) DEALLOCATE(array)
