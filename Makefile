@@ -137,7 +137,7 @@ DEFINES := $(DEFINE)
 # Uncomment to use Cauchy solution for predictor step B-field, othwerwise advective prediction
 #DEFINES += $(D)CAUCHY
 
-# Uncomment the following line to use Qmono viscosity
+# Uncomment the following line to limters on the shock viscosity
 #DEFINES += $(D)SHOCKLIMITER
 
 # Uncomment the following line to allow shock viscosity only in compressed cells
