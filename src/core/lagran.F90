@@ -25,6 +25,7 @@ MODULE lagran
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: fx_visc, fy_visc, fz_visc
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: bx0, by0, bz0
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: qx, qy, qz
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: energy0, delta_energy
 
 CONTAINS
 
@@ -62,6 +63,8 @@ CONTAINS
     ALLOCATE(qx(0:nx+1,0:ny+1,0:nz+1))
     ALLOCATE(qy(0:nx+1,0:ny+1,0:nz+1))
     ALLOCATE(qz(0:nx+1,0:ny+1,0:nz+1))
+    ALLOCATE(energy0(-1:nx+2,-1:ny+2,-1:nz+2))
+    ALLOCATE(delta_energy(-1:nx+2,-1:ny+2,-1:nz+2))
 
     DO iz = -1, nz + 2
       izm = iz - 1
@@ -148,8 +151,19 @@ CONTAINS
       dt = actual_dt
     END IF
 
-    IF (conduction) CALL conduct_heat
-    IF (radiation) CALL rad_losses
+    delta_energy = 0.0_num
+    IF (conduction) THEN
+      energy0 = energy
+      CALL conduct_heat
+      delta_energy = energy - energy0
+    END IF
+    IF (radiation) THEN
+      energy0 = energy
+      CALL rad_losses
+      delta_energy = delta_energy + energy - energy0
+    END IF
+    energy = energy + delta_energy
+    energy = MAX(energy, 0.0_num)
 
     CALL predictor_corrector_step
 
@@ -159,6 +173,7 @@ CONTAINS
     DEALLOCATE(flux_x, flux_y, flux_z)
     DEALLOCATE(curlb)
     DEALLOCATE(qx, qy, qz)
+    DEALLOCATE(energy0, delta_energy)
 #ifndef CAUCHY
     DEALLOCATE(bx0, by0, bz0)
 #endif
