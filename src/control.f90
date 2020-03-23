@@ -56,13 +56,13 @@ CONTAINS
   SUBROUTINE control_variables
 
     ! Set the number of gridpoints in x and y directions
-    nx_global = 128
-    ny_global = 128
-    nz_global = 128
+    nx_global = 64
+    ny_global = 64
+    nz_global = 64
 
     ! Set the maximum number of iterations of the core solver before the code
     ! terminates. If nsteps < 0 then the code will run until t = t_end
-    nsteps = 1
+    nsteps = 50
 
     ! The maximum runtime of the code
     t_end = 6.0_num
@@ -113,11 +113,11 @@ CONTAINS
 
     ! Turn on or off the Braginskii thermal conduction term in
     ! the MHD equations
-    conduction = .FALSE.
+    conduction = .TRUE.
     ! Turn on heat flux limiter
-    heat_flux_limiter = .FALSE.
+    heat_flux_limiter = .TRUE.
     ! Limiter used if on
-    flux_limiter = 0.05_num
+    flux_limiter = 0.1_num
 
     ! Use radiation as specified in SUBROUTINE rad_losses
     ! in src/radiative.f90
