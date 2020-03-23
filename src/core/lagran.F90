@@ -1043,7 +1043,7 @@ CONTAINS
     ! setting 'dt_multiplier' if you expect massive changes across cells.
 
     REAL(num) :: cs2, c_visc2, rho0, length
-    REAL(num) :: dxlocal, dt_local, dtr_local, dt1
+    REAL(num) :: dxlocal, dt_local, dtr_local, dt1, ss_limit
     REAL(num) :: dt_locals(2), dt_min(2)
     LOGICAL, SAVE :: first = .TRUE.
 
@@ -1113,6 +1113,17 @@ CONTAINS
 
     dt  = dt_multiplier * dt_min(1)
     dtr = dt_multiplier * dt_min(2)
+
+    IF (conduction) THEN
+      CALL calc_s_stages(.TRUE.)
+      ss_limit = 60
+      IF (n_s_stages >= ss_limit) THEN
+        dt  = dt  * REAL(2 * ss_limit**2   - 9, num) &
+                  / REAL(2 * n_s_stages**2 - 9, num)
+        dtr = dtr * REAL(2 * ss_limit**2   - 9, num) &
+                  / REAL(2 * n_s_stages**2 - 9, num)
+      END IF
+    END IF
 
     time = time + dt
 

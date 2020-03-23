@@ -8,10 +8,11 @@ MODULE conduct
 
   PRIVATE
 
-  PUBLIC :: conduct_heat
+  PUBLIC :: conduct_heat, calc_s_stages
 
   REAL(num),PARAMETER :: pow=5.0_num/2.0_num
   REAL(num),PARAMETER :: min_b=1.0e-10_num
+
 
 CONTAINS
 
@@ -19,12 +20,62 @@ CONTAINS
   ! Function calculating the number of stages needed for the RKL2
   !****************************************************************************
 
-  FUNCTION calc_s_stages()
+  SUBROUTINE calc_s_stages(lagrangian_call)
+
+    LOGICAL, INTENT(IN) :: lagrangian_call
 
     REAL(num)  ::  stages, dt_parab, dt1, dt2, dt3, temp
-    REAL(num) :: gm1
+    REAL(num) :: gm1, kappa1
+    REAL(num) :: q_fs, q_fs2, q_spx, q_spy, q_spz, q_sp2
     INTEGER :: n_s_stages_local, nstages
-    INTEGER :: calc_s_stages
+
+    ! Make sure arrays are allocated if calling this routine just to determine
+    ! dt from the lagrangian setp
+    IF (lagrangian_call) THEN
+      ALLOCATE(temperature(-1:nx+2,-1:ny+2,-1:nz+2))
+      ALLOCATE(larson_factor(0:nx,0:ny,0:nz))
+    END IF
+
+    DO iz=-1,nz+2
+      DO iy=-1,ny+2
+        DO ix=-1,nx+2
+          temperature(ix,iy,iz) = (gamma - 1.0_num) / (2.0_num - xi_n(ix,iy,iz)) &
+              * (energy(ix,iy,iz) - (1.0_num - xi_n(ix,iy,iz)) * ionise_pot)
+        ENDDO
+      ENDDO
+    ENDDO
+
+    ! Include flux limiting through a larson factor correction to the
+    ! conductivity
+    DO iz = 0, nz
+      izm = iz - 1
+      izp = iz + 1
+      DO iy = 0, ny
+        iym = iy - 1
+        iyp = iy + 1
+        DO ix = 0, nx
+          ixm = ix - 1
+          ixp = ix + 1
+          temp = temperature(ix,iy,iz)**pow
+          q_fs = 3.2e7_num * flux_limiter * rho(ix,iy,iz) &
+              * temperature(ix,iy,iz)**1.5_num
+          q_fs2 = q_fs**2
+          q_spx = - kappa_0 * temp &
+              * (temperature(ixp,iy,iz) - temperature(ixm,iy,iz)) &
+              * 0.5_num / dxb(ix)
+          q_spy = - kappa_0 * temp &
+              * (temperature(ix,iyp,iz) - temperature(ix,iym,iz)) &
+              * 0.5_num / dyb(iy)
+          q_spz = - kappa_0 * temp &
+              * (temperature(ix,iy,izp) - temperature(ix,iy,izm)) &
+              * 0.5_num / dzb(iz)
+          q_sp2 = q_spx**2 + q_spy**2 + q_spz**2
+          larson_factor(ix,iy,iz) = q_fs / SQRT(q_fs2 + q_sp2)
+        END DO
+      END DO
+    END DO
+
+    IF (.NOT. heat_flux_limiter) larson_factor = 1.0_num
 
     dt_parab = 1.e10_num
     gm1 = 0.5_num * (gamma-1.0_num)
@@ -32,14 +83,15 @@ CONTAINS
       DO iy = 1 , ny
         DO ix = 1 , nx
           ! explicit TC time-step
+          kappa1 = kappa_0 * larson_factor(ix,iy,iz)
           temp = gm1 * (2.0_num - xi_n(ix,iy,iz)) &
             *(energy(ix,iy,iz)-(1.0_num - xi_n(ix,iy,iz))&
             *ionise_pot)
-          dt1 = rho(ix,iy,iz)*dxb(ix)**2 / (2.0_num * kappa_0 * &
+          dt1 = rho(ix,iy,iz)*dxb(ix)**2 / (2.0_num * kappa1 * &
               temp**pow)
-          dt2 = rho(ix,iy,iz)*dyb(iy)**2 / (2.0_num * kappa_0 * &
+          dt2 = rho(ix,iy,iz)*dyb(iy)**2 / (2.0_num * kappa1 * &
               temp**pow)
-          dt3 = rho(ix,iy,iz)*dzb(iz)**2 / (2.0_num * kappa_0 * &
+          dt3 = rho(ix,iy,iz)*dzb(iz)**2 / (2.0_num * kappa1 * &
               temp**pow)
           dt_parab = MIN(dt_parab, dt1, dt2, dt3)
         END DO
@@ -56,9 +108,11 @@ CONTAINS
     ENDIF
     CALL MPI_ALLREDUCE(n_s_stages_local, nstages, 1, &
         MPI_INTEGER, MPI_MAX, comm, errcode)
-    calc_s_stages=nstages
+    n_s_stages = nstages
 
-  END FUNCTION calc_s_stages
+    IF (lagrangian_call) DEALLOCATE(temperature, larson_factor)
+
+  END SUBROUTINE calc_s_stages
 
 
 
@@ -245,8 +299,13 @@ CONTAINS
 
   SUBROUTINE conduct_heat
 
-    n_s_stages = calc_s_stages()
+    ALLOCATE(larson_factor(0:nx,0:ny,0:nz))
+    ALLOCATE(temperature(-1:nx+2,-1:ny+2,-1:nz+2))
+
+    CALL calc_s_stages(.FALSE.)
     CALL heat_conduct_sts2
+
+    DEALLOCATE(larson_factor, temperature)
 
   END SUBROUTINE conduct_heat
 
