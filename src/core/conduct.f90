@@ -16,6 +16,25 @@ MODULE conduct
 
 CONTAINS
 
+
+  !****************************************************************************
+  ! Subroutine implementing Braginskii parallel thermal conduction.
+  ! Notation and algorithm in Appendix of Manual
+  !****************************************************************************
+
+  SUBROUTINE conduct_heat
+
+    ALLOCATE(larsen_factor(0:nx,0:ny,0:nz))
+
+    CALL calc_s_stages(.FALSE.)
+    CALL heat_conduct_sts2
+
+    DEALLOCATE(larsen_factor)
+
+  END SUBROUTINE conduct_heat
+
+
+
   !****************************************************************************
   ! Function calculating the number of stages needed for the RKL2
   !****************************************************************************
@@ -31,10 +50,7 @@ CONTAINS
 
     ! Make sure arrays are allocated if calling this routine just to determine
     ! dt from the lagrangian setp
-    IF (lagrangian_call) THEN
-      ALLOCATE(temperature(-1:nx+2,-1:ny+2,-1:nz+2))
-      ALLOCATE(larson_factor(0:nx,0:ny,0:nz))
-    END IF
+    IF (lagrangian_call) ALLOCATE(larsen_factor(0:nx,0:ny,0:nz))
 
     DO iz=-1,nz+2
       DO iy=-1,ny+2
@@ -57,7 +73,7 @@ CONTAINS
           ixm = ix - 1
           ixp = ix + 1
           temp = temperature(ix,iy,iz)**pow
-          q_fs = 3.2e7_num * flux_limiter * rho(ix,iy,iz) &
+          q_fs = flux_limiter * 42.85_num * rho(ix,iy,iz) &  ! 42.85 = SQRT(m_i/m_e)
               * temperature(ix,iy,iz)**1.5_num
           q_fs2 = q_fs**2
           q_spx = - kappa_0 * temp &
@@ -70,12 +86,12 @@ CONTAINS
               * (temperature(ix,iy,izp) - temperature(ix,iy,izm)) &
               * 0.5_num / dzb(iz)
           q_sp2 = q_spx**2 + q_spy**2 + q_spz**2
-          larson_factor(ix,iy,iz) = q_fs / SQRT(q_fs2 + q_sp2)
+          larsen_factor(ix,iy,iz) = q_fs / SQRT(q_fs2 + q_sp2)
         END DO
       END DO
     END DO
 
-    IF (.NOT. heat_flux_limiter) larson_factor = 1.0_num
+    IF (.NOT. heat_flux_limiter) larsen_factor = 1.0_num
 
     dt_parab = 1.e10_num
     gm1 = 0.5_num * (gamma-1.0_num)
@@ -83,7 +99,7 @@ CONTAINS
       DO iy = 1 , ny
         DO ix = 1 , nx
           ! explicit TC time-step
-          kappa1 = kappa_0 * larson_factor(ix,iy,iz)
+          kappa1 = kappa_0 * larsen_factor(ix,iy,iz)
           temp = gm1 * (2.0_num - xi_n(ix,iy,iz)) &
             *(energy(ix,iy,iz)-(1.0_num - xi_n(ix,iy,iz))&
             *ionise_pot)
@@ -110,7 +126,7 @@ CONTAINS
         MPI_INTEGER, MPI_MAX, comm, errcode)
     n_s_stages = nstages
 
-    IF (lagrangian_call) DEALLOCATE(temperature, larson_factor)
+    IF (lagrangian_call) DEALLOCATE(larsen_factor)
 
   END SUBROUTINE calc_s_stages
 
@@ -130,11 +146,8 @@ CONTAINS
     INTEGER :: iz, izp, izm
     REAL(num) :: tb, tg, fc_sp, rho_b
     REAL(num) :: tg_a1, tg_a2, tb_p, tb_m
-    REAL(num) :: fc_sa, fc, modb, hfl
+    REAL(num) :: fc_sa, modb
     REAL(num) :: byf, bxf, bzf, b_component
-
-    hfl = 0.0_num
-    IF (heat_flux_limiter) hfl = 1.0_num
 
     flux=0.0_num
     DO iz = 0,nz
@@ -178,20 +191,11 @@ CONTAINS
 
           tb = MAX(tb, 0.0_num)
 
-          fc_sp = - kappa_0 * tb**pow * (bx(ix,iy,iz) * (tg * bx(ix,iy,iz) + &
+          fc_sp = - larsen_factor(ix,iy,iz) * kappa_0 * tb**pow * (bx(ix,iy,iz) * (tg * bx(ix,iy,iz) + &
               tg_a1 * byf + tg_a2 * bzf)+tg*min_b) / modb
 
-          ! Saturated Conductive Flux
-          rho_b = (rho(ixp,iy,iz)+rho(ix,iy,iz))/2.0_num
-          b_component = SQRT((bx(ix,iy,iz)**2 + min_b) / modb)
-          fc_sa =  42.85_num * b_component * flux_limiter * rho_b * tb**(3.0_num/2.0_num)  !42.85 = SRQT(m_p/m_e)
-
-          ! Conductive Flux Limiter.
-          fc = (1.0_num - hfl) * fc_sp + hfl * fc_sp * fc_sa / MAX(ABS(fc_sp) + fc_sa, none_zero)
-
-          flux(ix,iy,iz) = flux(ix,iy,iz) - fc/dxb(ix)
-          flux(ixp,iy,iz) = flux(ixp,iy,iz) + fc/dxb(ix)
-
+          flux(ix,iy,iz) = flux(ix,iy,iz) - fc_sp/dxb(ix)
+          flux(ixp,iy,iz) = flux(ixp,iy,iz) + fc_sp/dxb(ix)
 
           !Y flux
           bxf=0.25_num*(bx(ix,iy,iz)+bx(ix,iyp,iz)+&
@@ -225,19 +229,11 @@ CONTAINS
 
           tb = MAX(tb, 0.0_num)
 
-          fc_sp = - kappa_0 * tb**pow * (by(ix,iy,iz) * (tg * by(ix,iy,iz) + &
+          fc_sp = - larsen_factor(ix,iy,iz) * kappa_0 * tb**pow * (by(ix,iy,iz) * (tg * by(ix,iy,iz) + &
               tg_a1 * bxf + tg_a2 * bzf)+tg*min_b) / modb
 
-          ! Saturated Conductive Flux. 
-          rho_b = (rho(ix,iyp,iz)+rho(ix,iy,iz))/2.0_num
-          b_component = SQRT((by(ix,iy,iz)**2 + min_b) / modb)
-          fc_sa = 42.85_num * b_component * flux_limiter * rho_b * tb**(3.0_num/2.0_num)  
-
-          ! Conductive Flux Limiter. Note flux_limiter is inverse of usual
-          fc = (1.0_num - hfl) * fc_sp + hfl * fc_sp * fc_sa / MAX(ABS(fc_sp) + fc_sa, none_zero)
-
-          flux(ix,iy,iz) = flux(ix,iy,iz) - fc/dyb(iy)
-          flux(ix,iyp,iz) = flux(ix,iyp,iz) + fc/dyb(iy)
+          flux(ix,iy,iz) = flux(ix,iy,iz) - fc_sp/dyb(iy)
+          flux(ix,iyp,iz) = flux(ix,iyp,iz) + fc_sp/dyb(iy)
 
           !Z flux
           bxf=0.25_num*(bx(ix,iy,iz)+bx(ix,iy,izp)+&
@@ -271,43 +267,17 @@ CONTAINS
 
           tb = MAX(tb, 0.0_num)
 
-          fc_sp = - kappa_0 * tb**pow * (bz(ix,iy,iz) * (tg * bz(ix,iy,iz) + &
+          fc_sp = - larsen_factor(ix,iy,iz) * kappa_0 * tb**pow * (bz(ix,iy,iz) * (tg * bz(ix,iy,iz) + &
               tg_a1 * bxf + tg_a2 * byf)+tg*min_b) / modb
 
-          ! Saturated Conductive Flux
-          rho_b = (rho(ix,iy,izp)+rho(ix,iy,iz))/2.0_num
-          b_component = SQRT((bz(iz,iy,iz)**2 + min_b) / modb)
-          fc_sa = 42.85_num * b_component * flux_limiter * rho_b * tb**(3.0_num/2.0_num)  !42.85 = SRQT(m_p/m_e)
-
-          ! Conductive Flux Limiter
-          fc = (1.0_num - hfl) * fc_sp + hfl * fc_sp * fc_sa / MAX(ABS(fc_sp) + fc_sa, none_zero)
-
-          flux(ix,iy,iz) = flux(ix,iy,iz) - fc/dzb(iz)
-          flux(ix,iy,izp) = flux(ix,iy,izp) + fc/dzb(iz)
+          flux(ix,iy,iz) = flux(ix,iy,iz) - fc_sp/dzb(iz)
+          flux(ix,iy,izp) = flux(ix,iy,izp) + fc_sp/dzb(iz)
         END DO
       END DO
     END DO
 
   END SUBROUTINE heat_flux
 
-
-
-  !****************************************************************************
-  ! Subroutine implementing Braginskii parallel thermal conduction.
-  ! Notation and algorithm in Appendix of Manual
-  !****************************************************************************
-
-  SUBROUTINE conduct_heat
-
-    ALLOCATE(larson_factor(0:nx,0:ny,0:nz))
-    ALLOCATE(temperature(-1:nx+2,-1:ny+2,-1:nz+2))
-
-    CALL calc_s_stages(.FALSE.)
-    CALL heat_conduct_sts2
-
-    DEALLOCATE(larson_factor, temperature)
-
-  END SUBROUTINE conduct_heat
 
 
   !****************************************************************************

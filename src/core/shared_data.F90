@@ -102,7 +102,7 @@ MODULE shared_data
   REAL(num), DIMENSION(:), ALLOCATABLE :: zc, zb, dzb, dzc, zb_global
   REAL(num), DIMENSION(:), ALLOCATABLE :: grav
 
-  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: larson_factor
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: larsen_factor
 
   INTEGER, PARAMETER :: data_dir_max_length = 64
   CHARACTER(LEN = data_dir_max_length) :: data_dir

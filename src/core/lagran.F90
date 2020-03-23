@@ -155,12 +155,12 @@ CONTAINS
     IF (conduction) THEN
       energy0 = energy
       CALL conduct_heat
-      delta_energy = energy - energy0
+      delta_energy = energy0 - energy
     END IF
     IF (radiation) THEN
       energy0 = energy
       CALL rad_losses
-      delta_energy = delta_energy + energy - energy0
+      delta_energy = delta_energy + energy0 - energy
     END IF
     energy = energy + delta_energy
     energy = MAX(energy, 0.0_num)
