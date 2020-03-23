@@ -1,3 +1,4 @@
+
 MODULE initial_conditions
 
   USE shared_data
@@ -33,60 +34,51 @@ CONTAINS
 
   SUBROUTINE set_initial_conditions
 
-    !This is actually based on the default initial conditions shipped with LARE.
-    !With a few tweaks to constants, it's a very good fit to the C7 model of 
-    !Avrett and Loeser  
-    INTEGER :: loop
-    INTEGER :: ix, iz
-    REAL(num) :: a1, a2, dg, centre, width, amp
-    REAL(num) :: a=2.0_num, Tph=11.8_num
-    REAL(num) :: r1, maxerr, xi_v
-    REAL(num) :: t_bottom, grav_0
-    REAL(num) :: pressure0, energy0, v0, mbar, temp0, time0
-    REAL(num), DIMENSION(:), ALLOCATABLE :: zc_global, dzb_global, dzc_global
-    REAL(num), DIMENSION(:), ALLOCATABLE :: grav_ref, temp_ref, rho_ref
-    REAL(num), DIMENSION(:), ALLOCATABLE :: mu_m
+    REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: temperature
+    REAL(num) :: xi_v, amp, centre, width
 
-    !This is very inelegant, should do better
-    pressure0 = B_norm**2 / mu0_si
-    energy0 = pressure0 / rho_norm
-    v0 = SQRT(energy0)
-    mbar = mf * mh_si
-    temp0 = (mbar / kb_si) * energy0
-    time0 = L_norm/v0
+    ! Below are all the variables which must be defined and their sizes
 
-    vx(:,:,:) = 0.0_num
-    vy(:,:,:)  = 0.0_num
-    vz(:,:,:)  = 0.0_num
-    bx(:,:,:)  = 0.0_num
-    by(:,:,:)  = 0.0_num
-    bz(:,:,:) = 0.0_num
-    rho(:,:,:)  = 1.0_num
-    energy(:,:,:)  = 0.1_num
-    grav(:) = 0.0_num
+    vx(-2:nx+2, -2:ny+2, -2:nz+2) = 0.0_num
+    vy(-2:nx+2, -2:ny+2, -2:nz+2) = 0.0_num
+    vz(-2:nx+2, -2:ny+2, -2:nz+2) = 0.0_num
 
-    ALLOCATE(zc_global(-1:nz_global+1))
-    ALLOCATE(dzb_global(-1:nz_global+1), dzc_global(-1:nz_global))
-    ALLOCATE(grav_ref(-1:nz_global+2), temp_ref(-1:nz_global+2))
-    ALLOCATE(rho_ref(-1:nz_global+2))
-    ALLOCATE(mu_m(-1:nz_global+2))
-    CALL read_al_temperatures
-    CALL lookup_temperature(0.0_num,t_bottom)
-    Tph = t_bottom
-  
-    !fill in zc_global with the positions central to the zb_global points
-    DO iz = -1,nz_global+1
-       zc_global(iz) = 0.5_num * (zb_global(iz-1) + zb_global(iz))
+    bx(-2:nx+2, -1:ny+2, -1:nz+2) = 0.0_num
+    by(-1:nx+2, -2:ny+2, -1:nz+2) = 0.0_num
+    bz(-1:nx+2, -1:ny+2, -2:nz+2) = 0.0_num
+
+    rho(-1:nx+2, -1:ny+2, -2:nz+2) = 1.0_num
+    energy(-1:nx+2, -1:ny+2, -2:nz+2) = 0.1_num
+
+    grav(-1:nz+2) = 0.0_num
+
+    ! If defining the initial conditions using temperature then use
+    ALLOCATE(temperature(-1:nx+2, -1:ny+2, -1:nz+2))
+    temperature(-1:nx+2, -1:ny+2, -1:nz+2) = 0.5_num
+
+    ! If neutrals included xi_n is a function of temperature so iteration required
+    ! Set the neutral fraction if needed
+    DO iz = -1,nz+2
+      DO iy = -1,ny+2
+        DO ix = -1,nx+2
+          IF (eos_number /= EOS_IDEAL) THEN         
+            xi_v = get_neutral(temperature(ix,iy,iz), rho(ix,iy,iz))
+          ELSE  
+            IF (neutral_gas) THEN
+              xi_v = 1.0_num
+            ELSE
+              xi_v = 0.0_num
+            END IF
+          END IF
+          energy(ix,iy,iz) = (temperature(ix,iy,iz) * (2.0_num - xi_v) &
+                + (1.0_num - xi_v) * ionise_pot * (gamma - 1.0_num)) &
+                / (gamma - 1.0_num)
+        END DO
+      END DO
     END DO
-  
-    !fill in dzb_global and dzc_global
-    DO iz = -1,nz_global
-       dzb_global(iz) = zb_global(iz) - zb_global(iz-1)
-       dzc_global(iz) = zc_global(iz+1) - zc_global(iz)
-    END DO
-    dzb_global(nz_global+1) = dzb_global(nz_global) 
+    DEALLOCATE(temperature)
 
-    ! set backgroun, non-shock, viscosity
+    ! set background, non-shock, viscosity
     visc3 = 0.0_num
     IF (use_viscous_damping) THEN
       width = length_z / 10.0_num
@@ -101,116 +93,11 @@ CONTAINS
       END DO
     END IF    
   
-    !fill in the reference gravity array - lowering grav to zero at the top 
-    !of the corona smoothly from a1 to grav=0 at a2 and above
-    grav_0 = L_norm * 274.0_num / v0**2
-    grav_ref(:) = grav_0
-    a1 = 10.0_num !0.7_num * zb_global(nx_global) 
-    a2 = 20.0_num !0.9_num * zb_global(nx_global) 
-    DO iz = 0,nz_global+2
-       IF (zb_global(iz) > a1) THEN
-          grav_ref(iz) = 0.5_num * grav_0 * (1.0_num + COS(pi * (zb_global(iz) - a1) / (a2-a1))) 
-       END IF
-       IF (zb_global(iz) > a2) THEN
-          grav_ref(iz) = 0.0_num
-       END IF
-    END DO    
-    grav_ref(-1) = grav_ref(0)
-    grav_ref(nz_global+1:nz_global+2) = grav_ref(nz_global)
-
-    !calculate the density profile, starting from the refence density at the
-    !photosphere and calculating up and down from there including beta
-    rho_ref = 1.0_num
-    mu_m = 1.0_num
-    IF (eos_number == EOS_IDEAL .AND. (.NOT. neutral_gas)) mu_m = 0.5_num
-
-    DO loop = 1,1000
-       maxerr = 0.0_num
-       !Go from photosphere down
-       DO iz = -1,nz_global+1
-          IF (zc_global(iz) < 0.0_num) THEN
-             temp_ref(iz) = Tph - a * (gamma - 1.0_num) &
-                  * zc_global(iz) * grav_ref(iz) * mu_m(iz) / gamma 
-          END IF
-          IF(zc_global(iz) .GT. 0.0_num) THEN
-            CALL lookup_temperature(zc_global(iz),temp_ref(iz))
-          ENDIF
-        END DO
-        temp_ref(nz_global+1:nz_global+2) = temp_ref(nz_global)
-         
-       DO iz = nz_global,0,-1
-          IF (zc_global(iz) < 0.0_num) THEN  
-             dg = 1.0_num / (dzb_global(iz) + dzb_global(iz-1))
-             rho_ref(iz-1) = rho_ref(iz) * (temp_ref(iz) &
-                  /dzc_global(iz-1)/mu_m(iz)+grav_ref(iz-1)*dzb_global(iz)*dg)
-             rho_ref(iz-1) = rho_ref(iz-1) / (temp_ref(iz-1) &
-                  /dzc_global(iz-1)/mu_m(iz-1)-grav_ref(iz-1)*dzb_global(iz-1)*dg)
-          END IF
-       END DO
-       !Now move from the photosphere up to the corona
-       DO iz = 0,nz_global
-          IF (zc_global(iz) >= 0.0_num) THEN
-             dg = 1.0_num / (dzb_global(iz)+dzb_global(iz-1))
-             rho_ref(iz) = rho_ref(iz-1) * (temp_ref(iz-1) &
-                  /dzc_global(iz-1)/mu_m(iz-1)-grav_ref(iz-1)*dzb_global(iz-1)*dg)
-             rho_ref(iz) = rho_ref(iz) / (temp_ref(iz) &
-                  /dzc_global(iz-1)/mu_m(iz)+grav_ref(iz-1)*dzb_global(iz)*dg)
-          END IF
-       END DO
-       IF (eos_number /= EOS_IDEAL) THEN
-          DO iz=0,nz_global,1
-             xi_v = get_neutral(temp_ref(iz),rho_ref(iz))
-             r1 = mu_m(iz)
-             mu_m(iz) = 1.0_num / (2.0_num-xi_v)
-             maxerr = MAX(maxerr, ABS(mu_m(iz) - r1))
-          END DO
-       END IF
-       IF (maxerr < 1.e-16_num) EXIT
-    END DO
-  
-    rho_ref(nz_global+1:nz_global+2) = rho_ref(nz_global)   
-
-    !fill in all the final arrays from the ref arrays
-    grav(:) = grav_ref(coordinates(1)*nz-1:coordinates(1)*nz+nz+2)
-    DO iy = -1,ny+2
-     DO ix = -1,nx+2
-       rho(ix,iy,:) = rho_ref(coordinates(1)*nz-1:coordinates(1)*nz+nz+2)
-       energy(ix,iy,:) = temp_ref(coordinates(1)*nz-1:coordinates(1)*nz+nz+2)
-     END DO
-    END DO
-
-    DO iz = -1, nz + 2
-     DO iy = -1, ny + 2
-        DO ix = -1, nx + 2
-          IF (eos_number /= EOS_IDEAL) THEN         
-            xi_v = get_neutral(energy(ix,iy,iz), rho(ix,iy,iz))
-          ELSE  
-            IF (neutral_gas) THEN
-              xi_v = 1.0_num
-            ELSE
-              xi_v = 0.0_num
-            END IF
-          END IF
-          energy(ix,iy,iz) = (energy(ix,iy,iz) * (2.0_num - xi_v) &
-             + (1.0_num - xi_v) * ionise_pot * (gamma - 1.0_num)) &
-             / (gamma - 1.0_num)
-        END DO
-     END DO
-    END DO
-    DO iy= -1, ny + 2
-     DO ix= -1, nx + 2
-        energy(ix,iy,nz+2) = energy(ix,iy,nz+1)
-      END DO
-    END DO
-
-    DEALLOCATE(zc_global, dzb_global, dzc_global, mu_m)
-    DEALLOCATE(grav_ref, temp_ref, rho_ref)
-
-    IF (IAND(initial, IC_NEW) /= 0) CALL potential_field
+    ! An example for setting up simple potential field
+    CALL potential_field
 
   END SUBROUTINE set_initial_conditions
   
-
 
 
 
@@ -368,13 +255,6 @@ CONTAINS
               phi(ix,iy,0) = phi(ix,iy,1) &
                 + amp * dzc(1) * (1.0_num - TANH((r1 - radius)/0.2_num))
 
-              centre = 6.0_num
-              radius = 2.0_num
-              amp = 0.25_num
-              r1 = SQRT((xc(ix)-centre)**2 + yc(iy)**2)
-              phi(ix,iy,0) = phi(ix,iy,0) &
-                - amp * dzc(1) * (1.0_num - TANH((r1 - radius)/0.2_num))
-
               phi(ix,iy,-1) = phi(ix,iy,0)
             END DO
           END DO
@@ -405,70 +285,6 @@ CONTAINS
 
   END SUBROUTINE potential_field
 
-
-
-
-  SUBROUTINE read_al_temperatures()
-
-    REAL(num) :: pressure0, energy0, v0, mbar, temp0
-    INTEGER :: iel, reverse, start, end, delta
-
-    !This is very inelegant, should do better
-    pressure0 = B_norm**2 / mu0_si
-    energy0 = pressure0 / rho_norm
-    v0 = SQRT(energy0)
-    mbar = mf * mh_si
-    temp0 = (mbar / kb_si) * energy0  
-
-    IF (rank .EQ. 0) THEN
-      OPEN(UNIT=55,FILE='ExternalFiles/tables/c7.table',FORM='FORMATTED')
-      READ(55,*) table_count, reverse
-      ALLOCATE(axis(1:table_count), temperature_1d(1:table_count))
-      IF (reverse .EQ. 0) THEN
-        start=1
-        end=table_count
-        delta=1
-      ELSE
-        start=table_count
-        end=1
-        delta=-1
-      ENDIF
-      DO iel=start,end,delta
-        READ(55,*) axis(iel),temperature_1d(iel)
-      ENDDO
-      CLOSE(55)
-
-      axis=axis/L_norm
-      temperature_1d=temperature_1d/temp0
-
-    ENDIF
-
-    CALL MPI_BCAST(table_count,1,MPI_INTEGER,0,comm,errcode)
-    IF (rank .NE. 0) ALLOCATE(axis(1:table_count), &
-        temperature_1d(1:table_count))
-    CALL MPI_BCAST(axis,table_count,mpireal,0,comm,errcode)
-    CALL MPI_BCAST(temperature_1d,table_count,mpireal,0,comm,errcode)
-
-  END SUBROUTINE read_al_temperatures
-
-
-
-  SUBROUTINE lookup_temperature(y,temp)
-    REAL(num), INTENT(IN) :: y
-    REAL(num), INTENT(OUT) :: temp
-    INTEGER :: iz
-    REAL(num) :: frac
-    IF (y .GE. MAXVAL(axis)) THEN
-      temp=temperature_1d(table_count)
-      RETURN
-    ENDIF
-    DO iz=1,table_count-1
-      IF (axis(iz) .LE. y .AND. axis(iz+1) .GT. y) THEN
-        frac=(y-axis(iz))/(axis(iz+1)-axis(iz))
-        temp=temperature_1d(iz)+(temperature_1d(iz+1)-temperature_1d(iz))*frac
-      ENDIF
-    ENDDO
-  END SUBROUTINE lookup_temperature
 
 
 END MODULE initial_conditions
