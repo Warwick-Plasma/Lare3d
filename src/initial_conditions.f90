@@ -11,9 +11,6 @@ MODULE initial_conditions
 
   PUBLIC :: set_initial_conditions
 
-  REAL(num), DIMENSION(:), ALLOCATABLE :: axis, temperature_1d
-  INTEGER :: table_count
-
 CONTAINS
 
   !****************************************************************************

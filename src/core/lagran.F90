@@ -151,19 +151,19 @@ CONTAINS
       dt = actual_dt
     END IF
 
-    delta_energy = 0.0_num
+    delta_energy(:,:,:) = 0.0_num
     IF (conduction) THEN
-      energy0 = energy
+      energy0(:,:,:) = energy(:,:,:)
       CALL conduct_heat
-      delta_energy = energy0 - energy
+      delta_energy(:,:,:) = energy0(:,:,:) - energy(:,:,:)
     END IF
     IF (radiation) THEN
-      energy0 = energy
+      energy0(:,:,:) = energy(:,:,:)
       CALL rad_losses
-      delta_energy = delta_energy + energy0 - energy
+      delta_energy(:,:,:) = delta_energy(:,:,:) + energy0(:,:,:) - energy(:,:,:)
     END IF
-    energy = energy + delta_energy
-    energy = MAX(energy, 0.0_num)
+    energy(:,:,:) = energy(:,:,:) + delta_energy(:,:,:)
+    energy(:,:,:) = MAX(energy(:,:,:), 0.0_num)
 
     CALL predictor_corrector_step
 

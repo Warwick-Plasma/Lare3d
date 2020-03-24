@@ -144,10 +144,10 @@ CONTAINS
     INTEGER :: ix, ixp, ixm
     INTEGER :: iy, iyp, iym
     INTEGER :: iz, izp, izm
-    REAL(num) :: tb, tg, fc_sp, rho_b
+    REAL(num) :: tb, tg, fc_sp
     REAL(num) :: tg_a1, tg_a2, tb_p, tb_m
-    REAL(num) :: fc_sa, modb
-    REAL(num) :: byf, bxf, bzf, b_component
+    REAL(num) :: modb
+    REAL(num) :: byf, bxf, bzf
 
     flux=0.0_num
     DO iz = 0,nz
