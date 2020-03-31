@@ -11,6 +11,7 @@
 !  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 !  See the License for the specific language governing permissions and
 !  limitations under the License.
+
 !******************************************************************************
 ! Controls all I/O and diagnostics. Output files are 'lare3d.dat',
 ! 'control.dat', 'en.dat' and a series of snapshots in 'nnnn.sdf'

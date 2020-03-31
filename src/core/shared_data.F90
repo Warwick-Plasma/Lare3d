@@ -11,6 +11,7 @@
 !  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 !  See the License for the specific language governing permissions and
 !  limitations under the License.
+
 !******************************************************************************
 ! All global variables defined here (cf F77 COMMON block).
 ! All the names in here are public provided the MODULE is USE'd
