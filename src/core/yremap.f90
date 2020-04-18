@@ -238,8 +238,6 @@ CONTAINS
         END DO
       END DO
     END DO
-
-    ! cv1 = vertex CV before remap
     cv1(0:nx,0:ny,0:nz) = flux(0:nx,0:ny,0:nz) * 0.125_num
 
     DO iz = 0, nz
@@ -255,8 +253,6 @@ CONTAINS
         END DO
       END DO
     END DO
-
-    ! cv2 = vertex CV after remap
     cv2(0:nx,0:ny,0:nz) = flux(0:nx,0:ny,0:nz) * 0.125_num
 
     DO iz = 0, nz
@@ -267,31 +263,7 @@ CONTAINS
         END DO
       END DO
     END DO
-
-    ! Vertex boundary velocity used in remap
     vy1(0:nx,-2:ny+1,0:nz) = flux(0:nx,-2:ny+1,0:nz)
-
-    ! Calculate vertex-centred lengths
-
-    DO iz = -1, nz + 2
-      DO iy = -1, ny + 2
-        iym = iy - 1
-        DO ix = -1, nx + 2
-          ! dyb before remap
-          dyb1(ix,iy,iz) = dyb(iy) + (vy1(ix,iy,iz) - vy1(ix,iym,iz)) * dt
-        END DO
-      END DO
-    END DO
-
-    DO iz = -1, nz + 1
-      DO iy = -1, ny + 1
-        iyp = iy + 1
-        DO ix = -1, nx + 1
-          ! dyc before remap
-          dyc1(ix,iy,iz) = 0.5_num * (dyb1(ix,iy,iz) + dyb1(ix,iyp,iz))
-        END DO
-      END DO
-    END DO
 
     DO iz = 0, nz
       izp = iz + 1
@@ -306,15 +278,12 @@ CONTAINS
         END DO
       END DO
     END DO
-
-    ! Mass flux out of vertex CV
     dm(0:nx,-1:ny,0:nz) = flux(0:nx,-1:ny,0:nz) * 0.125_num
 
     DO iz = 0, nz
       DO iy = 0, ny
         iym = iy - 1
         DO ix = 0, nx
-          ! Vertex density after remap
           rho_v1(ix,iy,iz) = (rho_v(ix,iy,iz) * cv1(ix,iy,iz) &
               + dm(ix,iym,iz) - dm(ix,iy,iz)) / cv2(ix,iy,iz)
         END DO
