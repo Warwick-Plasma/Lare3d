@@ -1072,7 +1072,7 @@ CONTAINS
     ! setting 'dt_multiplier' if you expect massive changes across cells.
 
     REAL(num) :: cs2, c_visc2, rho0, length
-    REAL(num) :: dxlocal, dt_local, dtr_local, dt1, ss_limit
+    REAL(num) :: dxlocal, dt_local, dtr_local, dt1, dt2, dt3, ss_limit
     REAL(num) :: dt_locals(2), dt_min(2)
     LOGICAL, SAVE :: first = .TRUE.
 
@@ -1086,6 +1086,7 @@ CONTAINS
 
     dt_local = largest_number
     dtr_local = largest_number
+    dt3 = largest_number
 
     gamma_boris(:,:,:) = 1.0_num
 
@@ -1116,21 +1117,26 @@ CONTAINS
           dt1 = length / (SQRT(c_visc2) + SQRT(cs2 + c_visc2))
           dt_local = MIN(dt_local, dt1)
 
+          ! Check no node moves more than one cell to allow remap
+          dt2 = MIN(dxb(ix) / MAX(ABS(vx(ix,iy,iz)),none_zero), &
+                dyb(iy) / MAX(ABS(vy(ix,iy,iz)),none_zero),  &
+                dzb(iz) / MAX(ABS(vz(ix,iy,iz)),none_zero))
+          dt_local = MIN(dt_local, dt2)
+
           ! Note resistive limits assumes uniform resistivity hence cautious
           ! factor 0.2
           dxlocal = 1.0_num / (1.0_num / dxb(ix)**2 &
               + 1.0_num / dyb(iy)**2 + 1.0_num / dzb(iz)**2)
 
-          dt1 = largest_number
           IF (cowling_resistivity) THEN
-            dt1 = 0.2_num * dxlocal &
+            dt3 = 0.2_num * dxlocal &
                 / MAX(MAX(eta(ix,iy,iz), eta_perp(ix,iy,iz)), none_zero)
           ELSEIF (resistive_mhd) THEN
-            dt1 = 0.2_num * dxlocal / MAX(eta(ix,iy,iz), none_zero)
+            dt3 = 0.2_num * dxlocal / MAX(eta(ix,iy,iz), none_zero)
           END IF
 
           ! Adjust to accomodate resistive effects
-          dtr_local = MIN(dtr_local, dt1)
+          dtr_local = MIN(dtr_local, dt3)
         END DO
       END DO
     END DO
