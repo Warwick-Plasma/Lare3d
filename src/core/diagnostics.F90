@@ -66,8 +66,8 @@ CONTAINS
     IF (MOD(step, history_frequency) == 0 .OR. last_call) THEN
       IF (first) THEN
         ALLOCATE(var_local(en_nvars-1,dump_frequency))
+        ALLOCATE(var_sum(en_nvars-1,dump_frequency))
         IF (rank == 0) THEN
-          ALLOCATE(var_sum(en_nvars-1,dump_frequency))
           ALLOCATE(t_out(dump_frequency))
         END IF
         first = .FALSE.
