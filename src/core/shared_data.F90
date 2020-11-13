@@ -81,10 +81,9 @@ MODULE shared_data
   USE constants
   USE sdf_job_info
   USE sdf
+  USE mpi
 
   IMPLICIT NONE
-
-  INCLUDE 'mpif.h'
 
 #ifdef SINGLE
   INTEGER, PARAMETER :: mpireal = MPI_REAL
