@@ -1272,7 +1272,7 @@ CONTAINS
         iym = iy - 1
         DO ix = 1, nx
           ixm = ix - 1
-          local_heating = energy(ix,iy,iz) &
+          local_heating =  &
               + (curlb(ix ,iy ,iz ) + curlb(ixm,iy ,iz )  &
               +  curlb(ix ,iym,iz ) + curlb(ixm,iym,iz )  &
               +  curlb(ix ,iy ,izm) + curlb(ixm,iy ,izm)  &

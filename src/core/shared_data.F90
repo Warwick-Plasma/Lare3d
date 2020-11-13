@@ -85,8 +85,6 @@ MODULE shared_data
 
   IMPLICIT NONE
 
-!   INCLUDE 'mpif.h'
-
 #ifdef SINGLE
   INTEGER, PARAMETER :: mpireal = MPI_REAL
   INTEGER, PARAMETER :: sdf_num = c_datatype_real4
