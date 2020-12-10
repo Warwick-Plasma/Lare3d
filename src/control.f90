@@ -76,7 +76,7 @@ CONTAINS
 
     ! Set the maximum number of iterations of the core solver before the code
     ! terminates. If nsteps < 0 then the code will run until t = t_end
-    nsteps = 50
+    nsteps = 1
 
     ! The maximum runtime of the code
     t_end = 6.0_num
