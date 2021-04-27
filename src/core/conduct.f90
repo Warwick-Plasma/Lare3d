@@ -133,7 +133,7 @@ CONTAINS
     stages = 0.5_num*(SQRT(9.0_num + 16.0_num * (dt/dt_parab))-1.0_num)
 
     n_s_stages_local = CEILING(stages)
-    IF (MODULO(n_s_stages,2) .EQ. 0) THEN
+    IF (MODULO(n_s_stages_local,2) .EQ. 0) THEN
       n_s_stages_local = n_s_stages_local + 1
     ENDIF
     CALL MPI_ALLREDUCE(n_s_stages_local, nstages, 1, &
