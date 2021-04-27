@@ -114,9 +114,8 @@ CONTAINS
         DO ix = 1 , nx
           ! explicit TC time-step
           kappa1 = kappa_0 * larsen_factor(ix,iy,iz)
-          temp = gm1 * (2.0_num - xi_n(ix,iy,iz)) &
-            *(energy(ix,iy,iz)-(1.0_num - xi_n(ix,iy,iz))&
-            *ionise_pot)
+          temp = (gamma - 1.0_num) / (2.0_num - xi_n(ix,iy,iz)) &
+               * (energy(ix,iy,iz) - (1.0_num - xi_n(ix,iy,iz)) * ionise_pot)
           dt1 = rho(ix,iy,iz)*dxb(ix)**2 / (2.0_num * kappa1 * &
               temp**pow)
           dt2 = rho(ix,iy,iz)*dyb(iy)**2 / (2.0_num * kappa1 * &
