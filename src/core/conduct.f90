@@ -58,7 +58,7 @@ CONTAINS
     LOGICAL, INTENT(IN) :: lagrangian_call
 
     REAL(num)  ::  stages, dt_parab, dt1, dt2, dt3, temp
-    REAL(num) :: gm1, kappa1
+    REAL(num) :: kappa1
     REAL(num) :: q_fs, q_fs2, q_spx, q_spy, q_spz, q_sp2
     INTEGER :: n_s_stages_local, nstages
 
@@ -108,7 +108,6 @@ CONTAINS
     IF (.NOT. heat_flux_limiter) larsen_factor = 1.0_num
 
     dt_parab = 1.e10_num
-    gm1 = 0.5_num * (gamma-1.0_num)
     DO iz = 1 , nz
       DO iy = 1 , ny
         DO ix = 1 , nx
