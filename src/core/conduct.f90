@@ -58,7 +58,7 @@ CONTAINS
     LOGICAL, INTENT(IN) :: lagrangian_call
 
     REAL(num)  ::  stages, dt_parab, dt1, dt2, dt3, temp
-    REAL(num) :: gm1, kappa1
+    REAL(num) :: kappa1
     REAL(num) :: q_fs, q_fs2, q_spx, q_spy, q_spz, q_sp2
     INTEGER :: n_s_stages_local, nstages
 
@@ -108,15 +108,13 @@ CONTAINS
     IF (.NOT. heat_flux_limiter) larsen_factor = 1.0_num
 
     dt_parab = 1.e10_num
-    gm1 = 0.5_num * (gamma-1.0_num)
     DO iz = 1 , nz
       DO iy = 1 , ny
         DO ix = 1 , nx
           ! explicit TC time-step
           kappa1 = kappa_0 * larsen_factor(ix,iy,iz)
-          temp = gm1 * (2.0_num - xi_n(ix,iy,iz)) &
-            *(energy(ix,iy,iz)-(1.0_num - xi_n(ix,iy,iz))&
-            *ionise_pot)
+          temp = (gamma - 1.0_num) / (2.0_num - xi_n(ix,iy,iz)) &
+               * (energy(ix,iy,iz) - (1.0_num - xi_n(ix,iy,iz)) * ionise_pot)
           dt1 = rho(ix,iy,iz)*dxb(ix)**2 / (2.0_num * kappa1 * &
               temp**pow)
           dt2 = rho(ix,iy,iz)*dyb(iy)**2 / (2.0_num * kappa1 * &
@@ -133,7 +131,7 @@ CONTAINS
     stages = 0.5_num*(SQRT(9.0_num + 16.0_num * (dt/dt_parab))-1.0_num)
 
     n_s_stages_local = CEILING(stages)
-    IF (MODULO(n_s_stages,2) .EQ. 0) THEN
+    IF (MODULO(n_s_stages_local,2) .EQ. 0) THEN
       n_s_stages_local = n_s_stages_local + 1
     ENDIF
     CALL MPI_ALLREDUCE(n_s_stages_local, nstages, 1, &
