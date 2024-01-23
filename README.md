@@ -1,18 +1,8 @@
 DOWNLOADING AND BUILDING THE CODE
 ---------------------------------
 
-The easiest method of downloading the code is to grab a copy of the latest
-release package, located in the "Releases" section of the CCPForge site.
 
-For more advanced users, the code is also hosted on a git repository. Further
-details on this are provided below.
-
-The "Releases" section of the CCPForge site contains files in the form
-"lare3d-3.1.0.tar.gz". These are tarred and gzipped packages of the code
-which can be unpacked with the command `tar xzf lare3d-3.1.0.tar.gz`.
-This will create a directory called "lare3d-3.1.0".
-
-Within this directory there are various subdirectories and a "Makefile"
+Within the LAre3d directory there are various subdirectories and a "Makefile"
 containing the instructions for compiling the code.
 
 Many people will be used to editing Makefiles by hand in order to set them up
@@ -139,7 +129,7 @@ To perform an initial checkout of the code using git, you should issue the
 following command:
 
 ```
-  git clone --recursive https://cfsa-pmw.warwick.ac.uk/Lare/Lare3d.git
+  git clone --recursive https://github.com/Warwick-Plasma/Lare3d.git
 ```
 
 The "--recursive" flag ensures that not only the "lare3d"
