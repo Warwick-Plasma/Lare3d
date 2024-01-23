@@ -93,8 +93,13 @@ CONTAINS
     ! Parse commit string to get version number
     ! Commit ID begins with the string v[0-9].[0-9].[0-9]-
     strlen = LEN_TRIM(c_commit_id)
-    strmin = 2
-    strmax = strmin + 4
+    strmin = 1
+    strmax = strmin + 12
+    c_revision = -1
+
+    IF (c_commit_id(i:i) == 'v') THEN
+      strmin = 2
+    END IF
 
     ! Version
     DO i = strmin, MIN(strmax,strlen)
@@ -128,7 +133,12 @@ CONTAINS
       END IF
     END DO
 
-    version_string = c_commit_id(2:strmax)
+    IF (c_revision < 0) THEN
+      c_revision = c_minor_rev
+      c_minor_rev = 0
+    END IF
+
+    version_string = c_commit_id(1:strmax)
 
     CALL integer_as_string(jobid%start_seconds, job1)
     CALL integer_as_string(jobid%start_milliseconds, job2)
