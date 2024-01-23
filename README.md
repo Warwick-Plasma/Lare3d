@@ -115,7 +115,7 @@ WORKING WITH THE GIT REPOSITORY
 -------------------------------
 
 For more advanced users, the code is also hosted on a git repository. Details
-can be found in the "Git" section on the CCPForge site. There is quite a
+can be found in the "Code" section on the GitHub site. There is quite a
 steep learning curve for using git, so using this repository is only
 recommended for more advanced users who are comfortable that they can deal with
 a "git conflict".
@@ -138,16 +138,16 @@ for a username and password. You should enter the same username and password
 that you use to login to your GitLab account.
 
 It is recommended that after checking out a copy of the git repository, users
-immediately create a new working branch and leave the default "master" branch
+immediately create a new working branch and leave the default "main" branch
 untouched. A new branch can be created and switched to with the command
 `git checkout -b work`.
 
 When you wish to update to the latest version, do the following sequence of
 actions. First, commit or stash any changes you have made in your "work"
-branch. Next, switch to the "master" branch with
-`git checkout master`. Now pull the changes with `git pull`,
+branch. Next, switch to the "main" branch with
+`git checkout main`. Now pull the changes with `git pull`,
 followed by `git submodule update --recursive`.
-At this stage your "master" branch should be fully up to date.
+At this stage your "main" branch should be fully up to date.
 
 Merging the new version in with your "work" branch is prone to error, so it
 is recommended that you create a temporary copy of this branch just in case
@@ -158,7 +158,7 @@ wrong in the "work" branch, you can reset it back to the original using the
 command `git reset --hard workold`.
 
 In order to update your work branch, switch back to it with
-`git checkout work` and merge in the changes with `git merge master`.
+`git checkout work` and merge in the changes with `git merge main`.
 After issuing this last command, there is a fair chance that you will encounter
 conflicts. You must now resolve those conflicts and commit the changes.
 After successfully merging in the changes, you can now delete the temporary
