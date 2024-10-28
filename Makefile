@@ -234,6 +234,14 @@ visitclean:
 	@cd $(SDF)/../VisIt; make clean; ./build -c; \
 	  rm -rf .depend *.d *Info.C *Info.h CMake* cmake* Makefile
 
+sdfutils:
+	@cd $(SDF)/../C; make
+	@cd $(SDF)/../utilities; sh build.sh
+
+sdfutilsclean:
+	@cd $(SDF)/../C; make clean
+	@cd $(SDF)/../utilities; sh build.sh -c
+
 $(OBJFILES): | $(OBJDIR)
 
 $(OBJDIR):
