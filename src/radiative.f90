@@ -85,7 +85,7 @@ CONTAINS
     END DO
     END DO
     ! Convert to internal Lare units
-    heat_in(:,:,:) = heat_in(:,:,:) * time_norm**3 / (rho_norm * L_norm)
+    heat_in(:,:,:) = heat_in(:,:,:) * time_norm**3 / (rho_norm * L_norm**2)
 
     energy(:,:,:) = energy(:,:,:) + heat_in(:,:,:) * dt / rho(:,:,:)
     CALL energy_bcs
