@@ -108,16 +108,17 @@ ifeq ($(strip $(COMPILER)),ibm)
   D = -WF,-D
 endif
 
-# HECToR
+# ARCHER (also works for HECToR)
 # ========
-ifeq ($(strip $(COMPILER)),hector)
-  FFLAGS = -O3
+ifeq ($(strip $(COMPILER)),archer)
+  FFLAGS = -O3 -hipa2
   ifeq ($(strip $(MODE)),debug)
     FFLAGS = -O0 -g -ea -ec -eC -eD -eI -en -hfp_trap -Ktrap=fp -m0 -M1438,7413
   endif
   MODULEFLAG = -em -I/usr/include -I$(OBJDIR) -J$(OBJDIR)
   MPIF90 ?= ftn
-endif
+endif 
+
 
 
 MPIF90 ?= mpif90
